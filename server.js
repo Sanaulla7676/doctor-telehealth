@@ -104,6 +104,12 @@ async function initDb() {
                 status VARCHAR(50) DEFAULT 'active'
             );
         `);
+        // Migrations/Alters for patient_accounts schema differences
+        await pool.query(`ALTER TABLE patient_accounts ADD COLUMN IF NOT EXISTS full_name VARCHAR(255);`);
+        await pool.query(`ALTER TABLE patient_accounts ALTER COLUMN phone DROP NOT NULL;`);
+        await pool.query(`ALTER TABLE patient_accounts DROP CONSTRAINT IF EXISTS patient_accounts_phone_key;`);
+        await pool.query(`ALTER TABLE patient_accounts DROP CONSTRAINT IF EXISTS patient_accounts_phone_not_null;`);
+        await pool.query(`ALTER TABLE patient_accounts DROP CONSTRAINT IF EXISTS patient_accounts_patient_id_key;`);
 
         // 5. Clinical Notes Table
         await pool.query(`
@@ -363,6 +369,13 @@ app.post('/api/patient/register', async (req, res) => {
             return res.status(400).json({ success: false, error: "An account with this email already exists." });
         }
 
+        if (phone) {
+            const existingPhone = await pool.query('SELECT id FROM patient_accounts WHERE phone = $1;', [phone]);
+            if (existingPhone.rows.length > 0) {
+                return res.status(400).json({ success: false, error: "An account with this phone number already exists." });
+            }
+        }
+
         const accountId = 'pacct_' + Date.now();
         const passwordHash = await bcrypt.hash(password, 10);
 
@@ -395,6 +408,17 @@ app.post('/api/patient/register', async (req, res) => {
         res.status(201).json({ success: true, token, full_name, email, patientAccountId: accountId });
     } catch (err) {
         console.error('Patient register error:', err);
+        if (err.code === '23505') {
+            if (err.detail && err.detail.includes('email')) {
+                return res.status(400).json({ success: false, error: "An account with this email already exists." });
+            }
+            if (err.detail && err.detail.includes('phone')) {
+                return res.status(400).json({ success: false, error: "An account with this phone number already exists." });
+            }
+            if (err.detail && err.detail.includes('patient_id')) {
+                return res.status(400).json({ success: false, error: "This patient profile is already registered." });
+            }
+        }
         res.status(500).json({ success: false, error: "Registration failed. Please try again." });
     }
 });

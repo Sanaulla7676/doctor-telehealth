@@ -996,8 +996,6 @@
                     reason: document.getElementById('input-reason').value
                 };
                 sessionStorage.setItem('pendingBooking', JSON.stringify(pendingBooking));
-                
-                alert("Please login or create an account to finalize your booking.");
                 window.location.href = '/patient-auth.html?redirect=booking';
                 return;
             }
