@@ -540,6 +540,9 @@
     </main>
 
     <script>
+        // ── BACKEND BASE URL (Render) ──
+        const BASE_URL = 'https://doctor-telehealth.onrender.com';
+
         // ── UTILITIES ──
         function getRedirectUrl() {
             const params = new URLSearchParams(window.location.search);
@@ -622,7 +625,7 @@
 
             setLoading('login', true);
             try {
-                const res = await fetch('/api/patient/login', {
+                const res = await fetch(BASE_URL + '/api/patient/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email, password })
@@ -662,7 +665,7 @@
 
             setLoading('reg', true);
             try {
-                const res = await fetch('/api/patient/register', {
+                const res = await fetch(BASE_URL + '/api/patient/register', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ full_name, email, phone, password })
@@ -694,7 +697,7 @@
 
             setLoading('forgot', true);
             try {
-                const res = await fetch('/api/patient/forgot-password', {
+                const res = await fetch(BASE_URL + '/api/patient/forgot-password', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email })
@@ -718,7 +721,7 @@
             const token = localStorage.getItem('patientToken');
             if (token) {
                 // Verify token is still valid
-                fetch('/api/patient/profile', {
+                fetch(BASE_URL + '/api/patient/profile', {
                     headers: { 'Authorization': 'Bearer ' + token }
                 }).then(r => r.json()).then(d => {
                     if (d.success) redirectAfterAuth();

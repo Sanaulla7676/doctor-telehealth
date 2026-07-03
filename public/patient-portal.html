@@ -7,7 +7,7 @@
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Sockets Client Driver -->
-    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://doctor-telehealth.onrender.com/socket.io/socket.io.js"></script>
     <!-- Jitsi Video Call API -->
     <script src="https://meet.jit.si/external_api.js"></script>
     <!-- FontAwesome Icons -->
@@ -328,13 +328,14 @@
     <!-- Portal Core JavaScript Engine -->
     <script>
         // Setup secure token parameters
+        const BASE_URL = 'https://doctor-telehealth.onrender.com';
         const patientToken = localStorage.getItem('patientToken');
         if (!patientToken) {
             window.location.href = '/patient-auth.html';
         }
 
         // Establish defensive socket connection
-        const socket = (typeof io !== 'undefined') ? io(window.location.origin, {
+        const socket = (typeof io !== 'undefined') ? io(BASE_URL, {
             transports: ['websocket', 'polling']
         }) : { on: () => {}, emit: () => {} };
 
@@ -397,7 +398,7 @@
         // REST calls
         async function loadProfile() {
             try {
-                const res = await fetch('/api/patient/profile', {
+                const res = await fetch(BASE_URL + '/api/patient/profile', {
                     headers: { 'Authorization': 'Bearer ' + patientToken }
                 });
                 const data = await res.json();
@@ -428,7 +429,7 @@
             };
 
             try {
-                const res = await fetch('/api/patient/profile', {
+                const res = await fetch(BASE_URL + '/api/patient/profile', {
                     method: 'PUT',
                     headers: { 
                         'Content-Type': 'application/json',
@@ -449,7 +450,7 @@
 
         async function loadAppointments() {
             try {
-                const res = await fetch('/api/patient/appointments', {
+                const res = await fetch(BASE_URL + '/api/patient/appointments', {
                     headers: { 'Authorization': 'Bearer ' + patientToken }
                 });
                 const data = await res.json();
@@ -677,7 +678,7 @@
         // Notification center calls
         async function loadNotifications() {
             try {
-                const res = await fetch('/api/patient/notifications', {
+                const res = await fetch(BASE_URL + '/api/patient/notifications', {
                     headers: { 'Authorization': 'Bearer ' + patientToken }
                 });
                 const data = await res.json();
@@ -721,7 +722,7 @@
 
         async function markAllNotificationsRead() {
             try {
-                await fetch('/api/patient/notifications/mark-read', {
+                await fetch(BASE_URL + '/api/patient/notifications/mark-read', {
                     method: 'POST',
                     headers: { 'Authorization': 'Bearer ' + patientToken }
                 });
