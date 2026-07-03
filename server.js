@@ -437,7 +437,7 @@ app.post('/api/patient/login', async (req, res) => {
         const isMatch = await bcrypt.compare(password, account.password_hash);
         if (!isMatch) return res.status(400).json({ success: false, error: "Invalid email or password." });
 
-        if (account.status !== 'active') {
+        if (account.status && account.status.toLowerCase() !== 'active') {
             return res.status(403).json({ success: false, error: "Your account has been suspended." });
         }
 
