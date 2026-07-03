@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Portal - Homeopathway</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Sockets Client Driver -->
+    <script src="/socket.io/socket.io.js"></script>
+    <!-- Jitsi Video Call API -->
+    <script src="https://meet.jit.si/external_api.js"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                        serif: ['Cormorant Garamond', 'serif'],
+                    },
+                    colors: {
+                        luxDark: '#1C251D',
+                        luxMuted: '#6B756C',
+                        luxBg: '#F4F6F4',
+                        luxAccent: '#708264',
+                        luxAccentHover: '#5a6b4f',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #F4F6F4;
+            color: #1C251D;
+        }
+        .active-tab {
+            background-color: #1C251D;
+            color: #ffffff !important;
+        }
+        .active-tab i {
+            color: #ffffff !important;
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen font-sans">
+
+    <!-- Header / Navbar -->
+    <header class="bg-white border-b border-black/[0.04] sticky top-0 z-40 backdrop-blur-md bg-white/90">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                <a href="/index.html" class="flex items-center space-x-3">
+                    <div class="w-9 h-9 rounded-full bg-white border border-black/[0.06] flex items-center justify-center shadow-sm">
+                        <i class="fa-solid fa-seedling text-luxAccent text-sm"></i>
+                    </div>
+                    <div>
+                        <span class="block text-xs font-extrabold tracking-tight text-luxDark uppercase">Dr. Varsha Bandi</span>
+                        <span class="block text-[11px] font-medium text-luxAccent font-serif italic lowercase leading-none">homeopathway</span>
+                    </div>
+                </a>
+
+                <div class="flex items-center space-x-4">
+                    <div class="relative">
+                        <button onclick="toggleNotifications()" class="relative p-2 text-luxMuted hover:text-luxDark focus:outline-none transition">
+                            <i class="fa-regular fa-bell text-lg"></i>
+                            <span id="notif-badge" class="hidden absolute top-0 right-0 w-2.5 h-2.5 bg-red-500 rounded-full animate-ping"></span>
+                        </button>
+                        <!-- Notifications Dropdown -->
+                        <div id="notif-dropdown" class="hidden absolute right-0 mt-3 w-80 bg-white border border-black/[0.06] rounded-2xl shadow-xl py-3 z-50">
+                            <div class="px-4 py-2 border-b border-black/[0.04] flex justify-between items-center">
+                                <span class="font-bold text-xs uppercase tracking-wider text-luxDark">Notifications</span>
+                                <button onclick="markAllNotificationsRead()" class="text-[10px] text-luxAccent font-bold hover:underline">Mark read</button>
+                            </div>
+                            <div id="notif-list" class="max-h-64 overflow-y-auto divide-y divide-black/[0.02]">
+                                <!-- Notifications generated dynamically -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center space-x-3 border-l border-black/[0.06] pl-4">
+                        <div class="w-8 h-8 rounded-full bg-luxAccent/10 text-luxAccent flex items-center justify-center font-bold text-xs" id="user-avatar">
+                            U
+                        </div>
+                        <span class="hidden md:inline text-xs font-bold text-luxDark" id="user-name-display">Patient</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col md:flex-row gap-8">
+        
+        <!-- Sidebar Navigation -->
+        <aside class="w-full md:w-64 shrink-0 flex flex-col gap-2">
+            <nav class="bg-white border border-black/[0.04] p-4 rounded-3xl space-y-1 shadow-sm">
+                <button onclick="switchView('dashboard')" id="nav-dashboard" class="active-tab w-full flex items-center space-x-3 px-4 py-3 text-luxMuted hover:text-luxDark hover:bg-black/[0.02] rounded-xl font-bold text-xs uppercase tracking-wider transition">
+                    <i class="fa-solid fa-chart-line text-sm text-luxMuted"></i><span>Dashboard</span>
+                </button>
+                <button onclick="switchView('appointments')" id="nav-appointments" class="w-full flex items-center space-x-3 px-4 py-3 text-luxMuted hover:text-luxDark hover:bg-black/[0.02] rounded-xl font-bold text-xs uppercase tracking-wider transition">
+                    <i class="fa-solid fa-calendar-check text-sm text-luxMuted"></i><span>Appointments</span>
+                </button>
+                <button onclick="switchView('prescriptions')" id="nav-prescriptions" class="w-full flex items-center space-x-3 px-4 py-3 text-luxMuted hover:text-luxDark hover:bg-black/[0.02] rounded-xl font-bold text-xs uppercase tracking-wider transition">
+                    <i class="fa-solid fa-file-prescription text-sm text-luxMuted"></i><span>Prescriptions</span>
+                </button>
+                <button onclick="switchView('history')" id="nav-history" class="w-full flex items-center space-x-3 px-4 py-3 text-luxMuted hover:text-luxDark hover:bg-black/[0.02] rounded-xl font-bold text-xs uppercase tracking-wider transition">
+                    <i class="fa-solid fa-clock-rotate-left text-sm text-luxMuted"></i><span>Medical History</span>
+                </button>
+                <button onclick="switchView('profile')" id="nav-profile" class="w-full flex items-center space-x-3 px-4 py-3 text-luxMuted hover:text-luxDark hover:bg-black/[0.02] rounded-xl font-bold text-xs uppercase tracking-wider transition">
+                    <i class="fa-solid fa-user-gear text-sm text-luxMuted"></i><span>Profile Setup</span>
+                </button>
+                <hr class="border-black/[0.04] my-2">
+                <button onclick="handleLogout()" class="w-full flex items-center space-x-3 px-4 py-3 text-red-600 hover:bg-red-50 rounded-xl font-bold text-xs uppercase tracking-wider transition">
+                    <i class="fa-solid fa-power-off text-sm text-red-600"></i><span>Sign Out</span>
+                </button>
+            </nav>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="flex-grow">
+            <!-- Alert Messages -->
+            <div id="portal-alert" class="hidden mb-6 p-4 rounded-2xl border flex items-center gap-3 text-xs font-semibold">
+                <i class="fa-solid id-alert-icon"></i>
+                <span id="portal-alert-text"></span>
+            </div>
+
+            <!-- ================= VIEW 1: DASHBOARD ================= -->
+            <section id="view-dashboard" class="space-y-6">
+                <!-- Welcome Banner -->
+                <div class="bg-gradient-to-r from-luxDark to-emerald-950 text-white p-8 rounded-[32px] shadow-sm relative overflow-hidden">
+                    <div class="absolute right-0 bottom-0 top-0 w-1/3 bg-cover bg-right opacity-10 pointer-events-none" style="background-image: url('/botonical.png')"></div>
+                    <div class="max-w-xl space-y-2 relative z-10">
+                        <span class="text-[10px] uppercase tracking-widest text-luxAccent font-extrabold block">Patient Care Portal</span>
+                        <h2 class="text-3xl font-extrabold tracking-tight font-serif" id="welcome-heading">Hello, Guest</h2>
+                        <p class="text-xs text-gray-300 leading-relaxed">
+                            Welcome back to your personalized homeopathway wellness space. Here you can attend video consultations, access medical notes, view recipes, and book your next appointment instantly.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Live Consultation Frame if Active -->
+                <div id="live-consultation-banner" class="hidden bg-emerald-50 border border-luxAccent/20 rounded-[28px] p-6 shadow-sm flex flex-col md:flex-row items-center justify-between gap-6">
+                    <div class="space-y-2">
+                        <div class="flex items-center space-x-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-green-500 animate-ping"></span>
+                            <span class="text-xs font-bold text-luxAccent uppercase tracking-widest">Active Consultation Room</span>
+                        </div>
+                        <h3 class="text-lg font-bold text-luxDark">Dr. Varsha Bandi is waiting for you</h3>
+                        <p class="text-xs text-luxMuted">Your telemedicine consultation is ready. Please click join below to establish a secure link.</p>
+                    </div>
+                    <button onclick="startActiveMeeting()" class="bg-luxDark hover:bg-luxAccent text-white text-xs font-bold uppercase tracking-wider py-3.5 px-6 rounded-xl transition duration-300 shadow-md">
+                        Join Consultation Now
+                    </button>
+                </div>
+
+                <!-- Quick Stats -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-white border border-black/[0.04] p-6 rounded-[24px] shadow-sm">
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="text-[10px] text-luxMuted font-bold uppercase tracking-wider">Next Consult</span>
+                            <i class="fa-solid fa-calendar text-luxAccent"></i>
+                        </div>
+                        <h3 id="stat-next-appt" class="text-lg font-extrabold text-luxDark">No scheduled visits</h3>
+                        <p id="stat-next-appt-sub" class="text-[10px] text-luxMuted mt-1">Book one below to get started</p>
+                    </div>
+                    <div class="bg-white border border-black/[0.04] p-6 rounded-[24px] shadow-sm">
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="text-[10px] text-luxMuted font-bold uppercase tracking-wider">Consultation Status</span>
+                            <i class="fa-solid fa-heart-pulse text-luxAccent"></i>
+                        </div>
+                        <h3 id="stat-meeting-status" class="text-lg font-extrabold text-luxDark">None Active</h3>
+                        <p id="stat-meeting-status-sub" class="text-[10px] text-luxMuted mt-1">Updates instantly during call day</p>
+                    </div>
+                    <div class="bg-white border border-black/[0.04] p-6 rounded-[24px] shadow-sm">
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="text-[10px] text-luxMuted font-bold uppercase tracking-wider">Prescriptions Issued</span>
+                            <i class="fa-solid fa-receipt text-luxAccent"></i>
+                        </div>
+                        <h3 id="stat-prescriptions-count" class="text-lg font-extrabold text-luxDark">0</h3>
+                        <p class="text-[10px] text-luxMuted mt-1">Access recommendations directly</p>
+                    </div>
+                </div>
+
+                <!-- Main Layout Grid -->
+                <div class="grid grid-cols-1 lg:grid-cols-10 gap-6">
+                    <!-- Virtual Consultation Embed Container (70% width) -->
+                    <div id="video-section-container" class="hidden lg:col-span-7 bg-white border border-black/[0.04] p-6 rounded-[28px] shadow-sm flex flex-col min-h-[480px]">
+                        <div class="flex justify-between items-center mb-4 border-b border-black/[0.04] pb-3">
+                            <h3 class="font-bold text-xs uppercase tracking-widest text-luxDark flex items-center gap-2">
+                                <span class="w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse"></span>
+                                Secure Video Link
+                            </h3>
+                            <button onclick="closeVideoSection()" class="text-xs text-luxMuted font-bold hover:text-luxDark">Tear Down</button>
+                        </div>
+                        <div id="jitsi-patient-frame" class="flex-grow w-full rounded-2xl overflow-hidden bg-black min-h-[380px]"></div>
+                    </div>
+
+                    <!-- Upcoming Appointments Panel -->
+                    <div class="lg:col-span-10 bg-white border border-black/[0.04] p-6 rounded-[28px] shadow-sm flex flex-col">
+                        <div class="flex justify-between items-center mb-6 border-b border-black/[0.04] pb-4">
+                            <h3 class="font-bold text-xs uppercase tracking-widest text-luxDark">Consultation Feed & Status</h3>
+                            <a href="/index.html#contact" class="bg-luxDark text-white text-[10px] font-bold py-2 px-4 rounded-xl uppercase tracking-wider hover:bg-luxAccent transition duration-300">Book Consult</a>
+                        </div>
+                        <div id="dashboard-appts-list" class="space-y-4">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ================= VIEW 2: APPOINTMENTS ================= -->
+            <section id="view-appointments" class="hidden space-y-6">
+                <div class="bg-white border border-black/[0.04] p-6 rounded-[28px] shadow-sm">
+                    <h3 class="font-bold text-xs uppercase tracking-widest text-luxDark mb-6 border-b border-black/[0.04] pb-4">Your Appointment Log</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse text-xs">
+                            <thead class="bg-black/[0.02] border-b border-black/[0.04] text-luxMuted uppercase tracking-wider text-[9px] font-extrabold">
+                                <tr>
+                                    <th class="p-4">Date</th>
+                                    <th class="p-4">Time</th>
+                                    <th class="p-4">Reason</th>
+                                    <th class="p-4">Booking Status</th>
+                                    <th class="p-4">Meeting Link</th>
+                                </tr>
+                            </thead>
+                            <tbody id="appts-table-body" class="divide-y divide-black/[0.02]">
+                                <!-- Dynamic entries -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ================= VIEW 3: PRESCRIPTIONS ================= -->
+            <section id="view-prescriptions" class="hidden space-y-6">
+                <div class="bg-white border border-black/[0.04] p-6 rounded-[28px] shadow-sm">
+                    <h3 class="font-bold text-xs uppercase tracking-widest text-luxDark mb-6 border-b border-black/[0.04] pb-4">Issued Recommendations</h3>
+                    <div id="prescriptions-list" class="space-y-4">
+                        <!-- Prescriptions (SOAP Plan field) populated here -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- ================= VIEW 4: MEDICAL HISTORY / TIMELINE ================= -->
+            <section id="view-history" class="hidden space-y-6">
+                <div class="bg-white border border-black/[0.04] p-6 rounded-[28px] shadow-sm">
+                    <h3 class="font-bold text-xs uppercase tracking-widest text-luxDark mb-6 border-b border-black/[0.04] pb-4">Clinical Timeline</h3>
+                    <div id="history-timeline" class="relative pl-6 border-l border-luxAccent/30 space-y-8 text-xs">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- ================= VIEW 5: PROFILE SETUP ================= -->
+            <section id="view-profile" class="hidden space-y-6">
+                <div class="bg-white border border-black/[0.04] p-6 rounded-[28px] shadow-sm">
+                    <h3 class="font-bold text-xs uppercase tracking-widest text-luxDark mb-6 border-b border-black/[0.04] pb-4">Configure Patient Profile</h3>
+                    
+                    <form id="profile-form" onsubmit="saveProfile(event)" class="space-y-6 text-xs">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-[10px] font-bold text-luxMuted uppercase tracking-wider mb-2">WhatsApp Contact</label>
+                                <input type="tel" id="prof-phone" class="w-full bg-[#F5F5F7] border border-black/[0.08] rounded-xl px-4 py-3 text-xs text-luxDark focus:outline-none focus:border-luxDark focus:ring-1 focus:ring-luxDark">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-luxMuted uppercase tracking-wider mb-2">Email (Account ID)</label>
+                                <input type="email" id="prof-email" disabled class="w-full bg-black/[0.02] border border-black/[0.04] rounded-xl px-4 py-3 text-xs text-luxMuted cursor-not-allowed">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-[10px] font-bold text-luxMuted uppercase tracking-wider mb-2">Age</label>
+                                <input type="number" id="prof-age" class="w-full bg-[#F5F5F7] border border-black/[0.08] rounded-xl px-4 py-3 text-xs text-luxDark focus:outline-none focus:border-luxDark focus:ring-1 focus:ring-luxDark">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-luxMuted uppercase tracking-wider mb-2">Gender</label>
+                                <select id="prof-gender" class="w-full bg-[#F5F5F7] border border-black/[0.08] rounded-xl px-4 py-3 text-xs text-luxDark focus:outline-none focus:border-luxDark focus:ring-1 focus:ring-luxDark">
+                                    <option value="">Select Gender</option>
+                                    <option value="Female">Female</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-[10px] font-bold text-luxMuted uppercase tracking-wider mb-2">Residential Address</label>
+                            <textarea id="prof-address" rows="3" class="w-full bg-[#F5F5F7] border border-black/[0.08] rounded-xl px-4 py-3 text-xs text-luxDark focus:outline-none focus:border-luxDark focus:ring-1 focus:ring-luxDark"></textarea>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-[10px] font-bold text-luxMuted uppercase tracking-wider mb-2">Prior Medical History / Allergies</label>
+                                <textarea id="prof-history" rows="4" class="w-full bg-[#F5F5F7] border border-black/[0.08] rounded-xl px-4 py-3 text-xs text-luxDark focus:outline-none focus:border-luxDark focus:ring-1 focus:ring-luxDark" placeholder="PCOS since 2022, penicillin allergy..."></textarea>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-luxMuted uppercase tracking-wider mb-2">Personal Case Notes</label>
+                                <textarea id="prof-notes" rows="4" class="w-full bg-[#F5F5F7] border border-black/[0.08] rounded-xl px-4 py-3 text-xs text-luxDark focus:outline-none focus:border-luxDark focus:ring-1 focus:ring-luxDark" placeholder="Notes on sleep levels, stress factors..."></textarea>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="bg-luxDark hover:bg-luxAccent text-white text-xs font-bold uppercase tracking-wider py-3.5 px-6 rounded-xl transition duration-300 shadow-md">
+                            Save Profile Settings
+                        </button>
+                    </form>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-black/[0.04] text-xs py-8 text-luxMuted font-sans mt-auto">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center md:flex justify-between items-center">
+            <span>&copy; 2026 Dr. Varsha Bandi. All Rights Reserved.</span>
+            <span class="flex items-center justify-center space-x-1 mt-2 md:mt-0">
+                <span>Telemedicine Portal</span>
+                <i class="fa-solid fa-seedling text-luxDark text-[8px]"></i>
+                <span>Bengaluru, India</span>
+            </span>
+        </div>
+    </footer>
+
+    <!-- Portal Core JavaScript Engine -->
+    <script>
+        // Setup secure token parameters
+        const patientToken = localStorage.getItem('patientToken');
+        if (!patientToken) {
+            window.location.href = '/patient-auth.html';
+        }
+
+        // Establish defensive socket connection
+        const socket = (typeof io !== 'undefined') ? io(window.location.origin, {
+            transports: ['websocket', 'polling']
+        }) : { on: () => {}, emit: () => {} };
+
+        let appointmentsData = [];
+        let activeRoom = null;
+        let jitsiAPI = null;
+
+        // Smart notifications UI logic
+        function toggleNotifications() {
+            const el = document.getElementById('notif-dropdown');
+            el.classList.toggle('hidden');
+        }
+
+        document.addEventListener('click', (e) => {
+            const dropdown = document.getElementById('notif-dropdown');
+            const bell = document.querySelector('button[onclick="toggleNotifications()"]');
+            if (dropdown && !dropdown.contains(e.target) && bell && !bell.contains(e.target)) {
+                dropdown.classList.add('hidden');
+            }
+        });
+
+        // Tab views logic
+        function switchView(view) {
+            const views = ['dashboard', 'appointments', 'prescriptions', 'history', 'profile'];
+            views.forEach(v => {
+                document.getElementById(`view-${v}`).classList.add('hidden');
+                document.getElementById(`nav-${v}`).className = "w-full flex items-center space-x-3 px-4 py-3 text-luxMuted hover:text-luxDark hover:bg-black/[0.02] rounded-xl font-bold text-xs uppercase tracking-wider transition";
+            });
+
+            document.getElementById(`view-${view}`).classList.remove('hidden');
+            document.getElementById(`nav-${view}`).className = "active-tab w-full flex items-center space-x-3 px-4 py-3 text-white rounded-xl font-bold text-xs uppercase tracking-wider transition";
+
+            if (view === 'dashboard' || view === 'appointments' || view === 'prescriptions' || view === 'history') {
+                loadAppointments();
+            }
+            if (view === 'profile') {
+                loadProfile();
+            }
+        }
+
+        // Alert banner logic
+        function showPortalAlert(text, isError = false) {
+            const banner = document.getElementById('portal-alert');
+            const icon = banner.querySelector('.id-alert-icon');
+            const textEl = document.getElementById('portal-alert-text');
+
+            banner.className = `mb-6 p-4 rounded-2xl border flex items-center gap-3 text-xs font-semibold ${isError ? 'bg-red-50 border-red-200 text-red-800' : 'bg-green-50 border-green-200 text-green-800'}`;
+            icon.className = isError ? 'fa-solid fa-circle-exclamation' : 'fa-solid fa-circle-check';
+            textEl.innerText = text;
+            banner.classList.remove('hidden');
+            setTimeout(() => banner.classList.add('hidden'), 5000);
+        }
+
+        // Logout
+        function handleLogout() {
+            localStorage.clear();
+            window.location.href = '/index.html';
+        }
+
+        // REST calls
+        async function loadProfile() {
+            try {
+                const res = await fetch('/api/patient/profile', {
+                    headers: { 'Authorization': 'Bearer ' + patientToken }
+                });
+                const data = await res.json();
+                if (data.success) {
+                    const prof = data.profile;
+                    document.getElementById('prof-phone').value = prof.phone || '';
+                    document.getElementById('prof-email').value = prof.email || '';
+                    document.getElementById('prof-age').value = prof.age || '';
+                    document.getElementById('prof-gender').value = prof.gender || '';
+                    document.getElementById('prof-address').value = prof.address || '';
+                    document.getElementById('prof-history').value = prof.medical_history || '';
+                    document.getElementById('prof-notes').value = prof.notes || '';
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function saveProfile(e) {
+            e.preventDefault();
+            const payload = {
+                phone: document.getElementById('prof-phone').value,
+                age: parseInt(document.getElementById('prof-age').value) || null,
+                gender: document.getElementById('prof-gender').value,
+                address: document.getElementById('prof-address').value,
+                medical_history: document.getElementById('prof-history').value,
+                notes: document.getElementById('prof-notes').value
+            };
+
+            try {
+                const res = await fetch('/api/patient/profile', {
+                    method: 'PUT',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + patientToken
+                    },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showPortalAlert('Profile updated successfully.');
+                } else {
+                    showPortalAlert(data.error || 'Failed to save profile.', true);
+                }
+            } catch (err) {
+                showPortalAlert('Network error saving profile.', true);
+            }
+        }
+
+        async function loadAppointments() {
+            try {
+                const res = await fetch('/api/patient/appointments', {
+                    headers: { 'Authorization': 'Bearer ' + patientToken }
+                });
+                const data = await res.json();
+                if (data.success) {
+                    appointmentsData = data.appointments;
+                    renderDashboardAppts(appointmentsData);
+                    renderApptsTable(appointmentsData);
+                    renderPrescriptions(appointmentsData);
+                    renderTimeline(appointmentsData);
+                    checkActiveMeeting(appointmentsData);
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function checkActiveMeeting(list) {
+            // Find if there is an appointment with status Confirmed and meeting_status READY
+            const active = list.find(appt => appt.status === 'Confirmed' && appt.meeting_status === 'READY');
+            const banner = document.getElementById('live-consultation-banner');
+            const statMeeting = document.getElementById('stat-meeting-status');
+            const statMeetingSub = document.getElementById('stat-meeting-status-sub');
+            
+            if (active) {
+                activeRoom = active.video_room;
+                banner.classList.remove('hidden');
+                statMeeting.innerText = 'DOCTOR IS READY';
+                statMeeting.className = 'text-lg font-extrabold text-green-600';
+                statMeetingSub.innerText = 'Join call now';
+            } else {
+                activeRoom = null;
+                banner.classList.add('hidden');
+                statMeeting.innerText = 'None Active';
+                statMeeting.className = 'text-lg font-extrabold text-luxDark';
+                statMeetingSub.innerText = 'Updates instantly during call day';
+            }
+
+            // Next Appointment stat
+            const pendingOrConfirmed = list.filter(appt => appt.status === 'Pending' || appt.status === 'Confirmed')
+                                           .sort((a,b) => new Date(a.date) - new Date(b.date));
+            if (pendingOrConfirmed.length > 0) {
+                document.getElementById('stat-next-appt').innerText = `${pendingOrConfirmed[0].date}`;
+                document.getElementById('stat-next-appt-sub').innerText = `Scheduled for ${pendingOrConfirmed[0].time}`;
+            } else {
+                document.getElementById('stat-next-appt').innerText = 'No scheduled visits';
+                document.getElementById('stat-next-appt-sub').innerText = 'Book one in the dashboard';
+            }
+
+            // Prescriptions count
+            const prescriptionsCount = list.filter(appt => appt.plan && appt.plan.trim() !== '').length;
+            document.getElementById('stat-prescriptions-count').innerText = prescriptionsCount;
+        }
+
+        function renderDashboardAppts(list) {
+            const container = document.getElementById('dashboard-appts-list');
+            container.innerHTML = '';
+
+            if (list.length === 0) {
+                container.innerHTML = '<p class="text-xs text-luxMuted py-8 text-center">No appointments found. Press "Book Consult" above.</p>';
+                return;
+            }
+
+            list.slice(0, 5).forEach(appt => {
+                let statusColor = 'bg-yellow-100 text-yellow-800';
+                if (appt.status === 'Confirmed') statusColor = 'bg-green-100 text-green-800';
+                if (appt.status === 'Cancelled') statusColor = 'bg-red-100 text-red-800';
+
+                let meetingBadge = '';
+                if (appt.status === 'Confirmed' && appt.meeting_status === 'READY') {
+                    meetingBadge = `<span class="bg-red-500 text-white text-[9px] px-2 py-0.5 rounded-full font-bold animate-pulse">LIVE</span>`;
+                } else if (appt.meeting_status === 'ENDED') {
+                    meetingBadge = `<span class="bg-gray-100 text-gray-500 text-[9px] px-2 py-0.5 rounded-full">Call Finished</span>`;
+                }
+
+                const item = document.createElement('div');
+                item.className = 'p-4 border border-black/[0.04] bg-black/[0.01] rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4';
+                item.innerHTML = `
+                    <div>
+                        <div class="flex items-center space-x-2">
+                            <h4 class="font-bold text-xs text-luxDark">${appt.date} at ${appt.time}</h4>
+                            ${meetingBadge}
+                        </div>
+                        <p class="text-[10px] text-luxMuted mt-1">Brief: "${appt.reason}"</p>
+                    </div>
+                    <div class="flex items-center space-x-3 w-full md:w-auto justify-between md:justify-end">
+                        <span class="text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider ${statusColor}">${appt.status}</span>
+                        ${appt.status === 'Confirmed' && appt.meeting_status === 'READY' ? `
+                            <button onclick="startActiveMeeting()" class="bg-luxDark text-white text-[10px] font-bold py-2 px-4 rounded-xl uppercase tracking-wider hover:bg-luxAccent transition duration-300">Join Call</button>
+                        ` : ''}
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        function renderApptsTable(list) {
+            const tbody = document.getElementById('appts-table-body');
+            tbody.innerHTML = '';
+
+            if (list.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="p-8 text-center text-luxMuted">No appointments.</td></tr>';
+                return;
+            }
+
+            list.forEach(appt => {
+                let statusColor = 'bg-yellow-50 text-yellow-700';
+                if (appt.status === 'Confirmed') statusColor = 'bg-green-50 text-green-700';
+                if (appt.status === 'Cancelled') statusColor = 'bg-red-50 text-red-700';
+
+                let meetingCell = '<span class="text-luxMuted">—</span>';
+                if (appt.status === 'Confirmed' && appt.meeting_status === 'READY') {
+                    meetingCell = `<button onclick="startActiveMeeting()" class="text-green-600 font-bold hover:underline">Join Consultation</button>`;
+                } else if (appt.meeting_status === 'ENDED') {
+                    meetingCell = `<span class="text-luxMuted">Consultation Ended</span>`;
+                }
+
+                const tr = document.createElement('tr');
+                tr.className = 'border-b border-black/[0.02] hover:bg-black/[0.01] transition';
+                tr.innerHTML = `
+                    <td class="p-4 font-bold text-luxDark">${appt.date}</td>
+                    <td class="p-4 text-luxMuted">${appt.time}</td>
+                    <td class="p-4 max-w-xs truncate">${appt.reason}</td>
+                    <td class="p-4"><span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase ${statusColor}">${appt.status}</span></td>
+                    <td class="p-4">${meetingCell}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function renderPrescriptions(list) {
+            const container = document.getElementById('prescriptions-list');
+            container.innerHTML = '';
+
+            const activePrescriptions = list.filter(appt => appt.plan && appt.plan.trim() !== '');
+
+            if (activePrescriptions.length === 0) {
+                container.innerHTML = '<p class="text-xs text-luxMuted py-8 text-center">No prescriptions found. Once issued by Dr. Varsha, they will show up here.</p>';
+                return;
+            }
+
+            activePrescriptions.forEach(appt => {
+                const item = document.createElement('div');
+                item.className = 'p-6 border border-black/[0.04] bg-[#F9FAF9] rounded-[24px] space-y-4';
+                item.innerHTML = `
+                    <div class="flex justify-between items-center border-b border-black/[0.04] pb-3">
+                        <div>
+                            <h4 class="font-bold text-xs text-luxDark">Prescription - ${appt.date}</h4>
+                            <p class="text-[9px] text-luxMuted mt-0.5">Consultation Mode: Video</p>
+                        </div>
+                        <button onclick="window.print()" class="text-[10px] text-luxAccent font-bold hover:underline flex items-center gap-1.5"><i class="fa-solid fa-print"></i> Print</button>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="bg-white p-4 rounded-xl border border-black/[0.02] space-y-1">
+                            <span class="text-[9px] text-luxMuted uppercase font-bold tracking-wider">Symptoms / Reason</span>
+                            <p class="text-xs text-luxDark font-medium">"${appt.reason}"</p>
+                        </div>
+                        <div class="bg-white p-4 rounded-xl border border-black/[0.02] space-y-1">
+                            <span class="text-[9px] text-luxMuted uppercase font-bold tracking-wider">Prescribed Remedies & Guidance</span>
+                            <p class="text-xs text-luxDark whitespace-pre-line leading-relaxed font-semibold">${appt.plan}</p>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        function renderTimeline(list) {
+            const container = document.getElementById('history-timeline');
+            container.innerHTML = '';
+
+            if (list.length === 0) {
+                container.innerHTML = '<p class="text-luxMuted py-6">No previous clinical activity charted.</p>';
+                return;
+            }
+
+            list.forEach((v, index) => {
+                const node = document.createElement('div');
+                node.className = "relative mb-6";
+                node.innerHTML = `
+                    <div class="absolute -left-[30px] top-1.5 w-3.5 h-3.5 rounded-full bg-luxAccent border-4 border-white"></div>
+                    <span class="text-[10px] text-luxMuted font-bold">VISIT ${list.length - index} — ${v.date} (${v.time})</span>
+                    <h4 class="font-bold text-luxDark text-xs mt-1">Brief: "${v.reason}"</h4>
+                    <div class="mt-2 bg-black/[0.01] p-4 rounded-xl border border-black/[0.04] space-y-2 text-[11px] text-luxDark">
+                        <p><strong class="text-luxAccent font-bold">Clinical Record:</strong> ${v.subjective || 'N/A'}</p>
+                        <p><strong class="text-luxAccent font-bold">Observations:</strong> ${v.objective || 'N/A'}</p>
+                        <p><strong class="text-luxAccent font-bold">Clinical Assessment:</strong> ${v.assessment || 'N/A'}</p>
+                        <p><strong class="text-luxAccent font-bold">Prescription Plan:</strong> ${v.plan || 'N/A'}</p>
+                        ${v.followup_date ? `<p class="border-t border-black/[0.04] pt-2 mt-2"><strong class="text-yellow-600">Follow-up:</strong> Scheduled for ${v.followup_date} (${v.followup_notes || 'Pending'})</p>` : ''}
+                    </div>
+                `;
+                container.appendChild(node);
+            });
+        }
+
+        // Live Jitsi Video Frame Integrator
+        function startActiveMeeting() {
+            if (!activeRoom) return;
+
+            document.getElementById('video-section-container').classList.remove('hidden');
+            document.getElementById('jitsi-patient-frame').innerHTML = ''; // Reset
+
+            const domain = 'meet.element.io';
+            const options = {
+                roomName: activeRoom,
+                width: '100%',
+                height: '100%',
+                parentNode: document.querySelector('#jitsi-patient-frame'),
+                interfaceConfigOverwrite: { TILE_VIEW_MAX_COLUMNS: 2 },
+                userInfo: { displayName: localStorage.getItem('patientName') || 'Patient' }
+            };
+            jitsiAPI = new JitsiMeetExternalAPI(domain, options);
+
+            // Smoothly scroll to the video section
+            document.getElementById('video-section-container').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function closeVideoSection() {
+            document.getElementById('video-section-container').classList.add('hidden');
+            if (jitsiAPI) {
+                jitsiAPI.dispose();
+                jitsiAPI = null;
+            }
+        }
+
+        // Notification center calls
+        async function loadNotifications() {
+            try {
+                const res = await fetch('/api/patient/notifications', {
+                    headers: { 'Authorization': 'Bearer ' + patientToken }
+                });
+                const data = await res.json();
+                if (data.success) {
+                    renderNotificationsDropdown(data.notifications, data.unreadCount);
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function renderNotificationsDropdown(list, unreadCount) {
+            const badge = document.getElementById('notif-badge');
+            const container = document.getElementById('notif-list');
+            container.innerHTML = '';
+
+            if (unreadCount > 0) {
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+
+            if (list.length === 0) {
+                container.innerHTML = '<p class="text-[10px] text-luxMuted py-6 text-center">No notifications found.</p>';
+                return;
+            }
+
+            list.forEach(notif => {
+                const item = document.createElement('div');
+                item.className = `p-3.5 text-xs transition hover:bg-black/[0.01] ${notif.status === 'Unread' ? 'bg-emerald-50/50' : ''}`;
+                item.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <span class="font-bold text-[11px] text-luxDark">${notif.title}</span>
+                        <span class="text-[9px] text-luxMuted">${new Date(notif.created_at).toLocaleDateString()}</span>
+                    </div>
+                    <p class="text-[10px] text-luxMuted mt-1 leading-normal">${notif.message}</p>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        async function markAllNotificationsRead() {
+            try {
+                await fetch('/api/patient/notifications/mark-read', {
+                    method: 'POST',
+                    headers: { 'Authorization': 'Bearer ' + patientToken }
+                });
+                loadNotifications();
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        // Live Socket triggers to prevent polling on dashboard
+        socket.on('appointment_updated', (data) => {
+            const myAccountId = localStorage.getItem('patientAccountId');
+            // Check if updated appointment belongs to this patient
+            if (data.patient_account_id === myAccountId || (data.id && appointmentsData.some(a => a.id === data.id))) {
+                loadAppointments();
+                loadNotifications();
+                showPortalAlert('Your consultation status was updated in real time.');
+            }
+        });
+
+        // Initialize display
+        const pName = localStorage.getItem('patientName') || 'Patient';
+        document.getElementById('user-name-display').innerText = pName;
+        document.getElementById('welcome-heading').innerText = `Hello, ${pName}`;
+        document.getElementById('user-avatar').innerText = pName.charAt(0).toUpperCase();
+
+        switchView('dashboard');
+        loadNotifications();
+    </script>
+</body>
+</html>

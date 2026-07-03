@@ -1,0 +1,1299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dr. Varsha Bandi - Holistic Healing. Vital Force Activation.</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Sockets Client Driver (Absolute Cloud Integration) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+    <!-- Jitsi Video Call API -->
+    <script src="https://meet.jit.si/external_api.js"></script>
+    <!-- High-end GSAP Animation Engines -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <!-- Google Fonts: Plus Jakarta Sans & Cormorant Garamond -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                        serif: ['Cormorant Garamond', 'serif'],
+                    },
+                    colors: {
+                        luxDark: '#1C251D',
+                        luxMuted: '#6B756C',
+                        luxBg: '#F4F6F4',
+                        luxAccent: '#708264',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #F4F6F4;
+            color: #1C251D;
+            overflow-x: hidden;
+        }
+        /* Active Navigation Bar Indicator */
+        .active-nav {
+            color: #1C251D !important;
+            border-bottom: 2px solid #708264;
+            font-weight: 700;
+        }
+        /* Editorial luxury button styling */
+        .premium-btn {
+            background-color: #F4F6F4;
+            border: 1px solid rgba(112, 130, 100, 0.15);
+            box-shadow: inset 1px 1px 3px rgba(255, 255, 255, 0.9),
+                        inset -1px -1px 3px rgba(0, 0, 0, 0.02),
+                        3px 3px 10px rgba(0, 0, 0, 0.03);
+            border-radius: 9999px;
+            color: #1C251D;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .premium-btn:hover {
+            box-shadow: inset 1px 1px 2px rgba(255, 255, 255, 0.4),
+                        inset -1px -1px 2px rgba(0, 0, 0, 0.01),
+                        1px 1px 3px rgba(0, 0, 0, 0.02);
+            transform: scale(0.98);
+            border-color: rgba(112, 130, 100, 0.35);
+        }
+        /* Smooth Luxury Reveal Transitions */
+        .reveal-element {
+            opacity: 0;
+            transform: translateY(35px) scale(0.98);
+            transition: opacity 1200ms cubic-bezier(0.16, 1, 0.3, 1), transform 1200ms cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .reveal-element.active {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
+        .reveal-left {
+            opacity: 0;
+            transform: translateX(-40px);
+            transition: opacity 1200ms cubic-bezier(0.16, 1, 0.3, 1), transform 1200ms cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .reveal-right {
+            opacity: 0;
+            transform: translateX(40px);
+            transition: opacity 1200ms cubic-bezier(0.16, 1, 0.3, 1), transform 1200ms cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .reveal-left.active, .reveal-right.active {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        
+        /* INFINITE MARQUEE ANIMATION RULES */
+        @keyframes marquee {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-100%); }
+        }
+        .animate-marquee {
+            display: flex;
+            flex-shrink: 0;
+            min-width: 100%;
+            justify-content: space-around;
+            align-items: center;
+            animation: marquee 35s linear infinite;
+        }
+        .marquee-container:hover .animate-marquee {
+            animation-play-state: paused;
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen">
+
+    <!-- FLOATING EDITORIAL GLASS NAVBAR -->
+    <header class="sticky top-0 z-50 backdrop-blur-md bg-white/70 border-b border-black/[0.04] transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                <!-- Logo -->
+                <div class="flex items-center space-x-3 cursor-pointer" onclick="scrollToSection('home')">
+                    <div class="w-9 h-9 rounded-full bg-white border border-black/[0.06] flex items-center justify-center shadow-sm">
+                        <i class="fa-solid fa-seedling text-luxAccent text-sm"></i>
+                    </div>
+                    <div>
+                        <span class="block text-xs font-extrabold tracking-tight text-luxDark uppercase font-sans">Dr. Varsha Bandi</span>
+                        <span class="block text-[11px] font-medium text-luxAccent font-serif italic lowercase leading-none" style="font-family: 'Cormorant Garamond', serif;">homeopathway</span>
+                    </div>
+                </div>
+
+                <!-- Desktop Navigation Links -->
+                <nav class="hidden md:flex space-x-6 text-xs font-semibold tracking-wider uppercase font-sans">
+                    <button onclick="scrollToSection('home')" id="nav-home" class="hover:text-luxDark transition py-2 px-1 active-nav text-luxDark">Home</button>
+                    <button onclick="scrollToSection('about')" id="nav-about" class="hover:text-luxDark transition py-2 px-1 text-luxMuted">Philosophy</button>
+                    <button onclick="scrollToSection('doctor')" id="nav-doctor" class="hover:text-luxDark transition py-2 px-1 text-luxMuted">Our Specialist</button>
+                    <button onclick="scrollToSection('services')" id="nav-services" class="hover:text-luxDark transition py-2 px-1 text-luxMuted">Treatments</button>
+                    <button onclick="scrollToSection('products')" id="nav-products" class="hover:text-luxDark transition py-2 px-1 text-luxMuted">Methodology</button>
+                    <button onclick="scrollToSection('testimonials')" id="nav-testimonials" class="hover:text-luxDark transition py-2 px-1 text-luxMuted">Testimonials</button>
+                    <button onclick="scrollToSection('contact')" id="nav-contact" class="hover:text-luxDark transition py-2 px-1 text-luxMuted font-bold text-luxAccent">Book Consultation</button>
+                </nav>
+
+                <!-- Mobile Menu Icon -->
+                <div class="md:hidden flex items-center">
+                    <button onclick="toggleMobileMenu()" class="text-luxMuted hover:text-luxDark focus:outline-none">
+                        <i class="fa-solid fa-bars text-xl" id="menu-icon"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Expandable Menu -->
+        <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-black/[0.05] px-6 py-6 space-y-3 font-sans">
+            <button onclick="scrollToSection('home')" class="block w-full text-left py-2 text-luxDark font-bold text-sm">Home</button>
+            <button onclick="scrollToSection('about')" class="block w-full text-left py-2 text-luxMuted hover:text-luxDark font-semibold text-sm">Philosophy</button>
+            <button onclick="scrollToSection('doctor')" class="block w-full text-left py-2 text-luxMuted hover:text-luxDark font-semibold text-sm">Our Specialist</button>
+            <button onclick="scrollToSection('services')" class="block w-full text-left py-2 text-luxMuted hover:text-luxDark font-semibold text-sm">Treatments</button>
+            <button onclick="scrollToSection('products')" class="block w-full text-left py-2 text-luxMuted hover:text-luxDark font-semibold text-sm">Methodology</button>
+            <button onclick="scrollToSection('testimonials')" class="block w-full text-left py-2 text-luxMuted hover:text-luxDark font-semibold text-sm">Testimonials</button>
+            <button onclick="scrollToSection('contact')" class="block w-full text-left py-2 text-luxMuted hover:text-luxDark font-semibold text-sm">Book Consultation</button>
+        </div>
+    </header>
+
+    <!-- CONTENT WRAPPER -->
+    <main class="flex-grow relative">
+        <!-- Radial botanical gradient blur elements -->
+        <div class="absolute top-[100vh] left-1/4 w-[30rem] h-[30rem] bg-emerald-900/5 rounded-full blur-[120px] pointer-events-none"></div>
+        <div class="absolute top-[300vh] right-10 w-[20rem] h-[20rem] bg-green-900/5 rounded-full blur-[120px] pointer-events-none"></div>
+
+        <!-- ================= SECTION 1: HOME ================= -->
+        <section id="home" class="min-h-[calc(100vh-80px)] relative overflow-hidden bg-black flex items-center justify-center">
+            <!-- Full Bleed Looping Video Tag -->
+            <video autoplay loop muted playsinline class="absolute inset-0 w-full h-full object-cover">
+                <source src="Healthcare_hero_section_animation_202606212301.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+
+            <!-- Clickable Booking Button Overlay -->
+            <div class="absolute bottom-3 right-6 md:bottom-4 md:right-10 lg:bottom-4 lg:right-16 z-10">
+                <button onclick="scrollToSection('contact')" class="premium-btn px-8 py-3.5 text-xs font-bold uppercase tracking-widest backdrop-blur-md bg-white/80 text-luxDark border border-black/10 shadow-2xl transition duration-300 hover:scale-105 active:scale-95">
+                    Book Consultation
+                </button>
+            </div>
+        </section>
+
+        <!-- INFINITE LOOP PHILOSOPHY MARQUEE -->
+        <div class="reveal-element py-12 border-t border-b border-black/[0.04] text-center max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 overflow-hidden relative font-sans">
+            <span class="text-[10px] tracking-widest text-luxMuted uppercase font-bold block text-center mb-8">FOUNDATIONAL LAWS OF HOMEOPATHY</span>
+            
+            <!-- Soft gradient fades for elegant edges -->
+            <div class="absolute left-0 top-16 bottom-0 w-20 bg-gradient-to-r from-[#F4F6F4] to-transparent z-10 pointer-events-none"></div>
+            <div class="absolute right-0 top-16 bottom-0 w-20 bg-gradient-to-l from-[#F4F6F4] to-transparent z-10 pointer-events-none"></div>
+
+            <div class="flex overflow-hidden marquee-container w-full">
+                <!-- Container 1 -->
+                <div class="flex space-x-16 animate-marquee whitespace-nowrap min-w-full justify-around items-center text-xs font-semibold tracking-wider text-luxDark/80">
+                    <span><i class="fa-solid fa-leaf text-luxAccent mr-2"></i>LAW OF SIMILARS (LIKE CURES LIKE)</span>
+                    <span><i class="fa-solid fa-circle-check text-luxAccent mr-2"></i>INDIVIDUALIZED CARE PROTOCOLS</span>
+                    <span><i class="fa-solid fa-droplet text-luxAccent mr-2"></i>THE LAW OF THE SINGLE REMEDY</span>
+                    <span><i class="fa-solid fa-bolt text-luxAccent mr-2"></i>VITAL ENERGY STIMULATION</span>
+                    <span><i class="fa-solid fa-shield text-luxAccent mr-2"></i>SAFE, NON-TOXIC POTENTIZATION</span>
+                    <span><i class="fa-solid fa-heart text-luxAccent mr-2"></i>THE LAW OF THE MINIMUM DOSE</span>
+                </div>
+                <!-- Container 2 -->
+                <div class="flex space-x-16 animate-marquee whitespace-nowrap min-w-full justify-around items-center text-xs font-semibold tracking-wider text-luxDark/80" aria-hidden="true">
+                    <span><i class="fa-solid fa-leaf text-luxAccent mr-2"></i>LAW OF SIMILARS (LIKE CURES LIKE)</span>
+                    <span><i class="fa-solid fa-circle-check text-luxAccent mr-2"></i>INDIVIDUALIZED CARE PROTOCOLS</span>
+                    <span><i class="fa-solid fa-droplet text-luxAccent mr-2"></i>THE LAW OF THE SINGLE REMEDY</span>
+                    <span><i class="fa-solid fa-bolt text-luxAccent mr-2"></i>VITAL ENERGY STIMULATION</span>
+                    <span><i class="fa-solid fa-shield text-luxAccent mr-2"></i>SAFE, NON-TOXIC POTENTIZATION</span>
+                    <span><i class="fa-solid fa-heart text-luxAccent mr-2"></i>THE LAW OF THE MINIMUM DOSE</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= SECTION 2: PHILOSOPHY (ABOUT) ================= -->
+        <section id="about" class="reveal-element max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 relative border-t border-black/[0.04]">
+            <div class="text-center mb-16">
+                <span class="text-luxMuted text-xs uppercase font-extrabold tracking-widest font-sans">Our Ethos</span>
+                <h1 class="text-4xl font-extrabold text-luxDark mt-1 tracking-tight font-serif">Holistic Healing Philosophy</h1>
+            </div>
+
+            <!-- Main Narrative -->
+            <div class="flex flex-col items-center mb-16 relative z-10 font-sans">
+                <div class="max-w-3xl text-center space-y-6">
+                    <h2 class="text-2xl font-extrabold text-luxDark">A Deeper Approach to Wellness</h2>
+                    <p class="text-xs text-luxMuted leading-relaxed">
+                        Homeopathy is a sophisticated medical science established on the law of *Similia Similibus Curentur*—like cures like. Rather than merely suppressing localized physical symptoms, homeopathy views health as a state of dynamic equilibrium. 
+                    </p>
+                    <p class="text-xs text-luxMuted leading-relaxed">
+                        By prescribing highly diluted, customized botanical, mineral, and natural remedies, we activate the body’s innate vital force. This gentle, systemic stimulation encourages permanent, deep-rooted recovery from both acute ailments and long-standing chronic conditions.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16 relative z-10 font-sans">
+                <div class="bg-white border border-black/[0.04] p-8 rounded-[24px] shadow-sm">
+                    <i class="fa-solid fa-circle-nodes text-luxAccent text-lg mb-4"></i>
+                    <h3 class="font-extrabold text-luxDark text-base mb-2">Individualization</h3>
+                    <p class="text-xs text-luxMuted leading-relaxed">
+                        No two patients are identical. We evaluate your unique physical, emotional, and psychological composition to design a truly tailored constitutional treatment.
+                    </p>
+                </div>
+                <div class="bg-white border border-black/[0.04] p-8 rounded-[24px] shadow-sm">
+                    <i class="fa-solid fa-heart-pulse text-luxAccent text-lg mb-4"></i>
+                    <h3 class="font-extrabold text-luxDark text-base mb-2">Gentle Power</h3>
+                    <p class="text-xs text-luxMuted leading-relaxed">
+                        Lorem remedies are prepared through serial potentization, ensuring they are non-toxic, safe for infants and pregnant women, and free from side effects.
+                    </p>
+                </div>
+                <div class="bg-white border border-black/[0.04] p-8 rounded-[24px] shadow-sm">
+                    <i class="fa-solid fa-seedling text-luxAccent text-lg mb-4"></i>
+                    <h3 class="font-extrabold text-luxDark text-base mb-2">Systemic Cure</h3>
+                    <p class="text-xs text-luxMuted leading-relaxed">
+                        We aim to treat the root cause, strengthening your immune and nervous systems to prevent the recurrence of illness over time.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= SECTION 2B: PRACTITIONER (DOCTOR - FACE CLIPPING PERMANENTLY RESOLVED) ================= -->
+        <section id="doctor" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 border-t border-black/[0.04] relative">
+            <div class="text-center mb-16">
+                <span class="text-luxMuted text-xs uppercase font-extrabold tracking-widest font-sans">The Practitioner</span>
+                <h1 class="text-4xl font-extrabold text-luxDark mt-1 tracking-tight font-serif">About Dr. Varsha Bandi</h1>
+            </div>
+
+            <!-- Profile Banner (FIXED: MOVED CROPPED CONTAINER TO h-[60vh] AND CONFIGURED BACKGROUND TO CENTER TOP & CONTAIN TO PREVENT ANY CLIPPING OF YOUR FACE AND HAIR) -->
+            <div id="doctor-banner" class="relative h-[55vh] md:h-[60vh] min-h-[450px] w-full flex items-end p-8 md:p-16 mb-16 rounded-[32px] overflow-hidden shadow-sm" style="background-image: linear-gradient(to top, rgba(28, 37, 29, 0.95) 15%, rgba(28, 37, 29, 0.45) 50%, rgba(244, 246, 244, 0.1) 100%), url('profile.png'); background-position: center top; background-size: contain; background-repeat: no-repeat; background-color: #1c251d;">
+                <div class="max-w-3xl text-white space-y-4">
+                    <span class="text-xs uppercase tracking-widest text-luxAccent font-extrabold block">Chief Consultant & Academician</span>
+                    <h2 class="text-4xl md:text-6xl font-extrabold tracking-tight font-serif">Dr. Varsha Bandi <span class="text-lg md:text-2xl font-light font-sans block md:inline md:ml-2">BHMS, MD (Hom)</span></h2>
+                    <p class="text-xs md:text-sm font-medium italic text-gray-300 max-w-xl font-sans">
+                        Associate Professor, Nutritionist, & Classical Homeopath dedicated to evidence-based holistic healthcare and clinical excellence.
+                    </p>
+                    <div class="flex flex-wrap gap-x-6 gap-y-2 pt-2 text-xs text-gray-300 font-sans border-t border-white/10">
+                        <a href="mailto:drvarshabandi@gmail.com" class="hover:text-luxAccent transition flex items-center"><i class="fa-solid fa-envelope mr-2 text-luxAccent"></i> drvarshabandi@gmail.com</a>
+                        <a href="tel:9902684355" class="hover:text-luxAccent transition flex items-center"><i class="fa-solid fa-phone mr-2 text-luxAccent"></i> +91 9902684355</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-12 font-sans relative z-10">
+                <!-- Left: Biography and Qualifications -->
+                <div class="doctor-left lg:col-span-2 space-y-12">
+                    <!-- Objective -->
+                    <div class="bg-white border border-black/[0.04] p-8 rounded-[24px] shadow-sm hover:scale-[1.01] transition duration-300">
+                        <h3 class="font-extrabold text-luxDark text-lg mb-4 font-serif italic">Career Objective</h3>
+                        <p class="text-xs text-luxMuted leading-relaxed">
+                            Experienced and dedicated Associate Professor in Homeopathy with over 7 years and 10 months of teaching and clinical experience. Adept at guiding undergraduate students and delivering quality education in accordance with NCH norms. Seeking a challenging academic role to contribute to holistic medical education and evidence-based homeopathy.
+                        </p>
+                    </div>
+
+                    <!-- Qualifications -->
+                    <div class="doc-info-card space-y-6">
+                        <h3 class="font-extrabold text-luxDark text-xl font-serif">Educational Qualifications</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="bg-white border border-black/[0.04] p-6 rounded-[20px] shadow-sm flex flex-col justify-between hover:scale-[1.02] transition duration-300">
+                                <div>
+                                    <span class="text-xs font-bold text-luxAccent uppercase tracking-wider block mb-1">MD (Hom) — Repertory</span>
+                                    <h4 class="font-extrabold text-luxDark text-sm">BHMC, Belgaum</h4>
+                                    <p class="text-[11px] text-luxMuted mt-1">Rajiv Gandhi University of Health Sciences (RGUHS)</p>
+                                </div>
+                                <span class="text-xs font-bold text-luxDark mt-4 block pt-2 border-t border-black/[0.04]">Passed: 2010</span>
+                            </div>
+                            <div class="bg-white border border-black/[0.04] p-6 rounded-[20px] shadow-sm flex flex-col justify-between hover:scale-[1.02] transition duration-300">
+                                <div>
+                                    <span class="text-xs font-bold text-luxAccent uppercase tracking-wider block mb-1">BHMS</span>
+                                    <h4 class="font-extrabold text-luxDark text-sm">BHMC, Belgaum</h4>
+                                    <p class="text-[11px] text-luxMuted mt-1">Rajiv Gandhi University of Health Sciences (RGUHS)</p>
+                                </div>
+                                <span class="text-xs font-bold text-luxDark mt-4 block pt-2 border-t border-black/[0.04]">Passed: 2007</span>
+                            </div>
+                            <div class="bg-white border border-black/[0.04] p-6 rounded-[20px] shadow-sm flex flex-col justify-between hover:scale-[1.02] transition duration-300">
+                                <div>
+                                    <span class="text-xs font-bold text-luxAccent uppercase tracking-wider block mb-1">MSc — Clinical Nutrition & Dietetics</span>
+                                    <h4 class="font-extrabold text-luxDark text-sm">KSOU, Mysore</h4>
+                                    <p class="text-[11px] text-luxMuted mt-1">Karnataka State Open University</p>
+                                </div>
+                                <span class="text-xs font-bold text-luxDark mt-4 block pt-2 border-t border-black/[0.04]">Passed: 2022</span>
+                            </div>
+                            <div class="bg-white border border-black/[0.04] p-6 rounded-[20px] shadow-sm flex flex-col justify-between hover:scale-[1.02] transition duration-300">
+                                <div>
+                                    <span class="text-xs font-bold text-luxAccent uppercase tracking-wider block mb-1">Acupuncture & Acupressure (Ach)</span>
+                                    <h4 class="font-extrabold text-luxDark text-sm">Academy of Acupuncture & Acupressure</h4>
+                                    <p class="text-[11px] text-luxMuted mt-1">Professional Certification, Bangalore</p>
+                                </div>
+                                <span class="text-xs font-bold text-luxDark mt-4 block pt-2 border-t border-t-black/[0.04]">Passed: 2018</span>
+                            </div>
+                            <div class="bg-white border border-black/[0.04] p-6 rounded-[20px] shadow-sm flex flex-col justify-between hover:scale-[1.02] transition duration-300">
+                                <div>
+                                    <span class="text-xs font-bold text-luxAccent uppercase tracking-wider block mb-1">Yoga Instructor Certificate (YIC)</span>
+                                    <h4 class="font-extrabold text-luxDark text-sm">SGS International Yoga Foundation College</h4>
+                                    <p class="text-[11px] text-luxMuted mt-1">VYASA Janapada Folklore University</p>
+                                </div>
+                                <span class="text-xs font-bold text-luxDark mt-4 block pt-2 border-t border-black/[0.04]">Passed: 2021</span>
+                            </div>
+                            <div class="bg-white border border-black/[0.04] p-6 rounded-[20px] shadow-sm flex flex-col justify-between hover:scale-[1.02] transition duration-300">
+                                <div>
+                                    <span class="text-xs font-bold text-luxAccent uppercase tracking-wider block mb-1">Clinical Research & Medical Writing</span>
+                                    <h4 class="font-extrabold text-luxDark text-sm">Karnataka Institute of Clinical Research</h4>
+                                    <p class="text-[11px] text-luxMuted mt-1">Professional Certification, Bangalore</p>
+                                </div>
+                                <span class="text-xs font-bold text-luxDark mt-4 block pt-2 border-t border-black/[0.04]">Passed: 2025</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Experience -->
+                    <div class="doc-info-card space-y-6">
+                        <h3 class="font-extrabold text-luxDark text-xl font-serif">Professional Experience</h3>
+                        <div class="relative border-l border-black/10 pl-6 ml-2 space-y-8">
+                            <div class="relative">
+                                <div class="absolute -left-[31px] top-1.5 bg-luxAccent w-4 h-4 rounded-full border-4 border-luxBg"></div>
+                                <span class="text-[10px] font-bold text-luxAccent uppercase tracking-wider block">Jan 2026 – Present</span>
+                                <h4 class="font-extrabold text-luxDark text-sm">Professor and HOD</h4>
+                                <span class="block text-[11px] text-luxMuted font-semibold">Department of Physiology and Biochemistry</span>
+                                <p class="text-[11px] text-luxMuted mt-1">Anuradha homoeopathic medical college and hospital Bengaluru.</p>
+                            </div>
+                            <div class="relative">
+                                <div class="absolute -left-[31px] top-1.5 bg-luxDark w-4 h-4 rounded-full border-4 border-luxBg"></div>
+                                <span class="text-[10px] font-bold text-luxMuted uppercase tracking-wider block">Nov 2022 – Jan 2026</span>
+                                <h4 class="font-extrabold text-luxDark text-sm">Associate Professor</h4>
+                                <span class="block text-[11px] text-luxMuted font-semibold">Department of Physiology and Biochemistry</span>
+                                <p class="text-[11px] text-luxMuted mt-1">Anuradha Homoeopathic Medical College and Hospital, Bengaluru.</p>
+                            </div>
+                            <div class="relative">
+                                <div class="absolute -left-[31px] top-1.5 bg-luxDark w-4 h-4 rounded-full border-4 border-luxBg"></div>
+                                <span class="text-[10px] font-bold text-luxMuted uppercase tracking-wider block">Apr 2018 – Oct 2022</span>
+                                <h4 class="font-extrabold text-luxDark text-sm">Assistant Professor</h4>
+                                <span class="block text-[11px] text-luxMuted font-semibold">Department of Physiology and Biochemistry</span>
+                                <p class="text-[11px] text-luxMuted mt-1">Anuradha Homoeopathic Medical College and hospital Bengaluru.</p>
+                            </div>
+                            <div class="relative">
+                                <div class="absolute -left-[31px] top-1.5 bg-luxDark w-4 h-4 rounded-full border-4 border-luxBg"></div>
+                                <span class="text-[10px] font-bold text-luxMuted uppercase tracking-wider block">Jan 2007 – May 2007</span>
+                                <h4 class="font-extrabold text-luxDark text-sm">Lecturer</h4>
+                                <span class="block text-[11px] text-luxMuted font-semibold">Department of Pathology</span>
+                                <p class="text-[11px] text-luxMuted mt-1">AL-AMAAN homoeopathic medical college and hospital. Bijapur.</p>
+                            </div>
+                            <div class="relative">
+                                <div class="absolute -left-[31px] top-1.5 bg-luxAccent w-4 h-4 rounded-full border-4 border-luxBg"></div>
+                                <span class="text-[10px] font-bold text-luxAccent uppercase tracking-wider block">Clinical Practice Since 2010</span>
+                                <h4 class="font-extrabold text-luxDark text-sm">Senior Consultant Homoeopath</h4>
+                                <p class="text-[11px] text-luxMuted mt-1">Homoeopathway Clinic (Senior Consultant)</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Sidebar Column -->
+                <div class="doctor-right space-y-8 lg:col-span-1">
+                    <div class="bg-white border border-black/[0.04] p-6 rounded-[24px] shadow-sm space-y-4 hover:scale-[1.01] transition duration-300">
+                        <h4 class="font-extrabold text-luxDark text-sm uppercase tracking-wider border-b border-black/[0.04] pb-2">Skills & Focus</h4>
+                        <ul class="space-y-2 text-xs text-luxDark">
+                            <li class="flex items-start"><i class="fa-solid fa-check text-luxAccent mt-0.5 mr-2"></i> Academic Planning & NCH Curriculum</li>
+                            <li class="flex items-start"><i class="fa-solid fa-check text-luxAccent mt-0.5 mr-2"></i> Clinical Diagnostics & Classical Case-Taking</li>
+                            <li class="flex items-start"><i class="fa-solid fa-check text-luxAccent mt-0.5 mr-2"></i> Research Methodology & Statistical Analysis</li>
+                            <li class="flex items-start"><i class="fa-solid fa-check text-luxAccent mt-0.5 mr-2"></i> Clinical Nutrition, Dietetics & Yoga Therapy</li>
+                            <li class="flex items-start"><i class="fa-solid fa-check text-luxAccent mt-0.5 mr-2"></i> Student Mentoring & Academic Leadership</li>
+                        </ul>
+                    </div>
+
+                    <div class="bg-white border border-black/[0.04] p-6 rounded-[24px] shadow-sm space-y-4 hover:scale-[1.01] transition duration-300">
+                        <h4 class="font-extrabold text-luxDark text-sm uppercase tracking-wider border-b border-black/[0.04] pb-2">Key Achievements</h4>
+                        <ul class="space-y-3 text-xs text-luxMuted leading-relaxed">
+                            <li class="flex items-start"><i class="fa-solid fa-trophy text-luxAccent mt-1 mr-2 text-[10px]"></i> Academic research guide for RGUHS postgraduate/undergraduate students.</li>
+                            <li class="flex items-start"><i class="fa-solid fa-trophy text-luxAccent mt-1 mr-2 text-[10px]"></i> Research guide for NCH research programmes.</li>
+                            <li class="flex items-start"><i class="fa-solid fa-trophy text-luxAccent mt-1 mr-2 text-[10px]"></i> Served as university invigilator, examiner, and paper evaluator.</li>
+                        </ul>
+                    </div>
+
+                    <div class="bg-white border border-black/[0.04] p-6 rounded-[24px] shadow-sm space-y-4 hover:scale-[1.01] transition duration-300">
+                        <h4 class="font-extrabold text-luxDark text-sm uppercase tracking-wider border-b border-black/[0.04] pb-2">Certifications & Trainings</h4>
+                        <ul class="space-y-3 text-[11px] text-luxMuted leading-relaxed">
+                            <li class="border-b border-black/[0.03] pb-2"><strong>Basic Course in Educational Methodology (BCEM)</strong> - RGUHS (Feb 2025)</li>
+                            <li class="border-b border-black/[0.03] pb-2"><strong>CME-Pharmacovigilance sensitization programme</strong> (Feb 2025)</li>
+                            <li class="border-b border-black/[0.03] pb-2"><strong>National Homoeopathic Seminar</strong> - celebrations (2024 & 2025)</li>
+                            <li class="border-b border-black/[0.03] pb-2"><strong>Foundation Course in Educational Methodology</strong> - RAATI LMS, RGUHS (Jan 2024)</li>
+                            <li class="border-b border-black/[0.03] pb-2"><strong>Shiksha X-CBDC implementation support course</strong> (Apr 2023)</li>
+                            <li><strong>CBDC Training Program for 1st BHMS</strong> - conducted by NCH, Kottayam, Kerala (Feb 2021)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ================= SECTION 3: TREATMENTS (SERVICES - VISIBLE AND INTERACTIVE) ================= -->
+        <section id="services" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 border-t border-black/[0.04] relative">
+            <div class="text-center mb-16">
+                <span class="text-luxMuted text-xs uppercase font-extrabold tracking-widest font-sans">Specialized Care</span>
+                <h1 class="text-4xl font-extrabold text-luxDark mt-1 tracking-tight font-serif">Homeopathic Treatments</h1>
+            </div>
+
+            <!-- Specialized Treatment Cards (RE-ENABLED SOLID OPACITY ON LOAD WITH ELITE INTERACTIVE HOVER TRANSITIONS - NO CLIPPING) -->
+            <div id="services-grid" class="lg:col-span-2 grid grid-cols-2 md:grid-cols-3 gap-6 p-2 font-sans mb-16">
+                <!-- Chronic Illnesses -->
+                <div class="relative h-56 rounded-[24px] overflow-hidden shadow-sm border border-black/[0.04] group hover:scale-[1.03] hover:shadow-lg transition duration-500 cursor-pointer">
+                    <video autoplay loop muted playsinline class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110 shadow-inner">
+                        <source src="chronicaldesease.mp4" type="video/mp4">
+                    </video>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/25 to-transparent"></div>
+                    <div class="absolute bottom-5 left-5 right-5 z-10 flex flex-col items-start text-white">
+                        <i class="fa-solid fa-person-shelter text-sm mb-2 text-luxBg"></i>
+                        <h4 class="font-extrabold text-xs tracking-wider uppercase">Chronic Illnesses</h4>
+                        <p class="text-[9px] text-gray-300 mt-1">Deep constitutional therapy for migraines, asthma, and joint disorders.</p>
+                    </div>
+                </div>
+                <!-- Pediatric Care -->
+                <div class="relative h-56 rounded-[24px] overflow-hidden shadow-sm border border-black/[0.04] group hover:scale-[1.03] hover:shadow-lg transition duration-500 cursor-pointer">
+                    <img src="Pediatric.jpeg" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110 shadow-inner" alt="Pediatric Care">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/25 to-transparent"></div>
+                    <div class="absolute bottom-5 left-5 right-5 z-10 flex flex-col items-start text-white">
+                        <i class="fa-solid fa-child text-sm mb-2 text-luxBg"></i>
+                        <h4 class="font-extrabold text-xs tracking-wider uppercase">Pediatric Care</h4>
+                        <p class="text-[9px] text-gray-300 mt-1">Gentle remedies for immunity, behavioral patterns, and childhood allergies.</p>
+                    </div>
+                </div>
+                <!-- Women's Wellness (FIXED IMAGE SOURCE MAPPING) -->
+                <div class="relative h-56 rounded-[24px] overflow-hidden shadow-sm border border-black/[0.04] group hover:scale-[1.03] hover:shadow-lg transition duration-500 cursor-pointer">
+                    <img src="Womenwellness.jpeg" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110 shadow-inner" alt="Women's Health">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/25 to-transparent"></div>
+                    <div class="absolute bottom-5 left-5 right-5 z-10 flex flex-col items-start text-white">
+                        <i class="fa-solid fa-venus text-sm mb-2 text-luxBg"></i>
+                        <h4 class="font-extrabold text-xs tracking-wider uppercase">Women's Wellness</h4>
+                        <p class="text-[9px] text-gray-300 mt-1">Holistic regulation for hormonal imbalances, PCOS, thyroid, and anxiety.</p>
+                    </div>
+                </div>
+                <!-- Mental Health -->
+                <div class="relative h-56 rounded-[24px] overflow-hidden shadow-sm border border-black/[0.04] group hover:scale-[1.03] hover:shadow-lg transition duration-500 cursor-pointer">
+                    <img src="https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=400&q=80" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110 shadow-inner" alt="Mental Health">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/25 to-transparent"></div>
+                    <div class="absolute bottom-5 left-5 right-5 z-10 flex flex-col items-start text-white">
+                        <i class="fa-solid fa-brain text-sm mb-2 text-luxBg"></i>
+                        <h4 class="font-extrabold text-xs tracking-wider uppercase">Mental Health</h4>
+                        <p class="text-[9px] text-gray-300 mt-1">Natural, supportive therapeutic options for chronic stress, depression, and insomnia.</p>
+                    </div>
+                </div>
+                <!-- Dermatology -->
+                <div class="relative h-56 rounded-[24px] overflow-hidden shadow-sm border border-black/[0.04] group hover:scale-[1.03] hover:shadow-lg transition duration-500 cursor-pointer">
+                    <img src="Dermatology.jpeg" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110 shadow-inner" alt="Dermatology">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/25 to-transparent"></div>
+                    <div class="absolute bottom-5 left-5 right-5 z-10 flex flex-col items-start text-white">
+                        <i class="fa-solid fa-wand-magic-sparkles text-sm mb-2 text-luxBg"></i>
+                        <h4 class="font-extrabold text-xs tracking-wider uppercase">Dermatology & Skin</h4>
+                        <p class="text-[9px] text-gray-300 mt-1">Root-level purification treatments for eczema, psoriasis, and allergies.</p>
+                    </div>
+                </div>
+                <!-- Autoimmune Support -->
+                <div class="relative h-56 rounded-[24px] overflow-hidden shadow-sm border border-black/[0.04] group hover:scale-[1.03] hover:shadow-lg transition duration-500 cursor-pointer">
+                    <img src="https://images.unsplash.com/photo-1545205597-3d9d02c29597?auto=format&fit=crop&w=400&q=80" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110 shadow-inner" alt="Autoimmune Support">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/25 to-transparent"></div>
+                    <div class="absolute bottom-5 left-5 right-5 z-10 flex flex-col items-start text-white">
+                        <i class="fa-solid fa-shield-virus text-sm mb-2 text-luxBg"></i>
+                        <h4 class="font-extrabold text-xs tracking-wider uppercase">Autoimmune Support</h4>
+                        <p class="text-[9px] text-gray-300 mt-1">Immune modulation therapies to restore constitutional cellular balance.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Promise Block -->
+            <div class="bg-white border border-black/[0.04] rounded-[28px] p-12 flex flex-col lg:flex-row gap-12 shadow-sm relative z-10 font-sans">
+                <div class="lg:w-1/2 space-y-4">
+                    <span class="text-luxMuted text-xs font-extrabold uppercase tracking-widest">Our Promise</span>
+                    <h3 class="text-2xl font-extrabold text-luxDark tracking-tight">Your complete journey to long-term health</h3>
+                    <p class="text-xs text-luxMuted leading-relaxed">
+                        We don't simply target symptoms; we prioritize your complete physical and emotional recovery through safe, individualized therapies you can depend on.
+                    </p>
+                </div>
+                <div class="lg:w-1/2 grid grid-cols-2 gap-6 text-xs text-luxMuted">
+                    <div>
+                        <h4 class="font-bold text-luxDark mb-1">Tailored Care</h4>
+                        <p>Remedies selected to match your individual physical and emotional profile.</p>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-luxDark mb-1">Clinically Qualified</h4>
+                        <p>Consultations managed by highly experienced medical practitioners.</p>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-luxDark mb-1">Continuous Monitoring</h4>
+                        <p>Ongoing check-ups and potencies adjusted according to your healing rate.</p>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-luxDark mb-1">Gentle Recovery</h4>
+                        <p>Highly effective, serialized potencies devoid of side-effects.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ================= SECTION 4: POTENTIZATION (PRODUCTS - CONFLICTS RESOLVED FOR DYNAMIC LOAD) ================= -->
+        <section id="products" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 border-t border-black/[0.04]">
+            <div class="text-center mb-16">
+                <span class="text-luxMuted text-xs uppercase font-extrabold tracking-widest font-sans">Our Methodology</span>
+                <h1 class="text-4xl font-extrabold text-luxDark mt-1 tracking-tight font-serif">Remedy Potentization Science</h1>
+            </div>
+
+            <!-- Grid listing of remedies (WITH NEW LOCAL ASSETS RE-MAPPED & FULLY RE-ENABLED OPACITY FOR MULTI-DEVICE LAUNCH) -->
+            <div class="mb-16 font-sans">
+                <h2 class="text-2xl font-extrabold text-luxDark mb-8 text-center">Foundational Elements of our Pharmacopoeia</h2>
+                <div id="pharmacopoeia-grid" class="grid grid-cols-1 md:grid-cols-4 gap-6 p-2">
+                    <!-- Botanical Remedies -->
+                    <div class="pharm-card bg-white border border-black/[0.04] rounded-[20px] shadow-sm overflow-hidden flex flex-col justify-between hover:scale-[1.03] hover:shadow-lg transition duration-300">
+                        <div class="h-44 overflow-hidden bg-gray-100">
+                            <img src="botonical.png" class="w-full h-full object-cover" alt="Botanical remedies">
+                        </div>
+                        <div class="p-6">
+                            <h4 class="font-bold text-luxDark text-sm mb-2">Botanical Remedies</h4>
+                            <p class="text-[11px] text-luxMuted leading-relaxed">Pure, organic plant extractions selected for gentle vital stimulation.</p>
+                        </div>
+                    </div>
+                    <!-- Mineral extractions -->
+                    <div class="pharm-card bg-white border border-black/[0.04] rounded-[20px] shadow-sm overflow-hidden flex flex-col justify-between hover:scale-[1.03] hover:shadow-lg transition duration-300">
+                        <div class="h-44 overflow-hidden bg-gray-100">
+                            <img src="Mineral Minerals.png" class="w-full h-full object-cover" alt="Mineral Extractions">
+                        </div>
+                        <div class="p-6">
+                            <h4 class="font-bold text-luxDark text-sm mb-2">Mineral Minerals</h4>
+                            <p class="text-[11px] text-luxMuted leading-relaxed">Systematically triturated minerals built to reinforce biochemical structure.</p>
+                        </div>
+                    </div>
+                    <!-- Potentized dilutions -->
+                    <div class="pharm-card bg-white border border-black/[0.04] rounded-[20px] shadow-sm overflow-hidden flex flex-col justify-between hover:scale-[1.03] hover:shadow-lg transition duration-300">
+                        <div class="h-44 overflow-hidden bg-gray-100">
+                            <img src="Potentized Dilutions.png" class="w-full h-full object-cover" alt="Potentized dilutions">
+                        </div>
+                        <div class="p-6">
+                            <h4 class="font-bold text-luxDark text-sm mb-2">Potentized Dilutions</h4>
+                            <p class="text-[11px] text-luxMuted leading-relaxed">Serial dilutions succussed to remove toxicity while increasing vital healing energy.</p>
+                        </div>
+                    </div>
+                    <!-- Bio-chemics -->
+                    <div class="pharm-card bg-white border border-black/[0.04] rounded-[20px] shadow-sm overflow-hidden flex flex-col justify-between hover:scale-[1.03] hover:shadow-lg transition duration-300">
+                        <div class="h-44 overflow-hidden bg-gray-100">
+                            <img src="Tissue Bio-Chemic Salts.png" class="w-full h-full object-cover" alt="Bio-chemics">
+                        </div>
+                        <div class="p-6">
+                            <h4 class="font-bold text-luxDark text-sm mb-2">Tissue Bio-Chemic Salts</h4>
+                            <p class="text-[11px] text-luxMuted leading-relaxed">Schuessler tissue salts designed to support trace cellular nutrition.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Standards -->
+            <div class="max-w-3xl mx-auto font-sans">
+                <div class="space-y-6">
+                    <h3 class="font-extrabold text-xl text-luxDark text-center">Supported Classical Methodologies</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div class="bg-white border border-black/[0.04] p-4 rounded-xl text-center font-bold text-xs text-luxDark shadow-sm">Hahnemannian Classical</div>
+                        <div class="bg-white border border-black/[0.04] p-4 rounded-xl text-center font-bold text-xs text-luxDark shadow-sm">Kentasian Constitutional</div>
+                        <div class="bg-white border border-black/[0.04] p-4 rounded-xl text-center font-bold text-xs text-luxDark shadow-sm">Boericke Therapy</div>
+                        <div class="bg-white border border-black/[0.04] p-4 rounded-xl text-center font-bold text-xs text-luxDark shadow-sm">Schuessler Biochemistry</div>
+                        <div class="bg-white border border-black/[0.04] p-4 rounded-xl text-center font-bold text-xs text-luxDark shadow-sm">Boget's Synoptic Methods</div>
+                        <div class="bg-white border border-black/[0.04] p-4 rounded-xl text-center font-bold text-xs text-luxDark shadow-sm">Miasmatic Cleansing</div>
+                        <div class="bg-white border border-black/[0.04] p-4 rounded-xl text-center font-bold text-xs text-luxDark shadow-sm col-span-2 md:col-span-4">Sankaran Sensation Protocols</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ================= SECTION 5: TESTIMONIALS ================= -->
+        <section id="testimonials" class="reveal-element max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 border-t border-black/[0.04] relative">
+            <div class="text-center mb-16">
+                <span class="text-luxMuted text-xs uppercase font-extrabold tracking-widest font-sans">Patient Experiences</span>
+                <h1 class="text-4xl font-extrabold text-luxDark mt-1 tracking-tight font-serif">Healing Testimonials</h1>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 relative z-10 font-sans">
+                <!-- Review 1 -->
+                <div class="bg-white border border-black/[0.04] p-8 rounded-[24px] shadow-sm flex flex-col justify-between hover:scale-[1.02] transition duration-300">
+                    <div class="space-y-4">
+                        <div class="flex text-amber-500 text-xs gap-1">
+                            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+                        </div>
+                        <p class="text-xs text-luxMuted leading-relaxed italic">
+                            "I had been suffering from chronic migraine and severe acid reflux for over 8 years. Dr. Varsha Bandi's constitutional homeopathic treatment and personalized diet recommendations transformed my health completely. Within 4 months, my migraines stopped entirely."
+                        </p>
+                    </div>
+                    <div class="border-t border-black/[0.04] pt-4 mt-6">
+                        <h4 class="font-extrabold text-luxDark text-xs">Anitha K.</h4>
+                        <span class="text-[10px] text-luxMuted">Bengaluru — Treated for Chronic Migraine</span>
+                    </div>
+                </div>
+                <!-- Review 2 -->
+                <div class="bg-white border border-black/[0.04] p-8 rounded-[24px] shadow-sm flex flex-col justify-between hover:scale-[1.02] transition duration-300">
+                    <div class="space-y-4">
+                        <div class="flex text-amber-500 text-xs gap-1">
+                            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+                        </div>
+                        <p class="text-xs text-luxMuted leading-relaxed italic">
+                            "Our 4-year-old son had very low immunity and caught frequent respiratory infections. Dr. Varsha's pediatric remedies were so gentle and effective. His immune response has improved remarkably, and he is much more active and healthy now."
+                        </p>
+                    </div>
+                    <div class="border-t border-black/[0.04] pt-4 mt-6">
+                        <h4 class="font-extrabold text-luxDark text-xs">Rahul S.</h4>
+                        <span class="text-[10px] text-luxMuted">Bengaluru — Treated for Pediatric Immunity</span>
+                    </div>
+                </div>
+                <!-- Review 3 -->
+                <div class="bg-white border border-black/[0.04] p-8 rounded-[24px] shadow-sm flex flex-col justify-between hover:scale-[1.02] transition duration-300">
+                    <div class="space-y-4">
+                        <div class="flex text-amber-500 text-xs gap-1">
+                            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+                        </div>
+                        <p class="text-xs text-luxMuted leading-relaxed italic">
+                            "Dr. Varsha's integrated approach combining classical homeopathy with her clinical nutrition expertise resolved my hormonal imbalances and thyroid concerns. Her scientific explanation of physiology made me feel very secure in her care."
+                        </p>
+                    </div>
+                    <div class="border-t border-black/[0.04] pt-4 mt-6">
+                        <h4 class="font-extrabold text-luxDark text-xs">Dr. Meera P.</h4>
+                        <span class="text-[10px] text-luxMuted">Professor — Treated for Hormonal Imbalance</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ================= SECTION 7: BOOK CONSULTATION (CONTACT) ================= -->
+        <section id="contact" class="reveal-element max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 border-t border-black/[0.04] relative">
+            <div class="text-center mb-16">
+                <span class="text-luxMuted text-xs uppercase font-extrabold tracking-widest font-sans">Appointment Booking</span>
+                <h1 class="text-4xl font-extrabold text-luxDark mt-1 tracking-tight font-serif">Book Consultation</h1>
+            </div>
+
+            <!-- Interactive Booking Split Layout -->
+            <div class="flex flex-col lg:flex-row gap-12 relative z-10 font-sans">
+                <!-- Details -->
+                <div class="lg:w-1/2 space-y-8">
+                    <h2 class="text-2xl font-extrabold text-luxDark">Plan your path to gentle healing</h2>
+                    <p class="text-xs text-luxMuted leading-relaxed">
+                        Whether you are scheduling an initial in-depth constitutional consultation or seeking ongoing acute disease support, our clinical specialists are here to assist. Select your preference between in-person visits and private video calls.
+                    </p>
+
+                    <div class="space-y-6">
+                        <div class="flex items-start space-x-4">
+                            <div class="bg-white border border-black/[0.04] shadow-sm p-3 rounded-xl"><i class="fa-solid fa-phone text-luxDark text-sm"></i></div>
+                            <div>
+                                <h4 class="font-bold text-luxDark text-sm">Clinical Helpline</h4>
+                                <a href="tel:9902684355" class="text-xs text-luxMuted hover:text-luxDark transition">+91 9902684355</a>
+                            </div>
+                        </div>
+                        <div class="flex items-start space-x-4">
+                            <div class="bg-white border border-black/[0.04] shadow-sm p-3 rounded-xl"><i class="fa-solid fa-location-dot text-luxDark text-sm"></i></div>
+                            <div>
+                                <h4 class="font-bold text-luxDark text-sm">Aether Clinic Location</h4>
+                                <p class="text-xs text-luxMuted leading-relaxed">
+                                    14, 11th Cross, 1st B Main Rd, behind Indian Bank, Prashanth Nagar, Bengaluru, Karnataka 560079
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Highly Animated Interactive Booking Form Card -->
+                <div class="lg:w-1/2 bg-white border border-black/[0.04] p-8 rounded-[28px] shadow-sm relative animate-container">
+                    <!-- SUCCESS CARD SCREEN WITH LIVE VIDEO AUTO-LOAD -->
+                    <div id="booking-success" class="hidden absolute inset-0 bg-[#F4F6F4] rounded-[28px] z-50 flex flex-col items-center justify-center text-center p-8 transition-opacity duration-500 opacity-0 overflow-y-auto">
+                        <div class="w-16 h-16 bg-white border border-black/[0.04] rounded-full flex items-center justify-center shadow-sm text-luxAccent text-2xl mb-4">
+                            <i class="fa-solid fa-circle-check"></i>
+                        </div>
+                        <h3 class="text-2xl font-extrabold text-luxDark font-serif">Consultation Booked</h3>
+                        <p class="text-xs text-luxMuted mt-2 max-w-sm">
+                            Your reservation has been processed successfully. Our coordination desk will call shortly to verify details.
+                        </p>
+                        <div class="mt-4 bg-white border border-black/[0.04] p-4 rounded-xl text-left w-full text-xs text-luxDark space-y-2 shadow-sm">
+                            <div class="flex justify-between border-b pb-1"><span class="text-luxMuted">Visit Mode:</span> <span id="summary-mode" class="font-bold"></span></div>
+                            <div class="flex justify-between border-b pb-1"><span class="text-luxMuted">Date:</span> <span id="summary-date" class="font-bold"></span></div>
+                            <div class="flex justify-between"><span class="text-luxMuted">Scheduled Time:</span> <span id="summary-time" class="font-bold"></span></div>
+                        </div>
+
+                        <!-- EMBEDDED REAL-TIME VIDEO ROOM (AUTO-LOADS INSTANTLY ON CONFIRM) -->
+                        <div id="videoContainer" class="hidden mt-6 w-full border border-luxAccent/20 rounded-2xl p-4 bg-white/50 backdrop-blur-md shadow-sm">
+                            <p class="text-[10px] text-luxAccent font-bold uppercase tracking-widest mb-2 flex items-center justify-center">
+                                <span class="w-2 h-2 bg-red-600 rounded-full animate-pulse mr-2"></span>
+                                Live Video Consultation Active
+                            </p>
+                            <div id="jitsi-patient-meet" class="w-full h-[250px] rounded-xl overflow-hidden bg-black shadow-inner"></div>
+                        </div>
+
+                        <button id="resetFormBtn" onclick="resetBookingForm()" class="mt-8 premium-btn px-6 py-2.5 text-xs font-bold uppercase tracking-wider">Book another slot</button>
+                    </div>
+
+                    <h3 class="font-extrabold text-luxDark text-base mb-6">Request A Wellness Consultation</h3>
+                    <form class="space-y-6" id="booking-form" onsubmit="handleBookingSubmit(event)">
+                        
+                        <!-- Step 1: Visit Mode Toggle -->
+                        <div>
+                            <label class="block text-[10px] font-bold uppercase tracking-widest text-luxMuted mb-2">1. Select Consultation Mode</label>
+                            <div class="grid grid-cols-2 gap-4">
+                                <!-- In-Clinic Option -->
+                                <div onclick="selectConsultationMode('clinic')" id="card-mode-clinic" class="border-2 border-luxDark p-4 rounded-xl cursor-pointer transition-all duration-300 flex flex-col items-start bg-white shadow-sm">
+                                    <i class="fa-solid fa-clinic-medical text-base text-luxDark mb-2" id="icon-mode-clinic"></i>
+                                    <h4 class="font-bold text-xs text-luxDark">In-Clinic Visit</h4>
+                                    <p class="text-[9px] text-luxMuted mt-1 leading-normal">In-person holistic treatment at our serene Gangavathi clinic.</p>
+                                </div>
+                                <!-- Video Option -->
+                                <div onclick="selectConsultationMode('video')" id="card-mode-video" class="border-2 border-transparent p-4 bg-gray-50 rounded-xl cursor-pointer hover:border-black/20 transition-all duration-300 flex flex-col items-start">
+                                    <i class="fa-solid fa-video text-base text-luxMuted mb-2" id="icon-mode-video"></i>
+                                    <h4 class="font-bold text-xs text-luxDark">Video Consultation</h4>
+                                    <p class="text-[9px] text-luxMuted mt-1 leading-normal">Secure high-definition video evaluation from your home.</p>
+                                </div>
+                            </div>
+                            <input type="hidden" id="input-mode" value="clinic">
+                        </div>
+
+                        <!-- Step 2: Date & Time Scheduler -->
+                        <div>
+                            <label class="block text-[10px] font-bold uppercase tracking-widest text-luxMuted mb-2">2. Choose Date & Time</label>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-[9px] font-semibold text-luxMuted mb-1">Select Date</label>
+                                    <input type="date" id="input-date" class="w-full bg-[#F5F5F7] border border-black/[0.08] rounded-xl px-4 py-3 text-xs text-luxDark focus:outline-none focus:border-luxDark focus:ring-1 focus:ring-luxDark" required>
+                                </div>
+                                <div>
+                                    <label class="block text-[9px] font-semibold text-luxMuted mb-1">Select Time</label>
+                                    <input type="time" id="input-time" class="w-full bg-[#F5F5F7] border border-black/[0.08] rounded-xl px-4 py-3 text-xs text-luxDark focus:outline-none focus:border-luxDark focus:ring-1 focus:ring-luxDark" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Step 3: Patient Information -->
+                        <div>
+                            <label class="block text-[10px] font-bold uppercase tracking-widest text-luxMuted mb-2">3. Patient Profile Details</label>
+                            <div class="space-y-4">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-[9px] font-semibold text-luxMuted mb-1">Your Full Name</label>
+                                        <input type="text" id="input-name" class="w-full bg-[#F5F5F7] border border-black/[0.08] rounded-xl px-4 py-3 text-xs text-luxDark focus:outline-none focus:border-luxDark focus:ring-1 focus:ring-luxDark" required>
+                                    </div>
+                                    <div>
+                                        <label class="block text-[9px] font-semibold text-luxMuted mb-1">Contact Phone Number (WhatsApp)</label>
+                                        <input type="tel" id="input-phone" placeholder="+91XXXXXXXXXX" class="w-full bg-[#F5F5F7] border border-black/[0.08] rounded-xl px-4 py-3 text-xs text-luxDark focus:outline-none focus:border-luxDark focus:ring-1 focus:ring-luxDark" required>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-[9px] font-semibold text-luxMuted mb-1">Email Address</label>
+                                        <input type="email" id="input-email" class="w-full bg-[#F5F5F7] border border-black/[0.08] rounded-xl px-4 py-3 text-xs text-luxDark focus:outline-none focus:border-luxDark focus:ring-1 focus:ring-luxDark" required>
+                                    </div>
+                                    <div>
+                                        <label class="block text-[9px] font-semibold text-luxMuted mb-1">Specialty Focus</label>
+                                        <select class="w-full bg-[#F5F5F7] border border-black/[0.08] rounded-xl px-4 py-3 text-xs text-luxDark focus:outline-none focus:border-luxDark focus:ring-1 focus:ring-luxDark">
+                                            <option>Constitutional Chronic Consultation</option>
+                                            <option>Pediatric Consultation</option>
+                                            <option>Women's Health & PCOS</option>
+                                            <option>Stress & Sleep Disorders</option>
+                                            <option>Dermatology & Skin Disorders</option>
+                                            <option>Immune / Allergy Consultations</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-[9px] font-semibold text-luxMuted mb-1">Current Active Symptoms / Case Brief</label>
+                                    <textarea id="input-reason" rows="3" class="w-full bg-[#F5F5F7] border border-black/[0.08] rounded-xl px-4 py-3 text-xs text-luxDark focus:outline-none focus:border-luxDark focus:ring-1 focus:ring-luxDark" placeholder="Describe symptoms, duration, prior medication..." required></textarea>
+                                </div>
+                                <!-- File Upload Placeholder -->
+                                <div class="border border-dashed border-black/15 rounded-xl p-4 bg-gray-50/50 flex flex-col items-center justify-center text-center">
+                                    <i class="fa-solid fa-file-medical text-luxMuted text-base mb-1"></i>
+                                    <span class="block text-[10px] font-bold text-luxDark">Upload Medical Case Files / Prescriptions</span>
+                                    <span class="block text-[9px] text-luxMuted mt-0.5">Drag & drop or browse (Max 5MB)</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Step 4: Video Consent Agreement (Dynamically Toggled) -->
+                        <div id="consent-box" class="max-h-0 overflow-hidden transition-all duration-500 ease-in-out border border-transparent rounded-xl">
+                            <label class="block text-[10px] font-bold uppercase tracking-widest text-luxMuted mb-2">4. Telemedicine Consent Form</label>
+                            <div class="bg-[#F5F5F7] border border-black/[0.06] rounded-xl p-4 space-y-3">
+                                <div class="h-24 overflow-y-auto text-[9px] text-luxMuted leading-relaxed border-b border-black/[0.05] pb-2 pr-1 space-y-2">
+                                    <p>By checking the box below, you acknowledge and agree to the following terms regarding virtual/telemedicine consultation with Aether Homeopathy:</p>
+                                    <p>1. Tele-homeopathy is a supportive model used for consulting and evaluating constitutional patterns. It does not replace emergency medical interventions or acute critical surgical evaluations.</p>
+                                    <p>2. The remedies recommended are prepared through standard homeopathic dilutions according to HPI standards, aimed at gentle systemic support.</p>
+                                    <p>3. You agree that information provided is fully accurate, and understand that remote assessments rely strictly on self-declared clinical reports.</p>
+                                </div>
+                                <div class="flex items-start space-x-2">
+                                    <input type="checkbox" id="checkbox-consent" class="mt-0.5 w-3.5 h-3.5 checked:bg-luxDark">
+                                    <span class="text-[9px] text-luxMuted leading-normal">I have read the tele-homeopathy guidelines and agree to the virtual consultation policy.</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="w-full bg-luxDark text-white hover:bg-luxMuted font-bold py-3.5 rounded-xl transition duration-300 uppercase text-[10px] tracking-wider">
+                            Confirm Appointment
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-[#F5F5F7] border-t border-black/[0.04] text-xs py-12 text-luxMuted font-sans">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+                <div class="space-y-4">
+                    <div class="flex items-center space-x-3">
+                        <div class="bg-white border border-black/[0.05] p-2 rounded-xl shadow-sm">
+                            <i class="fa-solid fa-seedling text-luxDark text-lg"></i>
+                        </div>
+                        <div>
+                            <span class="block text-xs font-black text-luxDark tracking-tight uppercase">Dr. Varsha Bandi</span>
+                            <span class="block text-[10px] font-medium text-luxMuted font-serif italic lowercase leading-none" style="font-family: 'Cormorant Garamond', serif;">homeopathway</span>
+                        </div>
+                    </div>
+                    <p class="text-[11px] leading-relaxed text-luxMuted">
+                        Providing specialized, clinical-grade classical homeopathic care and system recovery.
+                    </p>
+                </div>
+                <div>
+                    <h4 class="font-extrabold text-luxDark text-xs mb-3 uppercase tracking-wider font-sans">Navigation</h4>
+                    <ul class="space-y-2 text-[11px] font-semibold font-sans">
+                        <li><button onclick="scrollToSection('home')" class="hover:text-luxDark transition">Home</button></li>
+                        <li><button onclick="scrollToSection('about')" class="hover:text-luxDark transition">Philosophy</button></li>
+                        <li><button onclick="scrollToSection('doctor')" class="hover:text-luxDark transition">Our Specialist</button></li>
+                        <li><button onclick="scrollToSection('services')" class="hover:text-luxDark transition">Treatments</button></li>
+                        <li><button onclick="scrollToSection('products')" class="hover:text-luxDark transition">Methodology</button></li>
+                        <li><button onclick="scrollToSection('testimonials')" class="hover:text-luxDark transition font-semibold">Testimonials</button></li>
+                        <li><button onclick="scrollToSection('contact')" class="hover:text-luxDark transition font-bold text-luxDark">Book Consultation</button></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-extrabold text-luxDark text-xs mb-3 uppercase tracking-wider font-sans">Practice Ethic</h4>
+                    <ul class="space-y-2 text-[11px] font-semibold font-sans">
+                        <li><button onclick="scrollToSection('about')" class="hover:text-luxDark transition font-normal font-sans">Holistic Philosophy</button></li>
+                        <li><button onclick="scrollToSection('contact')" class="hover:text-luxDark transition font-normal font-sans">Book Clinical consultations</button></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-extrabold text-luxDark text-xs mb-3 uppercase tracking-wider font-sans">Territories Covered</h4>
+                    <p class="text-[11px] leading-relaxed font-sans">
+                        Providing homeopathic wellness consultations across Gangavathi, Koppal, Bengaluru, and Karnataka, India.
+                    </p>
+                    <span class="block mt-4 font-bold text-luxDark font-sans">Support Hotline: +91 9902684355</span>
+                </div>
+            </div>
+            <div class="border-t border-black/[0.04] pt-8 flex flex-col md:flex-row items-center justify-between text-luxMuted text-[10px] font-semibold font-sans">
+                <span>&copy; 2026 Dr. Varsha Bandi. All Rights Reserved.</span>
+                <span class="flex items-center space-x-1 mt-2 md:mt-0">
+                    <span>Text-based Classical Homeopathy.</span>
+                    <i class="fa-solid fa-seedling text-luxDark text-[8px]"></i>
+                    <span>Bengaluru, India</span>
+                </span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- INTERSECTION OBSERVER FOR ACTIVE STATES, SCROLL REVEALS, PARALLAX & CLINICAL BOOKING ENGINE -->
+    <script>
+        // Smooth scrolling function to navigate to sections
+        function scrollToSection(id) {
+            const section = document.getElementById(id);
+            if (section) {
+                const yOffset = -80; // Offset for sticky navbar
+                const y = section.getBoundingClientRect().top + window.pageYOffset + yOffset;
+                window.scrollTo({ top: y, behavior: 'smooth' });
+            }
+        }
+
+        // Toggle Expandable Mobile Menu Drawer
+        function toggleMobileMenu() {
+            const mobileMenu = document.getElementById('mobile-menu');
+            const menuIcon = document.getElementById('menu-icon');
+            if (mobileMenu.classList.contains('hidden')) {
+                mobileMenu.classList.remove('hidden');
+                menuIcon.className = 'fa-solid fa-xmark text-xl';
+            } else {
+                mobileMenu.classList.add('hidden');
+                menuIcon.className = 'fa-solid fa-bars text-xl';
+            }
+        }
+
+        // CLINICAL INTERACTIVE BOOKING ENGINE LOGIC
+
+        // State function to handle consultation mode selection
+        function selectConsultationMode(mode) {
+            const cardClinic = document.getElementById('card-mode-clinic');
+            const cardVideo = document.getElementById('card-mode-video');
+            const iconClinic = document.getElementById('icon-mode-clinic');
+            const iconVideo = document.getElementById('icon-mode-video');
+            const inputMode = document.getElementById('input-mode');
+            const consentBox = document.getElementById('consent-box');
+            const checkboxConsent = document.getElementById('checkbox-consent');
+
+            if (mode === 'clinic') {
+                inputMode.value = 'clinic';
+                // Active Card styling
+                cardClinic.className = "border-2 border-luxDark p-4 rounded-xl cursor-pointer transition-all duration-300 flex flex-col items-start bg-white shadow-sm";
+                iconClinic.className = "fa-solid fa-clinic-medical text-base text-luxDark mb-2";
+                // Inactive Card styling
+                cardVideo.className = "border-2 border-transparent p-4 bg-gray-50 rounded-xl cursor-pointer hover:border-black/20 transition-all duration-300 flex flex-col items-start";
+                iconVideo.className = "fa-solid fa-video text-base text-luxMuted mb-2";
+                
+                // Animate hide consent form container smoothly
+                consentBox.style.maxHeight = "0px";
+                consentBox.style.borderColor = "transparent";
+                consentBox.style.marginTop = "0px";
+                checkboxConsent.required = false;
+            } else {
+                inputMode.value = 'video';
+                // Active Card styling
+                cardVideo.className = "border-2 border-luxDark p-4 rounded-xl cursor-pointer transition-all duration-300 flex flex-col items-start bg-white shadow-sm";
+                iconVideo.className = "fa-solid fa-video text-base text-luxDark mb-2";
+                // Inactive Card styling
+                cardClinic.className = "border-2 border-transparent p-4 bg-gray-50 rounded-xl cursor-pointer hover:border-black/20 transition-all duration-300 flex flex-col items-start";
+                iconClinic.className = "fa-solid fa-clinic-medical text-base text-luxMuted mb-2";
+                
+                // Animate show consent form container smoothly
+                consentBox.style.maxHeight = "400px";
+                consentBox.style.borderColor = "rgba(0,0,0,0.06)";
+                consentBox.style.marginTop = "1rem";
+                checkboxConsent.required = true;
+            }
+        }
+
+        // ================= FULL-STACK BOOKING SUBMISSION & SOCKETS INTEGRATION =================
+        const socket = (typeof io !== 'undefined') ? io(window.location.origin, {
+            transports: ['websocket', 'polling']
+        }) : { on: () => {}, emit: () => {} };
+
+        let myAppointmentId = null;
+
+        function formatTime12Hour(timeString) {
+            if (!timeString) return '';
+            const [hours, minutes] = timeString.split(':');
+            let h = parseInt(hours);
+            const m = minutes;
+            const ampm = h >= 12 ? 'PM' : 'AM';
+            h = h % 12;
+            h = h ? h : 12;
+            const formattedHours = h < 10 ? '0' + h : h;
+            return `${formattedHours}:${m} ${ampm}`;
+        }
+
+        async function handleBookingSubmit(event) {
+            event.preventDefault();
+
+            const token = localStorage.getItem('patientToken');
+            const patientAccountId = localStorage.getItem('patientAccountId');
+
+            // Gate booking behind patient authentication
+            if (!token) {
+                // Save current state of the form to sessionStorage so user doesn't lose progress
+                const pendingBooking = {
+                    mode: document.getElementById('input-mode').value,
+                    date: document.getElementById('input-date').value,
+                    time: document.getElementById('input-time').value,
+                    name: document.getElementById('input-name').value,
+                    phone: document.getElementById('input-phone').value,
+                    email: document.getElementById('input-email').value,
+                    reason: document.getElementById('input-reason').value
+                };
+                sessionStorage.setItem('pendingBooking', JSON.stringify(pendingBooking));
+                
+                alert("Please login or create an account to finalize your booking.");
+                window.location.href = '/patient-auth.html?redirect=booking';
+                return;
+            }
+
+            const inputMode = document.getElementById('input-mode').value;
+            const inputDate = document.getElementById('input-date').value;
+            const inputTimeRaw = document.getElementById('input-time').value;
+            const inputTimeFormatted = formatTime12Hour(inputTimeRaw);
+            const checkboxConsent = document.getElementById('checkbox-consent');
+
+            // Telemedicine consent validation
+            if (inputMode === 'video' && !checkboxConsent.checked) {
+                alert("Please acknowledge and check the Telemedicine Consent Form to proceed with virtual video consultation.");
+                return;
+            }
+
+            // Construct payload for API matching appointments schema
+            const payload = {
+                name: document.getElementById('input-name').value,
+                email: document.getElementById('input-email').value,
+                phone: document.getElementById('input-phone').value,
+                date: inputDate,
+                time: inputTimeFormatted,
+                reason: document.getElementById('input-reason').value,
+                patient_account_id: patientAccountId
+            };
+
+            try {
+                const response = await fetch('/api/appointments', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token
+                    },
+                    body: JSON.stringify(payload)
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    myAppointmentId = data.appointment.id;
+                    sessionStorage.removeItem('pendingBooking'); // Clear cached state
+
+                    // Populate booking metadata into summary box
+                    document.getElementById('summary-mode').innerText = inputMode === 'clinic' ? 'In-Clinic Visit' : 'Video Consultation';
+                    document.getElementById('summary-date').innerText = inputDate;
+                    document.getElementById('summary-time').innerText = inputTimeFormatted;
+
+                    // Trigger smooth transition to Success Screen
+                    const successCard = document.getElementById('booking-success');
+                    successCard.classList.remove('hidden');
+                    setTimeout(() => {
+                        successCard.classList.remove('opacity-0');
+                    }, 50);
+
+                    document.getElementById('booking-form').reset();
+                    selectConsultationMode('clinic');
+                } else {
+                    alert("Booking failed: " + data.error);
+                }
+            } catch (err) {
+                console.error("Error booking appointment:", err);
+                alert("Network error booking appointment. Please try again.");
+            }
+        }
+
+        // Real-Time Confirmation Socket Listener (EMBEDDED VIDEO AUTO-LAUNCH FIXED)
+        socket.on('appointment_updated', (appointment) => {
+            if (appointment.id === myAppointmentId) {
+                if (appointment.status === 'Confirmed' && appointment.videoRoom) {
+                    // Reveal the video consultation frame seamlessly inside the success card
+                    document.getElementById('videoContainer').classList.remove('hidden');
+                    document.getElementById('resetFormBtn').classList.add('hidden'); // Hide reset button during call
+                    startVideoCall(appointment.videoRoom);
+                }
+            }
+        });
+
+        // Initialize Embedded Video Frame safely with Jitsi alternative
+        function startVideoCall(roomName) {
+            document.getElementById('jitsi-patient-meet').innerHTML = ''; // Clear previous instances
+            const domain = 'meet.element.io'; // Stable unrestricted Jitsi server (unlimited duration)
+            const options = {
+                roomName: roomName,
+                width: '100%',
+                height: '100%',
+                parentNode: document.querySelector('#jitsi-patient-meet'),
+                interfaceConfigOverwrite: { TILE_VIEW_MAX_COLUMNS: 2 }
+            };
+            const api = new JitsiMeetExternalAPI(domain, options);
+        }
+
+        // Resets successfully booked form parameters back to initial state
+        function resetBookingForm() {
+            const successCard = document.getElementById('booking-success');
+            const videoContainer = document.getElementById('videoContainer');
+            const meetDiv = document.getElementById('jitsi-patient-meet');
+            
+            successCard.classList.add('opacity-0');
+            setTimeout(() => {
+                successCard.classList.add('hidden');
+                videoContainer.classList.add('hidden');
+                meetDiv.innerHTML = ''; // Safely tear down active call frame
+                document.getElementById('resetFormBtn').classList.remove('hidden');
+                selectConsultationMode('clinic');
+            }, 500);
+        }
+
+        // Intersection Observer & Custom Scrolling Parallax Effects
+        document.addEventListener("DOMContentLoaded", function() {
+            const sections = document.querySelectorAll("section");
+            const navButtons = document.querySelectorAll("nav button");
+
+            const observerOptions = {
+                root: null,
+                rootMargin: "-100px 0px -50% 0px", // Detect active section as it crosses viewport center
+                threshold: 0
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const id = entry.target.id;
+                        navButtons.forEach(btn => {
+                            if (btn.id === 'nav-' + id) {
+                                btn.classList.add('active-nav');
+                                btn.classList.remove('text-luxMuted');
+                            } else {
+                                btn.classList.remove('active-nav');
+                                btn.classList.add('text-luxMuted');
+                            }
+                        });
+                    }
+                });
+            }, observerOptions);
+
+            sections.forEach(section => observer.observe(section));
+
+            // Setup scroll reveal animation tracking
+            const revealElements = document.querySelectorAll('.reveal-element, .reveal-left, .reveal-right');
+            const scrollObserverOptions = {
+                root: null,
+                threshold: 0.05,
+                rootMargin: "0px 0px -50px 0px" // Trigger slightly before entering view
+            };
+
+            const scrollObserver = new IntersectionObserver((entries, self) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('active');
+                        self.unobserve(entry.target);
+                    }
+                });
+            }, scrollObserverOptions);
+
+            revealElements.forEach(el => scrollObserver.observe(el));
+
+            // Setup high-end scroll based zoom/fade animations for doctor's profile elements (FEATURE 9)
+            gsap.registerPlugin(ScrollTrigger);
+
+            // Staggered pop-on-scroll animation for doctor section info cards
+            gsap.from(".doc-info-card", {
+                scrollTrigger: {
+                    trigger: "#doctor",
+                    start: "top 65%",
+                    toggleActions: "play none none none"
+                },
+                duration: 0.8,
+                scale: 0.85,
+                opacity: 0,
+                y: 30,
+                stagger: 0.15,
+                ease: "back.out(1.4)" // Luxurious clinical pop effect
+            });
+
+            // Staggered spring/pop animation for pharmacopoeia cards with custom assets
+            gsap.from(".pharm-card", {
+                scrollTrigger: {
+                    trigger: "#products",
+                    start: "top 75%",
+                    toggleActions: "play none none none"
+                },
+                duration: 0.8,
+                scale: 0.8,
+                opacity: 0,
+                y: 40,
+                stagger: 0.15,
+                ease: "back.out(1.5)"
+            });
+
+            // Corner fly-in pop animations for doctor's details (FEATURE 9)
+            gsap.from(".doctor-left", {
+                scrollTrigger: {
+                    trigger: "#doctor",
+                    start: "top 70%",
+                    toggleActions: "play none none none"
+                },
+                duration: 1.2,
+                x: -200,
+                opacity: 0,
+                ease: "power3.out"
+            });
+
+            gsap.from(".doctor-right", {
+                scrollTrigger: {
+                    trigger: "#doctor",
+                    start: "top 70%",
+                    toggleActions: "play none none none"
+                },
+                duration: 1.2,
+                x: 200,
+                opacity: 0,
+                ease: "power3.out"
+            });
+
+            // Corner fly-in pop animations for specialized treatments (FEATURE 9)
+            gsap.from(".service-card-left", {
+                scrollTrigger: {
+                    trigger: "#services",
+                    start: "top 70%",
+                    toggleActions: "play none none none"
+                },
+                duration: 1.2,
+                x: -250,
+                opacity: 0,
+                scale: 0.9,
+                stagger: 0.15,
+                ease: "power3.out"
+            });
+
+            gsap.from(".service-card-right", {
+                scrollTrigger: {
+                    trigger: "#services",
+                    start: "top 70%",
+                    toggleActions: "play none none none"
+                },
+                duration: 1.2,
+                x: 250,
+                opacity: 0,
+                scale: 0.9,
+                stagger: 0.15,
+                ease: "power3.out"
+            });
+
+            // Add Patient Portal button if authenticated
+            const token = localStorage.getItem('patientToken');
+            if (token) {
+                const nav = document.querySelector('nav');
+                if (nav) {
+                    const portalBtn = document.createElement('a');
+                    portalBtn.href = '/patient-portal.html';
+                    portalBtn.className = 'hover:text-luxDark transition py-2 px-1 text-luxAccent font-extrabold uppercase ml-2';
+                    portalBtn.innerText = 'Portal';
+                    nav.appendChild(portalBtn);
+                }
+                const mobileNav = document.getElementById('mobile-menu');
+                if (mobileNav) {
+                    const portalLink = document.createElement('a');
+                    portalLink.href = '/patient-portal.html';
+                    portalLink.className = 'block w-full text-left py-2 text-luxAccent font-extrabold text-sm border-t border-black/[0.05] mt-2';
+                    portalLink.innerText = 'Patient Portal';
+                    mobileNav.appendChild(portalLink);
+                }
+            }
+
+            // Restore pending booking state if redirect-returned
+            const pending = sessionStorage.getItem('pendingBooking');
+            if (pending) {
+                try {
+                    const booking = JSON.parse(pending);
+                    selectConsultationMode(booking.mode);
+                    document.getElementById('input-date').value = booking.date || '';
+                    document.getElementById('input-time').value = booking.time || '';
+                    document.getElementById('input-name').value = booking.name || '';
+                    document.getElementById('input-phone').value = booking.phone || '';
+                    document.getElementById('input-email').value = booking.email || '';
+                    document.getElementById('input-reason').value = booking.reason || '';
+                    
+                    // Smoothly scroll to the booking section
+                    setTimeout(() => {
+                        scrollToSection('contact');
+                    }, 500);
+                } catch(e) {
+                    console.error("Error restoring pending booking", e);
+                }
+            }
+
+            // Subtle parallax background watermark text scaling
+            window.addEventListener('scroll', function() {
+                const scrolled = window.pageYOffset;
+                const parallaxTexts = document.querySelectorAll('[class*="select-none"]');
+                parallaxTexts.forEach(text => {
+                    const speed = 0.12;
+                    text.style.transform = `translateY(${scrolled * speed}px)`;
+                });
+            });
+        });
+    </script>
+</body>
+</html>

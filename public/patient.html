@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Redirecting...</title>
+    <script>
+        const token = localStorage.getItem('patientToken');
+        if (token) {
+            window.location.replace('/patient-portal.html');
+        } else {
+            window.location.replace('/patient-auth.html');
+        }
+    </script>
+</head>
+<body>
+    <p>Redirecting to patient space...</p>
+</body>
+</html>
