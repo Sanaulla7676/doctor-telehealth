@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Portal — Dr. Varsha Bandi | Homeopathway</title>
+    <meta name="description" content="Login or register to access your patient portal and book a consultation with Dr. Varsha Bandi.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --lux-dark: #1C251D;
+            --lux-muted: #6B756C;
+            --lux-bg: #F4F6F4;
+            --lux-accent: #708264;
+            --lux-accent-light: #8fa37d;
+            --lux-white: #ffffff;
+            --lux-card: #ffffff;
+            --lux-border: rgba(0,0,0,0.06);
+            --lux-border-focus: #708264;
+            --error: #c0392b;
+            --success: #27ae60;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--lux-bg);
+            color: var(--lux-dark);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* ── BACKGROUND DECORATION ── */
+        .bg-decor {
+            position: fixed;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .bg-decor-1 {
+            top: -120px; right: -120px;
+            width: 480px; height: 480px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(112,130,100,0.12) 0%, transparent 70%);
+        }
+        .bg-decor-2 {
+            bottom: -80px; left: -80px;
+            width: 360px; height: 360px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(28,37,29,0.06) 0%, transparent 70%);
+        }
+
+        /* ── NAVBAR ── */
+        nav.top-nav {
+            position: sticky; top: 0; z-index: 50;
+            backdrop-filter: blur(12px);
+            background: rgba(244,246,244,0.85);
+            border-bottom: 1px solid var(--lux-border);
+            padding: 0 2rem;
+            height: 72px;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .nav-logo {
+            display: flex; align-items: center; gap: 10px;
+            text-decoration: none;
+        }
+        .nav-logo-icon {
+            width: 36px; height: 36px; border-radius: 50%;
+            background: white; border: 1px solid var(--lux-border);
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+        }
+        .nav-logo-icon i { color: var(--lux-accent); font-size: 14px; }
+        .nav-brand-name {
+            font-size: 11px; font-weight: 800; letter-spacing: 0.08em;
+            text-transform: uppercase; color: var(--lux-dark); display: block;
+        }
+        .nav-brand-sub {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 11px; font-style: italic; color: var(--lux-accent);
+            display: block; line-height: 1;
+        }
+        .nav-back-btn {
+            font-size: 11px; font-weight: 700; letter-spacing: 0.06em;
+            text-transform: uppercase; color: var(--lux-muted);
+            text-decoration: none; display: flex; align-items: center; gap: 6px;
+            transition: color 0.2s;
+        }
+        .nav-back-btn:hover { color: var(--lux-dark); }
+
+        /* ── MAIN LAYOUT ── */
+        main {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 3rem 1.5rem;
+            position: relative; z-index: 1;
+        }
+
+        .auth-container {
+            width: 100%;
+            max-width: 480px;
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .auth-header .eyebrow {
+            font-size: 10px; font-weight: 800; letter-spacing: 0.12em;
+            text-transform: uppercase; color: var(--lux-accent);
+            display: block; margin-bottom: 6px;
+        }
+        .auth-header h1 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 36px; font-weight: 700;
+            color: var(--lux-dark); line-height: 1.1;
+        }
+        .auth-header p {
+            font-size: 12px; color: var(--lux-muted);
+            margin-top: 8px; line-height: 1.6;
+        }
+
+        /* ── TAB SWITCHER ── */
+        .tab-switcher {
+            display: flex;
+            background: white;
+            border: 1px solid var(--lux-border);
+            border-radius: 14px;
+            padding: 4px;
+            margin-bottom: 1.75rem;
+            gap: 4px;
+        }
+        .tab-btn {
+            flex: 1; border: none; background: transparent;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 11px; font-weight: 700; letter-spacing: 0.06em;
+            text-transform: uppercase; color: var(--lux-muted);
+            padding: 10px 12px; border-radius: 10px;
+            cursor: pointer; transition: all 0.25s ease;
+        }
+        .tab-btn.active {
+            background: var(--lux-dark);
+            color: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        .tab-btn:hover:not(.active) { color: var(--lux-dark); background: var(--lux-bg); }
+
+        /* ── CARD ── */
+        .auth-card {
+            background: white;
+            border: 1px solid var(--lux-border);
+            border-radius: 24px;
+            padding: 2.25rem;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.05), 0 1px 4px rgba(0,0,0,0.03);
+        }
+
+        /* ── FORM FIELDS ── */
+        .form-panel { display: none; }
+        .form-panel.active { display: block; }
+
+        .form-group {
+            margin-bottom: 1.1rem;
+        }
+        .form-label {
+            display: block;
+            font-size: 10px; font-weight: 700; letter-spacing: 0.06em;
+            text-transform: uppercase; color: var(--lux-muted);
+            margin-bottom: 6px;
+        }
+        .form-input {
+            width: 100%;
+            background: #F5F5F7;
+            border: 1.5px solid rgba(0,0,0,0.08);
+            border-radius: 12px;
+            padding: 12px 14px;
+            font-size: 13px;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            color: var(--lux-dark);
+            transition: border-color 0.2s, box-shadow 0.2s;
+            outline: none;
+        }
+        .form-input:focus {
+            border-color: var(--lux-accent);
+            background: white;
+            box-shadow: 0 0 0 3px rgba(112,130,100,0.12);
+        }
+        .form-input::placeholder { color: #b0b8b0; }
+
+        .form-input-icon-wrap {
+            position: relative;
+        }
+        .form-input-icon-wrap .form-input {
+            padding-left: 42px;
+        }
+        .form-input-icon-wrap .input-icon {
+            position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+            color: var(--lux-muted); font-size: 13px; pointer-events: none;
+        }
+        .form-input-icon-wrap .toggle-pw {
+            position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+            color: var(--lux-muted); font-size: 13px; cursor: pointer;
+            background: none; border: none; padding: 0;
+        }
+        .form-input-icon-wrap .toggle-pw:hover { color: var(--lux-dark); }
+
+        .form-row {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+        }
+
+        /* ── BUTTONS ── */
+        .btn-primary {
+            width: 100%;
+            background: var(--lux-dark);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 14px 20px;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 11px; font-weight: 800;
+            letter-spacing: 0.08em; text-transform: uppercase;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+            margin-top: 0.5rem;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .btn-primary:hover { background: var(--lux-accent); box-shadow: 0 4px 16px rgba(112,130,100,0.3); }
+        .btn-primary:active { transform: scale(0.98); }
+        .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+        /* ── ALERTS ── */
+        .alert {
+            border-radius: 10px;
+            padding: 12px 14px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: none;
+            align-items: center;
+            gap: 8px;
+        }
+        .alert.show { display: flex; }
+        .alert-error { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; }
+        .alert-success { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; }
+
+        /* ── DIVIDERS & FOOTNOTES ── */
+        .form-footnote {
+            text-align: center;
+            font-size: 11px;
+            color: var(--lux-muted);
+            margin-top: 1.25rem;
+        }
+        .form-footnote a, .form-link {
+            color: var(--lux-accent);
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .form-footnote a:hover, .form-link:hover { color: var(--lux-dark); text-decoration: underline; }
+
+        .consent-text {
+            font-size: 10px;
+            color: var(--lux-muted);
+            line-height: 1.6;
+            margin-top: 1rem;
+            text-align: center;
+        }
+
+        /* ── STRENGTH METER ── */
+        .strength-bar-wrap {
+            margin-top: 6px;
+            display: flex; gap: 4px;
+        }
+        .strength-seg {
+            flex: 1; height: 3px; border-radius: 2px;
+            background: #e5e7eb;
+            transition: background 0.3s;
+        }
+        .strength-seg.weak { background: #ef4444; }
+        .strength-seg.fair { background: #f59e0b; }
+        .strength-seg.good { background: var(--lux-accent); }
+        .strength-seg.strong { background: #22c55e; }
+
+        /* ── LOADER SPINNER ── */
+        .spinner {
+            width: 16px; height: 16px;
+            border: 2px solid rgba(255,255,255,0.4);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            display: none;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ── TRUST BADGES ── */
+        .trust-row {
+            display: flex; justify-content: center;
+            gap: 1.5rem; margin-top: 2rem;
+        }
+        .trust-item {
+            display: flex; flex-direction: column; align-items: center;
+            gap: 4px;
+        }
+        .trust-item i { color: var(--lux-accent); font-size: 16px; }
+        .trust-item span { font-size: 9px; font-weight: 700; color: var(--lux-muted); text-transform: uppercase; letter-spacing: 0.08em; }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 520px) {
+            .form-row { grid-template-columns: 1fr; }
+            .auth-card { padding: 1.5rem; }
+            .auth-header h1 { font-size: 28px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Background Decoration -->
+    <div class="bg-decor bg-decor-1"></div>
+    <div class="bg-decor bg-decor-2"></div>
+
+    <!-- Navbar -->
+    <nav class="top-nav">
+        <a href="/index.html" class="nav-logo">
+            <div class="nav-logo-icon">
+                <i class="fa-solid fa-seedling"></i>
+            </div>
+            <div>
+                <span class="nav-brand-name">Dr. Varsha Bandi</span>
+                <span class="nav-brand-sub">homeopathway</span>
+            </div>
+        </a>
+        <a href="/index.html" class="nav-back-btn">
+            <i class="fa-solid fa-arrow-left"></i> Back to website
+        </a>
+    </nav>
+
+    <!-- Main -->
+    <main>
+        <div class="auth-container">
+
+            <!-- Header -->
+            <div class="auth-header">
+                <span class="eyebrow">Patient Portal</span>
+                <h1>Your Healing Journey Starts Here</h1>
+                <p>Login or create a free account to book consultations, view your prescriptions, and join video sessions.</p>
+            </div>
+
+            <!-- Tab Switcher -->
+            <div class="tab-switcher" role="tablist">
+                <button class="tab-btn active" id="tab-login" role="tab" onclick="switchTab('login')">Login</button>
+                <button class="tab-btn" id="tab-register" role="tab" onclick="switchTab('register')">Register</button>
+                <button class="tab-btn" id="tab-forgot" role="tab" onclick="switchTab('forgot')">Forgot Password</button>
+            </div>
+
+            <!-- Auth Card -->
+            <div class="auth-card">
+
+                <!-- ── LOGIN PANEL ── -->
+                <div class="form-panel active" id="panel-login">
+                    <div class="alert alert-error" id="login-error">
+                        <i class="fa-solid fa-circle-exclamation"></i>
+                        <span id="login-error-text"></span>
+                    </div>
+                    <div class="alert alert-success" id="login-success">
+                        <i class="fa-solid fa-circle-check"></i>
+                        <span>Login successful! Redirecting...</span>
+                    </div>
+
+                    <form id="login-form" onsubmit="handleLogin(event)" novalidate>
+                        <div class="form-group">
+                            <label class="form-label" for="login-email">Email Address</label>
+                            <div class="form-input-icon-wrap">
+                                <i class="fa-regular fa-envelope input-icon"></i>
+                                <input type="email" id="login-email" class="form-input" placeholder="your@email.com" required autocomplete="email">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="login-password">Password</label>
+                            <div class="form-input-icon-wrap">
+                                <i class="fa-solid fa-lock input-icon"></i>
+                                <input type="password" id="login-password" class="form-input" placeholder="••••••••" required autocomplete="current-password">
+                                <button type="button" class="toggle-pw" onclick="togglePassword('login-password', this)">
+                                    <i class="fa-regular fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn-primary" id="login-btn">
+                            <div class="spinner" id="login-spinner"></div>
+                            <span id="login-btn-text">Login to My Account</span>
+                        </button>
+                    </form>
+
+                    <p class="form-footnote" style="margin-top:1rem;">
+                        <span class="form-link" onclick="switchTab('forgot')">Forgot your password?</span>
+                    </p>
+                    <p class="form-footnote">
+                        New patient? <span class="form-link" onclick="switchTab('register')">Create a free account</span>
+                    </p>
+                </div>
+
+                <!-- ── REGISTER PANEL ── -->
+                <div class="form-panel" id="panel-register">
+                    <div class="alert alert-error" id="register-error">
+                        <i class="fa-solid fa-circle-exclamation"></i>
+                        <span id="register-error-text"></span>
+                    </div>
+                    <div class="alert alert-success" id="register-success">
+                        <i class="fa-solid fa-circle-check"></i>
+                        <span>Account created! Redirecting to your portal...</span>
+                    </div>
+
+                    <form id="register-form" onsubmit="handleRegister(event)" novalidate>
+                        <div class="form-group">
+                            <label class="form-label" for="reg-name">Full Name</label>
+                            <div class="form-input-icon-wrap">
+                                <i class="fa-regular fa-user input-icon"></i>
+                                <input type="text" id="reg-name" class="form-input" placeholder="Your full name" required autocomplete="name">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label" for="reg-email">Email</label>
+                                <div class="form-input-icon-wrap">
+                                    <i class="fa-regular fa-envelope input-icon"></i>
+                                    <input type="email" id="reg-email" class="form-input" placeholder="your@email.com" required autocomplete="email">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="reg-phone">Phone (WhatsApp)</label>
+                                <div class="form-input-icon-wrap">
+                                    <i class="fa-solid fa-phone input-icon"></i>
+                                    <input type="tel" id="reg-phone" class="form-input" placeholder="+91XXXXXXXXXX" autocomplete="tel">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="reg-password">Password</label>
+                            <div class="form-input-icon-wrap">
+                                <i class="fa-solid fa-lock input-icon"></i>
+                                <input type="password" id="reg-password" class="form-input" placeholder="Minimum 6 characters" required autocomplete="new-password" oninput="checkPasswordStrength(this.value)">
+                                <button type="button" class="toggle-pw" onclick="togglePassword('reg-password', this)">
+                                    <i class="fa-regular fa-eye"></i>
+                                </button>
+                            </div>
+                            <div class="strength-bar-wrap">
+                                <div class="strength-seg" id="str1"></div>
+                                <div class="strength-seg" id="str2"></div>
+                                <div class="strength-seg" id="str3"></div>
+                                <div class="strength-seg" id="str4"></div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="reg-confirm">Confirm Password</label>
+                            <div class="form-input-icon-wrap">
+                                <i class="fa-solid fa-lock input-icon"></i>
+                                <input type="password" id="reg-confirm" class="form-input" placeholder="Re-enter password" required autocomplete="new-password">
+                                <button type="button" class="toggle-pw" onclick="togglePassword('reg-confirm', this)">
+                                    <i class="fa-regular fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn-primary" id="reg-btn">
+                            <div class="spinner" id="reg-spinner"></div>
+                            <span id="reg-btn-text">Create My Account</span>
+                        </button>
+                    </form>
+
+                    <p class="consent-text">By registering, you agree to our telemedicine consultation terms and privacy policy.</p>
+                    <p class="form-footnote">
+                        Already have an account? <span class="form-link" onclick="switchTab('login')">Login here</span>
+                    </p>
+                </div>
+
+                <!-- ── FORGOT PASSWORD PANEL ── -->
+                <div class="form-panel" id="panel-forgot">
+                    <div class="alert alert-error" id="forgot-error">
+                        <i class="fa-solid fa-circle-exclamation"></i>
+                        <span id="forgot-error-text"></span>
+                    </div>
+                    <div class="alert alert-success" id="forgot-success">
+                        <i class="fa-solid fa-circle-check"></i>
+                        <span>If this email is registered, a reset link has been sent. Please check your inbox.</span>
+                    </div>
+
+                    <p style="font-size:12px; color:var(--lux-muted); margin-bottom:1.25rem; line-height:1.6;">
+                        Enter your registered email address below and we'll send you a link to reset your password.
+                    </p>
+
+                    <form id="forgot-form" onsubmit="handleForgot(event)" novalidate>
+                        <div class="form-group">
+                            <label class="form-label" for="forgot-email">Registered Email</label>
+                            <div class="form-input-icon-wrap">
+                                <i class="fa-regular fa-envelope input-icon"></i>
+                                <input type="email" id="forgot-email" class="form-input" placeholder="your@email.com" required autocomplete="email">
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn-primary" id="forgot-btn">
+                            <div class="spinner" id="forgot-spinner"></div>
+                            <span id="forgot-btn-text">Send Reset Link</span>
+                        </button>
+                    </form>
+
+                    <p class="form-footnote" style="margin-top:1rem;">
+                        Remembered it? <span class="form-link" onclick="switchTab('login')">Back to Login</span>
+                    </p>
+                </div>
+
+            </div><!-- /.auth-card -->
+
+            <!-- Trust Badges -->
+            <div class="trust-row">
+                <div class="trust-item">
+                    <i class="fa-solid fa-shield-halved"></i>
+                    <span>Secure & Private</span>
+                </div>
+                <div class="trust-item">
+                    <i class="fa-solid fa-lock"></i>
+                    <span>Encrypted</span>
+                </div>
+                <div class="trust-item">
+                    <i class="fa-solid fa-user-doctor"></i>
+                    <span>Doctor Verified</span>
+                </div>
+            </div>
+
+        </div><!-- /.auth-container -->
+    </main>
+
+    <script>
+        // ── BACKEND BASE URL (Render) ──
+        const BASE_URL = 'https://doctor-telehealth.onrender.com';
+
+        // ── UTILITIES ──
+        function getRedirectUrl() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get('redirect') || null;
+        }
+
+        function switchTab(tab) {
+            ['login', 'register', 'forgot'].forEach(t => {
+                document.getElementById(`tab-${t}`).classList.toggle('active', t === tab);
+                document.getElementById(`panel-${t}`).classList.toggle('active', t === tab);
+            });
+            clearAllAlerts();
+        }
+
+        function clearAllAlerts() {
+            document.querySelectorAll('.alert').forEach(el => el.classList.remove('show'));
+        }
+
+        function showError(prefix, text) {
+            document.getElementById(`${prefix}-error-text`).textContent = text;
+            document.getElementById(`${prefix}-error`).classList.add('show');
+            document.getElementById(`${prefix}-success`).classList.remove('show');
+        }
+
+        function showSuccess(prefix) {
+            document.getElementById(`${prefix}-success`).classList.add('show');
+            document.getElementById(`${prefix}-error`).classList.remove('show');
+        }
+
+        function setLoading(prefix, loading) {
+            const btn = document.getElementById(`${prefix}-btn`);
+            const spinner = document.getElementById(`${prefix}-spinner`);
+            const text = document.getElementById(`${prefix}-btn-text`);
+            btn.disabled = loading;
+            spinner.style.display = loading ? 'block' : 'none';
+            text.style.opacity = loading ? '0.6' : '1';
+        }
+
+        function togglePassword(inputId, btn) {
+            const input = document.getElementById(inputId);
+            const icon = btn.querySelector('i');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.className = 'fa-regular fa-eye-slash';
+            } else {
+                input.type = 'password';
+                icon.className = 'fa-regular fa-eye';
+            }
+        }
+
+        function checkPasswordStrength(pw) {
+            const segs = [document.getElementById('str1'), document.getElementById('str2'), document.getElementById('str3'), document.getElementById('str4')];
+            segs.forEach(s => { s.className = 'strength-seg'; });
+            let score = 0;
+            if (pw.length >= 6) score++;
+            if (pw.length >= 10) score++;
+            if (/[A-Z]/.test(pw) && /[0-9]/.test(pw)) score++;
+            if (/[^A-Za-z0-9]/.test(pw)) score++;
+            const classes = ['weak', 'fair', 'good', 'strong'];
+            for (let i = 0; i < score; i++) segs[i].classList.add(classes[Math.min(score-1, 3)]);
+        }
+
+        function redirectAfterAuth() {
+            const redirect = getRedirectUrl();
+            if (redirect === 'booking') {
+                window.location.href = '/index.html#contact';
+            } else {
+                window.location.href = '/patient-portal.html';
+            }
+        }
+
+        // ── LOGIN ──
+        async function handleLogin(e) {
+            e.preventDefault();
+            clearAllAlerts();
+            const email = document.getElementById('login-email').value.trim();
+            const password = document.getElementById('login-password').value;
+
+            if (!email || !password) return showError('login', 'Please enter your email and password.');
+
+            setLoading('login', true);
+            try {
+                const res = await fetch(BASE_URL + '/api/patient/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    localStorage.setItem('patientToken', data.token);
+                    localStorage.setItem('patientName', data.full_name);
+                    localStorage.setItem('patientEmail', data.email);
+                    localStorage.setItem('patientAccountId', data.patientAccountId);
+                    showSuccess('login');
+                    setTimeout(redirectAfterAuth, 800);
+                } else {
+                    showError('login', data.error || 'Login failed. Please try again.');
+                }
+            } catch (err) {
+                showError('login', 'Network error. Please check your connection.');
+            } finally {
+                setLoading('login', false);
+            }
+        }
+
+        // ── REGISTER ──
+        async function handleRegister(e) {
+            e.preventDefault();
+            clearAllAlerts();
+            const full_name = document.getElementById('reg-name').value.trim();
+            const email = document.getElementById('reg-email').value.trim();
+            const phone = document.getElementById('reg-phone').value.trim();
+            const password = document.getElementById('reg-password').value;
+            const confirm = document.getElementById('reg-confirm').value;
+
+            if (!full_name) return showError('register', 'Please enter your full name.');
+            if (!email) return showError('register', 'Please enter your email address.');
+            if (password.length < 6) return showError('register', 'Password must be at least 6 characters.');
+            if (password !== confirm) return showError('register', 'Passwords do not match.');
+
+            setLoading('reg', true);
+            try {
+                const res = await fetch(BASE_URL + '/api/patient/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ full_name, email, phone, password })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    localStorage.setItem('patientToken', data.token);
+                    localStorage.setItem('patientName', data.full_name);
+                    localStorage.setItem('patientEmail', data.email);
+                    localStorage.setItem('patientAccountId', data.patientAccountId);
+                    showSuccess('register');
+                    setTimeout(redirectAfterAuth, 900);
+                } else {
+                    showError('register', data.error || 'Registration failed. Please try again.');
+                }
+            } catch (err) {
+                showError('register', 'Network error. Please check your connection.');
+            } finally {
+                setLoading('reg', false);
+            }
+        }
+
+        // ── FORGOT PASSWORD ──
+        async function handleForgot(e) {
+            e.preventDefault();
+            clearAllAlerts();
+            const email = document.getElementById('forgot-email').value.trim();
+            if (!email) return showError('forgot', 'Please enter your registered email address.');
+
+            setLoading('forgot', true);
+            try {
+                const res = await fetch(BASE_URL + '/api/patient/forgot-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showSuccess('forgot');
+                    document.getElementById('forgot-form').reset();
+                } else {
+                    showError('forgot', data.error || 'Request failed. Please try again.');
+                }
+            } catch (err) {
+                showError('forgot', 'Network error. Please try again.');
+            } finally {
+                setLoading('forgot', false);
+            }
+        }
+
+        // ── INIT: If already logged in, redirect ──
+        (function init() {
+            const token = localStorage.getItem('patientToken');
+            if (token) {
+                // Verify token is still valid
+                fetch(BASE_URL + '/api/patient/profile', {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                }).then(r => r.json()).then(d => {
+                    if (d.success) redirectAfterAuth();
+                }).catch(() => {});
+            }
+
+            // Pre-select tab from URL param
+            const params = new URLSearchParams(window.location.search);
+            const tab = params.get('tab');
+            if (tab === 'register') switchTab('register');
+        })();
+    </script>
+</body>
+</html>

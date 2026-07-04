@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Login - EMR Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+
+    <div class="max-w-md w-full bg-white p-8 rounded-lg shadow-md border border-gray-100">
+        <h2 class="text-3xl font-bold text-center text-blue-600 mb-2">CareClinic EMR</h2>
+        <p class="text-gray-500 text-center mb-6 text-sm">Please log in to access the Doctor Dashboard</p>
+
+        <form id="loginForm" class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Email Address</label>
+                <input type="email" id="email" required class="w-full mt-1 p-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none" placeholder="drvarshabandi@clinic.com">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Password</label>
+                <input type="password" id="password" required class="w-full mt-1 p-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none" placeholder="••••••••">
+            </div>
+
+            <div id="errorMessage" class="hidden p-3 bg-red-50 text-red-700 rounded text-sm font-medium text-center border border-red-100"></div>
+
+            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded transition">
+                Log In
+            </button>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const errorDiv = document.getElementById('errorMessage');
+
+            errorDiv.classList.add('hidden');
+
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Store the secure JWT token in browser localStorage
+                    localStorage.setItem('doctorToken', data.token);
+                    localStorage.setItem('doctorName', data.doctorName);
+                    
+                    // Redirect to the dashboard
+                    window.location.href = '/doctor.html';
+                } else {
+                    errorDiv.innerText = data.error;
+                    errorDiv.classList.remove('hidden');
+                }
+            } catch (err) {
+                errorDiv.innerText = "Connection error. Please try again.";
+                errorDiv.classList.remove('hidden');
+            }
+        });
+    </script>
+</body>
+</html>

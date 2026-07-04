@@ -1,0 +1,38 @@
+{
+  "id": "psoriasis-001",
+  "featured": true,
+  "published": true,
+
+  "title": "Psoriasis & Arthritis",
+
+  "patient": {
+    "name": "Anonymous",
+    "age": 56,
+    "gender": "Female"
+  },
+
+  "condition": [
+    "Psoriasis",
+    "Arthritis"
+  ],
+
+  "duration": "6 Months",
+
+  "status": "Ongoing Treatment",
+
+  "doctor": "Dr. Varsha Bandi",
+
+  "summary": "Joint pain improved significantly after treatment. Psoriasis lesions reduced considerably over six months.",
+
+  "rating": 5,
+
+  "images": {
+    "before": [
+      "before/1.png",
+      "before/2.png"
+    ],
+    "after": [
+      "after/1.png"
+    ]
+  }
+}

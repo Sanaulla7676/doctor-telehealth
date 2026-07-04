@@ -1,0 +1,114 @@
+@import "tailwindcss";
+
+@theme {
+  --color-luxDark: #1C251D;
+  --color-luxMuted: #6B756C;
+  --color-luxBg: #F4F6F4;
+  --color-luxAccent: #708264;
+  
+  --font-serif: var(--font-serif);
+  --font-sans: var(--font-sans);
+}
+
+:root {
+  --background: #F4F6F4;
+  --foreground: #1C251D;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  overflow-x: hidden;
+}
+
+/* Lenis Smooth Scroll Configuration */
+html.lenis, html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overflow: clip;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+.lenis.lenis-scrolling iframe {
+  pointer-events: none;
+}
+
+/* Custom premium elements styling */
+.glass-nav {
+  backdrop-filter: blur(16px);
+  background-color: rgba(255, 255, 255, 0.75);
+  border-bottom: 1px solid rgba(28, 37, 29, 0.05);
+}
+
+.premium-btn {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  border-radius: 9999px;
+  background-color: #1C251D;
+  color: #ffffff;
+  border: 1px solid rgba(28, 37, 29, 0.1);
+}
+
+.premium-btn::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 120%;
+  height: 120%;
+  background: #708264;
+  transition: all 0.5s ease;
+  z-index: 0;
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(0);
+}
+
+.premium-btn:hover::before {
+  transform: translate(-50%, -50%) scale(1.1);
+}
+
+.premium-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(112, 130, 100, 0.15);
+}
+
+.premium-btn > * {
+  position: relative;
+  z-index: 10;
+}
+
+/* Marquee Animation */
+@keyframes marquee {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  display: flex;
+  width: max-content;
+  animation: marquee 25s linear infinite;
+}
+
+.marquee-container:hover .animate-marquee {
+  animation-play-state: paused;
+}
+
+/* Asymmetric Grid Image container styles */
+.doctor-portrait-container {
+  box-shadow: 0 20px 40px rgba(28, 37, 29, 0.08);
+  border: 1px solid rgba(28, 37, 29, 0.04);
+}

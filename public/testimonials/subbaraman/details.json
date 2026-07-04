@@ -1,0 +1,73 @@
+{
+  "id": "subbaraman-001",
+  "featured": true,
+  "published": true,
+  "type": "testimonial",
+
+  "title": "Diabetes Management & Lifestyle Improvement",
+
+  "patient": {
+    "name": "B. K. Subburaman",
+    "age": 70,
+    "gender": "Male"
+  },
+
+  "condition": [
+    "Type 2 Diabetes",
+    "High Blood Sugar"
+  ],
+
+  "duration": "3 Months",
+
+  "status": "Significantly Improved",
+
+  "doctor": "Dr. Varsha Bandi",
+
+  "summary": "After experiencing a sudden rise in blood sugar levels, the patient followed a personalized homeopathic treatment plan along with lifestyle modifications, dietary changes, and regular exercise. Within three months, blood sugar levels improved, weight increased, and overall health became stable.",
+
+  "rating": 5,
+
+  "images": {
+    "before": [],
+    "after": []
+  },
+
+  "feedback": {
+    "title": "Patient Appreciation Letter",
+    "textFile": "feedback/feedback.txt",
+    "image": "feedback/feedback.png"
+  },
+
+  "treatmentHighlights": [
+    "Personalized homeopathic treatment",
+    "Lifestyle modification",
+    "Dietary counselling",
+    "Exercise guidance",
+    "Regular blood sugar monitoring",
+    "Monthly follow-up reviews"
+  ],
+
+  "results": [
+    "Blood sugar improved",
+    "Weight regained",
+    "Overall health improved",
+    "Better lifestyle management",
+    "Patient satisfaction"
+  ],
+
+  "tags": [
+    "Diabetes",
+    "Type 2 Diabetes",
+    "Blood Sugar",
+    "Lifestyle Management",
+    "Homeopathy",
+    "Senior Citizen",
+    "Patient Testimonial"
+  ],
+
+  "seo": {
+    "slug": "diabetes-management-success",
+    "metaTitle": "Diabetes Management Success | Patient Success Story",
+    "metaDescription": "Read how personalized homeopathic treatment and lifestyle guidance helped improve diabetes management under Dr. Varsha Bandi."
+  }
+}

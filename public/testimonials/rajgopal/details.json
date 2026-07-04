@@ -1,0 +1,55 @@
+{
+  "id": "rajgopal-001",
+  "featured": false,
+  "published": true,
+
+  "type": "testimonial",
+
+  "title": "Diabetic Ulcer Recovery",
+
+  "patient": {
+    "name": "Rajagopal",
+    "age": null,
+    "gender": "Male"
+  },
+
+  "condition": [
+    "Diabetic Ulcer",
+    "Diabetes"
+  ],
+
+  "duration": "45 Days",
+
+  "status": "Recovered",
+
+  "doctor": "Dr. Varsha Bandi",
+
+  "summary": "The patient underwent surgery for an infected left ankle. The wound was left open and uncovered due to diabetes. After starting homeopathic treatment under Dr. Varsha, the wound healed completely within 45 days.",
+
+  "rating": 5,
+
+  "images": {
+    "before": [],
+    "after": []
+  },
+
+  "feedback": {
+    "title": "Patient Appreciation",
+    "textFile": "feedback/feedback.txt",
+    "image": "feedback/feedback.png"
+  },
+
+  "tags": [
+    "Diabetic Ulcer",
+    "Diabetes",
+    "Wound Healing",
+    "Homeopathy",
+    "Patient Testimonial"
+  ],
+
+  "seo": {
+    "slug": "diabetic-ulcer-recovery",
+    "metaTitle": "Diabetic Ulcer Recovery | Patient Testimonial",
+    "metaDescription": "Read how a diabetic ulcer healed after homeopathic treatment under Dr. Varsha Bandi."
+  }
+}

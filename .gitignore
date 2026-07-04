@@ -2,3 +2,19 @@ node_modules
 .env
 .vercel
 .env*.local
+
+# Reference data folder
+refrence/
+
+# Debug and migration files
+debug_register.js
+inspect_db.js
+test_register.js
+migrate.js
+
+# Frontend specific ignores
+frontend/.next/
+frontend/node_modules/
+frontend/.env.local
+frontend/.env.*.local
+frontend/.vercel/

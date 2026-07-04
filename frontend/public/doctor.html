@@ -1,0 +1,1216 @@
+<!DOCTYPE html>
+<html lang="en" id="htmlRoot" class="theme-dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Homeopathway Clinical Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://meet.jit.si/external_api.js"></script>
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        darkBg: '#09090b',
+                        darkCard: '#121214',
+                        darkBorder: '#1f1f23',
+                        lightBg: '#f8f9fa',
+                        lightCard: '#ffffff',
+                        lightBorder: '#e9ecef'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .theme-transition { transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease; }
+        .sticky-header { position: sticky; top: 0; z-index: 40; backdrop-filter: blur(12px); }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 4px; }
+        
+        .theme-dark { --bg: #09090b; --card: #121214; --border: #1f1f23; --text: #f4f4f5; --text-muted: #71717a; }
+        .theme-light { --bg: #f4f5f7; --card: #ffffff; --border: #e4e4e7; --text: #09090b; --text-muted: #71717a; }
+    </style>
+</head>
+<body class="theme-transition bg-[var(--bg)] text-[var(--text)] min-h-screen flex font-sans overflow-hidden">
+
+    <!-- Sound Alert Element -->
+    <audio id="alertSound" src="https://assets.mixkit.co/active_storage/sfx/2568/2568-84.wav" preload="auto"></audio>
+
+    <!-- Sidebar -->
+    <aside class="w-64 bg-[var(--card)] border-r border-[var(--border)] flex flex-col justify-between p-6 shrink-0 theme-transition">
+        <div>
+            <!-- Header Logo -->
+            <div class="flex items-center space-x-3 mb-10">
+                <div class="w-10 h-10 rounded-full bg-rose-600 flex items-center justify-center font-bold text-white text-lg">H</div>
+                <div>
+                    <h2 class="text-sm font-bold leading-none">Homeopathway</h2>
+                    <span class="text-xs text-gray-500">Clinical Dashboard</span>
+                </div>
+            </div>
+
+            <!-- Navigation Menu Items -->
+            <nav class="space-y-1">
+                <button onclick="switchTab('dashboard')" id="nav-dashboard" class="w-full flex items-center space-x-3 px-4 py-3 bg-rose-600 text-white rounded-lg font-semibold text-sm transition">
+                    <span>📊</span><span>Dashboard</span>
+                </button>
+                <button onclick="switchTab('patients')" id="nav-patients" class="w-full flex items-center space-x-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-rose-900/10 rounded-lg font-medium text-sm transition">
+                    <span>👥</span><span>Patients</span>
+                </button>
+                <button onclick="switchTab('followups')" id="nav-followups" class="w-full flex items-center space-x-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-rose-900/10 rounded-lg font-medium text-sm transition">
+                    <span>📅</span><span>Today's Follow-up</span>
+                </button>
+                <button onclick="switchTab('books')" id="nav-books" class="w-full flex items-center space-x-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-rose-900/10 rounded-lg font-medium text-sm transition">
+                    <span>📚</span><span>Books & Docs</span>
+                </button>
+            </nav>
+        </div>
+
+        <!-- Profile Widget -->
+        <div class="border-t border-[var(--border)] pt-6 space-y-4 theme-transition">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-full bg-rose-200 text-rose-800 font-bold flex items-center justify-center">VB</div>
+                <div class="overflow-hidden">
+                    <h4 class="text-xs font-bold truncate">Dr. Varsha Bandi</h4>
+                    <span class="text-[10px] text-gray-500 truncate block">drvarshabandi@gmail.com</span>
+                </div>
+            </div>
+            <button onclick="handleLogout()" class="w-full flex items-center justify-center space-x-2 bg-rose-950/20 text-rose-300 border border-rose-900/50 py-2 rounded-lg text-xs font-bold hover:bg-rose-900/40 transition">
+                <span>🚪</span><span>Sign Out</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Content Workspace -->
+    <div class="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
+        
+        <!-- Sticky Header with Real-Time Clock -->
+        <header class="sticky-header bg-[var(--bg)] border-b border-[var(--border)] p-6 flex justify-between items-center theme-transition">
+            <div>
+                <h1 id="clockGreeting" class="text-xl font-extrabold">Good morning,</h1>
+                <p id="clockDoctor" class="text-2xl font-black text-rose-500 leading-none">Dr. Varsha Bandi</p>
+                <div class="flex items-center space-x-2 text-[10px] text-gray-500 mt-1 font-mono">
+                    <span id="clockDay">Sunday</span>
+                    <span>•</span>
+                    <span id="clockDate">21 June 2026</span>
+                    <span>•</span>
+                    <span id="clockTime" class="font-bold text-rose-400">03:47 PM</span>
+                </div>
+            </div>
+            
+            <div class="flex items-center space-x-4">
+                <div id="liveAlert" class="hidden bg-rose-950 text-rose-300 border border-rose-800 px-4 py-2 rounded-full text-xs font-bold animate-bounce">
+                    New Booking Detected!
+                </div>
+                
+                <button onclick="toggleTheme()" class="bg-[var(--card)] border border-[var(--border)] text-xs px-4 py-2 rounded-full font-bold flex items-center space-x-2 hover:bg-rose-900/10 transition">
+                    <span id="themeToggleIcon">🌙</span>
+                    <span id="themeToggleLabel">Dark</span>
+                </button>
+            </div>
+        </header>
+
+        <main class="flex-1 p-8 overflow-y-auto min-h-0">
+
+            <!-- ================= VIEW 1: DASHBOARD HOME ================= -->
+            <section id="view-dashboard" class="space-y-8">
+                <!-- Summary Metrics Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div onclick="switchTab('patients')" class="cursor-pointer bg-[var(--card)] border border-[var(--border)] p-5 rounded-xl flex items-center justify-between hover:border-rose-500/50 transition">
+                        <div>
+                            <span class="text-xs text-gray-500 font-bold uppercase tracking-wider">Total Patients</span>
+                            <h3 id="statTotalPatients" class="text-2xl font-bold mt-1">--</h3>
+                        </div>
+                        <div class="text-2xl p-3 bg-rose-950/20 rounded-lg text-rose-400">👥</div>
+                    </div>
+                    <div class="bg-[var(--card)] border border-[var(--border)] p-5 rounded-xl flex items-center justify-between">
+                        <div>
+                            <span class="text-xs text-gray-500 font-bold uppercase tracking-wider">Today's Appts</span>
+                            <h3 id="statTodayAppts" class="text-2xl font-bold mt-1">--</h3>
+                        </div>
+                        <div class="text-2xl p-3 bg-rose-950/20 rounded-lg text-rose-400">📅</div>
+                    </div>
+                    <div onclick="switchTab('followups')" class="cursor-pointer bg-[var(--card)] border border-[var(--border)] p-5 rounded-xl flex items-center justify-between hover:border-rose-500/50 transition">
+                        <div>
+                            <span class="text-xs text-gray-500 font-bold uppercase tracking-wider">Today's Follow-ups</span>
+                            <h3 id="statFollowupsToday" class="text-2xl font-bold mt-1">--</h3>
+                        </div>
+                        <div class="text-2xl p-3 bg-rose-950/20 rounded-lg text-rose-400">⏳</div>
+                    </div>
+                    <div class="bg-[var(--card)] border border-[var(--border)] p-5 rounded-xl flex items-center justify-between">
+                        <div>
+                            <span class="text-xs text-gray-500 font-bold uppercase tracking-wider">Completed</span>
+                            <h3 id="statCompleted" class="text-2xl font-bold mt-1">--</h3>
+                        </div>
+                        <div class="text-2xl p-3 bg-rose-950/20 rounded-lg text-rose-400">📹</div>
+                    </div>
+                </div>
+
+                <!-- Upgraded 70/30 Layout Row -->
+                <div class="grid grid-cols-1 lg:grid-cols-10 gap-8">
+                    <!-- Today's Schedule Card (70% width) -->
+                    <div class="lg:col-span-7 bg-[var(--card)] border border-[var(--border)] p-6 rounded-xl flex flex-col h-[400px]">
+                        <div class="flex justify-between items-center mb-4 border-b border-[var(--border)] pb-3">
+                            <h3 class="font-bold text-md">Clinical Schedule (All Bookings)</h3>
+                            <button onclick="loadAppointments()" class="text-xs text-rose-400 font-bold">Refresh Feed</button>
+                        </div>
+                        <div id="appointmentsList" class="flex-1 overflow-y-auto space-y-3">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Live Clinic Status Card (30% width) -->
+                    <div class="lg:col-span-3 bg-[var(--card)] border border-[var(--border)] p-6 rounded-xl flex flex-col justify-between h-[400px]">
+                        <div>
+                            <div class="flex justify-between items-center mb-4 border-b border-[var(--border)] pb-3">
+                                <h3 class="font-bold text-md">Live Clinic Status</h3>
+                                <span class="w-2.5 h-2.5 rounded-full bg-green-500 animate-ping"></span>
+                            </div>
+                            
+                            <div class="space-y-4 text-xs">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-gray-500">Clinic Status:</span>
+                                    <span class="px-2 py-0.5 rounded bg-green-950/30 text-green-400 font-bold">OPEN</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-gray-500">Doctor Availability:</span>
+                                    <span class="px-2 py-0.5 rounded bg-blue-950/30 text-blue-400 font-bold">ACTIVE</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-gray-500">Active Consultations:</span>
+                                    <span id="clinicActiveCount" class="font-bold">0</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="p-3 bg-rose-950/10 border border-rose-900/30 rounded-lg text-center text-[10px] text-gray-500">
+                            Homeopathway Cloud Database linked in Southeast Asia (Singapore) region.
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ================= VIEW 2: PATIENTS MANAGEMENT ================= -->
+            <section id="view-patients" class="hidden space-y-6">
+                <div class="flex justify-between items-center bg-[var(--card)] border border-[var(--border)] p-4 rounded-xl">
+                    <div class="relative w-72">
+                        <input type="text" id="patientSearch" onkeyup="filterPatients()" placeholder="Search patient directory..." class="w-full bg-rose-950/10 border border-[var(--border)] text-xs p-2.5 pl-8 rounded-lg outline-none text-[var(--text)]">
+                        <span class="absolute left-2.5 top-3.5 text-xs text-gray-500">🔍</span>
+                    </div>
+                    <button onclick="openAddPatientModal()" class="bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs px-4 py-2.5 rounded-lg transition">
+                        + Add New Patient
+                    </button>
+                </div>
+
+                <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse text-xs">
+                            <thead class="bg-rose-950/10 border-b border-[var(--border)] text-gray-400 uppercase tracking-wider text-[10px]">
+                                <tr>
+                                    <th class="p-4">Patient ID</th>
+                                    <th class="p-4">Name</th>
+                                    <th class="p-4">Phone</th>
+                                    <th class="p-4">Age / Gender</th>
+                                    <th class="p-4">Registration Date</th>
+                                    <th class="p-4">Total Visits</th>
+                                    <th class="p-4 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="patientsTableBody" class="divide-y divide-[var(--border)]">
+                                <!-- Dynamic entries -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ================= VIEW 3: TODAY'S FOLLOW-UP REMINDERS ================= -->
+            <section id="view-followups" class="hidden space-y-6">
+                <div class="flex flex-col md:flex-row justify-between items-center gap-4 bg-[var(--card)] border border-[var(--border)] p-4 rounded-xl">
+                    <div class="relative w-full md:w-72">
+                        <input type="text" id="followupSearch" onkeyup="filterFollowups()" placeholder="Search patient name..." class="w-full bg-rose-950/10 border border-[var(--border)] text-xs p-2.5 pl-8 rounded-lg outline-none text-[var(--text)]">
+                        <span class="absolute left-2.5 top-3.5 text-xs text-gray-500">🔍</span>
+                    </div>
+                    <select id="stageFilter" onchange="filterFollowups()" class="bg-rose-950/10 border border-[var(--border)] text-xs p-2 rounded-lg outline-none text-gray-400">
+                        <option value="">All Reminder Stages</option>
+                        <option value="DAY_MINUS_3">3 Days Before</option>
+                        <option value="DAY_MINUS_2">2 Days Before</option>
+                        <option value="DAY_MINUS_1">1 Day Before</option>
+                        <option value="DAY_0">Consultation Day</option>
+                    </select>
+                </div>
+
+                <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl overflow-hidden">
+                    <table class="w-full text-left border-collapse text-xs">
+                        <thead class="bg-rose-950/10 border-b border-[var(--border)] text-gray-400 uppercase tracking-wider text-[10px]">
+                            <tr>
+                                <th class="p-4">Patient Name</th>
+                                <th class="p-4">Contact</th>
+                                <th class="p-4">Last Visit</th>
+                                <th class="p-4">Summary</th>
+                                <th class="p-4">Next Follow-up</th>
+                                <th class="p-4">Stage</th>
+                                <th class="p-4">Prepared Message</th>
+                                <th class="p-4">Status</th>
+                                <th class="p-4 text-right">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="followupTableBody" class="divide-y divide-[var(--border)]">
+                            <!-- Dynamic -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- ================= VIEW 4: BOOKS / DOCUMENT LIBRARY ================= -->
+            <section id="view-books" class="hidden space-y-6">
+                <div class="flex flex-col md:flex-row justify-between items-center gap-4 bg-[var(--card)] border border-[var(--border)] p-4 rounded-xl">
+                    <div class="flex space-x-3 w-full md:w-auto">
+                        <select id="docFolderSelect" onchange="loadDocuments()" class="bg-rose-950/10 border border-[var(--border)] text-xs p-2.5 rounded-lg outline-none text-gray-400">
+                            <option value="Guidelines">📂 Guidelines</option>
+                            <option value="Reports">📂 Reports</option>
+                            <option value="Reference Books">📂 Reference Books</option>
+                            <option value="Patient Documents">📂 Patient Documents</option>
+                        </select>
+                        <input type="file" id="fileUploadInput" onchange="handleFileUpload()" class="hidden">
+                        <button onclick="document.getElementById('fileUploadInput').click()" class="bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs px-4 py-2.5 rounded-lg transition">
+                            📤 Upload Document
+                        </button>
+                    </div>
+                </div>
+
+                <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl overflow-hidden">
+                    <table class="w-full text-left border-collapse text-xs">
+                        <thead class="bg-rose-950/10 border-b border-[var(--border)] text-gray-400 uppercase tracking-wider text-[10px]">
+                            <tr>
+                                <th class="p-4">Document Name</th>
+                                <th class="p-4">Category</th>
+                                <th class="p-4">Uploaded Date</th>
+                                <th class="p-4">Size</th>
+                                <th class="p-4 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="documentsTableBody" class="divide-y divide-[var(--border)]">
+                            <!-- Dynamic -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- ================= MODALS & DRAWERS ================= -->
+
+    <!-- Add Patient Modal -->
+    <div id="addPatientModal" class="fixed inset-0 bg-black/80 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-6 max-w-lg w-full text-[var(--text)]">
+            <h3 class="font-bold text-lg mb-4 text-white">Register New Patient</h3>
+            <form id="addPatientForm" class="space-y-4 text-xs">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block mb-1">Patient Name</label>
+                        <input type="text" id="pat-name" required class="w-full p-2 bg-rose-950/10 border border-[var(--border)] rounded text-[var(--text)]">
+                    </div>
+                    <div>
+                        <label class="block mb-1">Phone Number</label>
+                        <input type="text" id="pat-phone" required class="w-full p-2 bg-rose-950/10 border border-[var(--border)] rounded text-[var(--text)]">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block mb-1">Age</label>
+                        <input type="number" id="pat-age" required class="w-full p-2 bg-rose-950/10 border border-[var(--border)] rounded text-[var(--text)]">
+                    </div>
+                    <div>
+                        <label class="block mb-1">Gender</label>
+                        <select id="pat-gender" class="w-full p-2 bg-rose-950/10 border border-[var(--border)] rounded text-gray-400">
+                            <option value="Female">Female</option>
+                            <option value="Male">Male</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block mb-1">Address</label>
+                    <textarea id="pat-address" rows="2" class="w-full p-2 bg-rose-950/10 border border-[var(--border)] rounded text-[var(--text)]"></textarea>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block mb-1">Medical History</label>
+                        <textarea id="pat-history" rows="2" class="w-full p-2 bg-rose-950/10 border border-[var(--border)] rounded text-[var(--text)]"></textarea>
+                    </div>
+                    <div>
+                        <label class="block mb-1">Notes</label>
+                        <textarea id="pat-notes" rows="2" class="w-full p-2 bg-rose-950/10 border border-[var(--border)] rounded text-[var(--text)]"></textarea>
+                    </div>
+                </div>
+                <div class="flex justify-end space-x-3 pt-4">
+                    <button type="button" onclick="closeAddPatientModal()" class="px-4 py-2 border border-[var(--border)] rounded text-white">Cancel</button>
+                    <button type="submit" class="px-4 py-2 bg-rose-600 text-white rounded font-bold">Save Patient</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Patient Case Study Timeline Drawer -->
+    <div id="patientTimelineDrawer" class="fixed right-0 top-0 h-full w-[450px] bg-[var(--card)] border-l border-[var(--border)] p-6 z-50 transform translate-x-full transition-transform duration-300 overflow-y-auto text-[var(--text)]">
+        <div class="flex justify-between items-center border-b border-[var(--border)] pb-4 mb-6">
+            <div>
+                <h3 id="timelinePatientName" class="font-extrabold text-lg text-white">Patient Case Study</h3>
+                <p id="timelinePatientDetails" class="text-xs text-gray-500"></p>
+            </div>
+            <button onclick="closeTimeline()" class="text-xl text-white">✕</button>
+        </div>
+
+        <div id="timelineContainer" class="relative pl-6 border-l border-rose-500/30 space-y-8 text-xs">
+            <!-- Populated dynamically -->
+        </div>
+    </div>
+
+    <!-- Active Consultation Overlay (SOAP & Video Integration) -->
+    <div id="consultationOverlay" class="fixed inset-0 bg-black/80 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl max-w-6xl w-full h-[90vh] flex flex-col overflow-hidden text-[var(--text)]">
+            <header class="p-4 border-b border-[var(--border)] flex justify-between items-center bg-rose-950/20">
+                <h3 class="font-bold text-sm text-rose-400 flex items-center">
+                    <span class="w-3 h-3 bg-red-500 rounded-full mr-2 animate-ping"></span>
+                    Live Consultation Case Sheet
+                </h3>
+                <span id="activePatientLabel" class="text-xs font-bold text-white bg-rose-950 border border-rose-900 px-3 py-1 rounded-full"></span>
+            </header>
+
+            <div class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4 p-4 overflow-hidden min-h-0">
+                <!-- Video Stream Frame -->
+                <div class="border border-[var(--border)] rounded-lg bg-black/50 p-2 flex flex-col h-full relative">
+                    <p class="text-xs text-rose-500 font-bold mb-2 flex items-center">
+                        <span class="w-2 h-2 bg-red-600 rounded-full mr-1.5 animate-pulse"></span>
+                        Live Telehealth Feed
+                    </p>
+                    <div id="jitsi-doctor-meet" class="flex-1 rounded-lg overflow-hidden bg-black"></div>
+                </div>
+
+                <!-- Interactive SOAP Form -->
+                <div class="border border-[var(--border)] rounded-lg bg-rose-950/5 p-5 flex flex-col h-full overflow-y-auto space-y-4">
+                    <h3 class="text-xs font-bold uppercase tracking-wider border-b border-[var(--border)] pb-2 text-white">Clinical Case Notes (SOAP)</h3>
+                    
+                    <div class="space-y-4 text-xs text-[var(--text)]">
+                        <div>
+                            <label class="block font-bold text-gray-500 mb-1">Subjective (S)</label>
+                            <textarea id="soap-subjective" rows="3" class="w-full bg-rose-950/10 border border-[var(--border)] text-[var(--text)] p-2 rounded outline-none resize-none"></textarea>
+                        </div>
+                        <div>
+                            <label class="block font-bold text-gray-500 mb-1">Objective (O)</label>
+                            <textarea id="soap-objective" rows="2" class="w-full bg-rose-950/10 border border-[var(--border)] text-[var(--text)] p-2 rounded outline-none resize-none"></textarea>
+                        </div>
+                        <div>
+                            <label class="block font-bold text-gray-500 mb-1">Assessment (A)</label>
+                            <textarea id="soap-assessment" rows="2" class="w-full bg-rose-950/10 border border-[var(--border)] text-[var(--text)] p-2 rounded outline-none resize-none"></textarea>
+                        </div>
+                        <div>
+                            <label class="block font-bold text-gray-500 mb-1">Plan (P)</label>
+                            <textarea id="soap-plan" rows="3" class="w-full bg-rose-950/10 border border-[var(--border)] text-[var(--text)] p-2 rounded outline-none resize-none"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Follow-up Component -->
+                    <div class="border-t border-[var(--border)] pt-4 mt-2 space-y-3 bg-rose-950/5 p-4 rounded-xl border border-[var(--border)]">
+                        <h4 class="text-xs font-bold text-rose-400">📅 Follow-up Management</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                            <div>
+                                <label class="block font-bold text-gray-500 mb-1">Next Follow-up Date</label>
+                                <input type="date" id="fup-date-input" class="w-full bg-rose-950/10 border border-[var(--border)] text-[var(--text)] p-2 rounded outline-none">
+                            </div>
+                            <div>
+                                <label class="block font-bold text-gray-500 mb-1">Consultation Summary (Max 120 chars)</label>
+                                <input type="text" id="fup-summary-input" maxlength="120" placeholder="Fever improved..." class="w-full bg-rose-950/10 border border-[var(--border)] text-[var(--text)] p-2 rounded outline-none">
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-3 pt-2 text-xs">
+                            <button onclick="scheduleFollowup()" class="bg-rose-600 text-white px-4 py-2 rounded font-bold">Schedule Follow-up</button>
+                            <button onclick="disableFollowup()" class="text-red-400 hover:text-red-300 font-bold">Disable</button>
+                        </div>
+                    </div>
+
+                    <button onclick="saveClinicalNotes()" class="w-full bg-rose-600 hover:bg-rose-700 text-white text-xs py-3 rounded-lg font-bold transition">
+                        Save Consultation Case Sheet
+                    </button>
+                    <div id="saveStatus" class="hidden text-center text-xs py-2 bg-green-950 text-green-400 border border-green-900 rounded-lg font-bold">
+                        ✓ Case Sheet saved successfully.
+                    </div>
+                </div>
+            </div>
+
+            <footer class="p-4 border-t border-[var(--border)] flex justify-end space-x-3 bg-rose-950/10">
+                <button onclick="closeWorkspace()" class="bg-rose-950/30 text-gray-400 px-4 py-2 rounded-lg text-xs font-bold">Close Workspace</button>
+            </footer>
+        </div>
+    </div>
+
+    <!-- Instant Toast Notifications -->
+    <div id="toastContainer" class="fixed top-6 right-6 z-50 space-y-4 pointer-events-none"></div>
+
+    <!-- Read More Modal -->
+    <div id="readMoreModal" class="fixed inset-0 bg-black/70 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-[#121214] border border-[#1f1f23] rounded-xl p-6 max-w-md w-full">
+            <h4 class="font-bold text-white text-sm mb-2 border-b border-[#1f1f23] pb-2">Full Consultation Notes</h4>
+            <p id="readMoreText" class="text-xs text-gray-400 leading-relaxed font-sans"></p>
+            <button onclick="closeReadMore()" class="mt-4 bg-[#1c1c1f] hover:bg-[#25252a] text-white text-xs px-4 py-2 rounded-lg font-bold transition">Close</button>
+        </div>
+    </div>
+
+    <!-- JavaScript core engines -->
+    <script>
+        // Securely initialize Socket.io defensively (keeps page active even if sockets fail)
+        const socket = (typeof io !== 'undefined') ? io(window.location.origin, {
+            transports: ['websocket', 'polling']
+        }) : { on: () => {}, emit: () => {} };
+        
+        let activeAppointmentId = null;
+        let activePatientId = null;
+        let activeVisitDate = null;
+        let followupsList = [];
+        let patientDirectoryList = [];
+
+        // Real-Time Smart Clock Engine (FEATURE 5)
+        function startSmartClock() {
+            setInterval(() => {
+                const now = new Date();
+                const hours = now.getHours();
+                const minutes = now.getMinutes();
+                const ampm = hours >= 12 ? 'PM' : 'AM';
+                const formattedTime = `${String(hours % 12 || 12).padStart(2, '0')}:${String(minutes).padStart(2, '0')} ${ampm}`;
+                
+                const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+                const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+                
+                let greeting = 'Working Late';
+                if (hours >= 5 && hours < 12) greeting = 'Good Morning';
+                else if (hours >= 12 && hours < 17) greeting = 'Good Afternoon';
+                else if (hours >= 17 && hours < 21) greeting = 'Good Evening';
+
+                document.getElementById('clockGreeting').innerText = `${greeting},`;
+                document.getElementById('clockDay').innerText = days[now.getDay()];
+                document.getElementById('clockDate').innerText = `${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
+                document.getElementById('clockTime').innerText = formattedTime;
+            }, 1000);
+        }
+        startSmartClock();
+
+        // Theme Toggle Engine
+        function toggleTheme() {
+            const root = document.getElementById('htmlRoot');
+            const toggleIcon = document.getElementById('themeToggleIcon');
+            const toggleLabel = document.getElementById('themeToggleLabel');
+
+            if (root.classList.contains('theme-dark')) {
+                root.className = 'theme-light';
+                localStorage.setItem('theme', 'light');
+                toggleIcon.innerText = '☀';
+                toggleLabel.innerText = 'Light';
+            } else {
+                root.className = 'theme-dark';
+                localStorage.setItem('theme', 'dark');
+                toggleIcon.innerText = '🌙';
+                toggleLabel.innerText = 'Dark';
+            }
+        }
+        
+        // Load saved theme choice
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        document.getElementById('htmlRoot').className = savedTheme === 'light' ? 'theme-light' : 'theme-dark';
+        document.getElementById('themeToggleIcon').innerText = savedTheme === 'light' ? '☀' : '🌙';
+        document.getElementById('themeToggleLabel').innerText = savedTheme === 'light' ? 'Light' : 'Dark';
+
+        // Tab routing switcher
+        function switchTab(tab) {
+            const views = ['dashboard', 'patients', 'followups', 'books'];
+            views.forEach(v => {
+                document.getElementById(`view-${v}`).classList.add('hidden');
+                document.getElementById(`nav-${v}`).className = "w-full flex items-center space-x-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-rose-900/10 rounded-lg font-medium text-sm transition";
+            });
+
+            document.getElementById(`view-${tab}`).classList.remove('hidden');
+            document.getElementById(`nav-${tab}`).className = "w-full flex items-center space-x-3 px-4 py-3 bg-rose-600 text-white rounded-lg font-semibold text-sm transition";
+
+            if (tab === 'dashboard') loadAppointments();
+            if (tab === 'patients') loadPatients();
+            if (tab === 'followups') loadTodayFollowups();
+            if (tab === 'books') loadDocuments();
+        }
+
+        // Real-Time Audio alerts & Toast UI
+        socket.on('new_booking_notification', (data) => {
+            const sound = document.getElementById('alertSound');
+            sound.play().catch(() => {}); 
+            
+            showToast(`New Booking: ${data.appointment.name}`, `For ${data.appointment.date} at ${data.appointment.time}`);
+            loadAppointments();
+        });
+
+        function showToast(title, body) {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = "bg-[#121214] border border-rose-800 p-4 rounded-xl shadow-xl flex flex-col pointer-events-auto transition-opacity duration-300 w-72 text-white";
+            toast.innerHTML = `
+                <div class="flex justify-between items-center mb-1">
+                    <span class="font-bold text-xs text-rose-400">🔔 ${title}</span>
+                    <button onclick="this.parentElement.parentElement.remove()" class="text-xs text-gray-500">✕</button>
+                </div>
+                <p class="text-[10px] text-gray-400">${body}</p>
+            `;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 6000);
+        }
+
+        // API calls for appointments
+        async function loadAppointments() {
+            const token = localStorage.getItem('doctorToken');
+            try {
+                const res = await fetch('/api/appointments', { headers: { 'Authorization': 'Bearer ' + token } });
+                const data = await res.json();
+                renderAppointments(data);
+                calculateStats(data);
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function calculateStats(list) {
+            const token = localStorage.getItem('doctorToken');
+            const fupRes = await fetch('/api/dashboard/all-reminders', { headers: { 'Authorization': 'Bearer ' + token } });
+            const fupData = await fupRes.json();
+            const fupCount = fupData.success ? fupData.followupsToday.length : 0;
+
+            document.getElementById('statTotalPatients').innerText = list.length;
+            document.getElementById('statTodayAppts').innerText = list.filter(item => item.date === new Date().toISOString().split('T')[0]).length;
+            document.getElementById('statFollowupsToday').innerText = fupCount;
+            document.getElementById('statCompleted').innerText = list.filter(item => item.status === 'Confirmed').length;
+        }
+
+        // Renders ALL today's active schedule appointments (RESTORED TO BEHAVE EXACTLY AS BEFORE)
+        function renderAppointments(list) {
+            const container = document.getElementById('appointmentsList');
+            container.innerHTML = '';
+            
+            if(list.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 text-center py-10 text-xs">No appointments scheduled.</p>';
+                return;
+            }
+
+            list.forEach(item => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = `p-4 border rounded-xl transition ${item.status === 'Confirmed' ? 'border-green-300/30 bg-green-950/20' : item.status === 'Cancelled' ? 'border-red-900/30 bg-red-950/10 opacity-60' : 'border-[#1f1f23] bg-[#151518]'}`;
+                
+                let actionButtons = '';
+                if (item.status === 'Pending') {
+                    actionButtons = `
+                        <div class="grid grid-cols-3 gap-2 mt-3">
+                            <button onclick="confirmAndConnect('${item.id}', '${item.name}', '${item.date}')" class="bg-rose-600 hover:bg-rose-700 text-white text-[9px] py-2 rounded-lg font-bold transition uppercase">Confirm</button>
+                            <button onclick="rescheduleAppointment('${item.id}')" class="bg-zinc-800 hover:bg-zinc-700 text-gray-300 text-[9px] py-2 rounded-lg font-bold transition uppercase">Reschedule</button>
+                            <button onclick="cancelAppointment('${item.id}')" class="bg-red-950/40 hover:bg-red-900/40 text-red-400 text-[9px] py-2 rounded-lg font-bold transition uppercase border border-red-900/30">Cancel</button>
+                        </div>
+                    `;
+                } else if (item.status === 'Confirmed') {
+                    const showComplete = item.meeting_status !== 'ENDED';
+                    actionButtons = `
+                        <div class="grid grid-cols-2 gap-2 mt-3">
+                            <button onclick="viewActiveWorkspace('${item.id}', '${item.name}', '${item.videoRoom}', '${item.date}')" class="bg-[#1c1c1f] hover:bg-[#25252a] text-white text-[9px] py-2 rounded-lg font-bold transition uppercase border border-[var(--border)]">Open Workspace</button>
+                            ${showComplete ? `
+                                <button onclick="completeConsultation('${item.id}')" class="bg-green-900 hover:bg-green-800 text-white text-[9px] py-2 rounded-lg font-bold transition uppercase">End Call</button>
+                            ` : `
+                                <span class="bg-zinc-900 text-zinc-500 text-[9px] py-2 rounded-lg font-bold text-center border border-zinc-800 uppercase select-none">Completed</span>
+                            `}
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 mt-2">
+                            <button onclick="rescheduleAppointment('${item.id}')" class="bg-zinc-800 hover:bg-zinc-700 text-gray-300 text-[9px] py-1.5 rounded-lg font-bold transition uppercase">Reschedule</button>
+                            <button onclick="cancelAppointment('${item.id}')" class="bg-red-950/40 hover:bg-red-900/40 text-red-400 text-[9px] py-1.5 rounded-lg font-bold transition uppercase border border-red-900/30">Cancel</button>
+                        </div>
+                    `;
+                }
+
+                itemDiv.innerHTML = `
+                    <div class="flex justify-between items-start mb-2">
+                        <h4 class="font-bold text-white text-xs">${item.name}</h4>
+                        <span class="text-[9px] px-2 py-0.5 rounded font-bold uppercase tracking-wider ${item.status === 'Confirmed' ? 'bg-green-950 text-green-400 border border-green-900/30' : item.status === 'Cancelled' ? 'bg-red-950 text-red-400 border border-red-900/30' : 'bg-rose-950 text-rose-400'}">${item.status}</span>
+                    </div>
+                    <p class="text-[10px] text-gray-500">📅 ${item.date} at 🕒 ${item.time} (${item.phone || 'No phone'})</p>
+                    <p class="text-xs text-gray-400 mt-2 bg-rose-950/10 p-2 rounded border border-[var(--border)] italic">"${item.reason}"</p>
+                    ${actionButtons}
+                `;
+                container.appendChild(itemDiv);
+            });
+        }
+
+        async function cancelAppointment(id) {
+            if (!confirm("Are you sure you want to cancel this appointment?")) return;
+            const token = localStorage.getItem('doctorToken');
+            try {
+                const res = await fetch(`/api/appointments/${id}/status`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token
+                    },
+                    body: JSON.stringify({ status: 'Cancelled', meeting_status: 'CANCELLED' })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    loadAppointments();
+                } else {
+                    alert("Error cancelling appointment.");
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function rescheduleAppointment(id) {
+            const newDate = prompt("Enter new Date (YYYY-MM-DD):");
+            if (!newDate) return;
+            const newTime = prompt("Enter new Time (e.g. 10:30 AM):");
+            if (!newTime) return;
+
+            const token = localStorage.getItem('doctorToken');
+            try {
+                const res = await fetch(`/api/appointments/${id}/status`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token
+                    },
+                    body: JSON.stringify({ date: newDate, time: newTime })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    loadAppointments();
+                } else {
+                    alert("Error rescheduling appointment.");
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function completeConsultation(id) {
+            if (!confirm("Are you sure you want to complete this consultation?")) return;
+            const token = localStorage.getItem('doctorToken');
+            try {
+                const res = await fetch('/api/meeting/end', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token
+                    },
+                    body: JSON.stringify({ appointmentId: id })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    loadAppointments();
+                } else {
+                    alert("Error completing consultation.");
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function viewActiveWorkspace(appointmentId, patientName, roomName, visitDate) {
+            activeAppointmentId = appointmentId;
+            activePatientId = appointmentId; 
+            activeVisitDate = visitDate;
+
+            document.getElementById('activePatientLabel').innerText = `Patient: ${patientName}`;
+            document.getElementById('consultationOverlay').classList.remove('hidden');
+
+            document.getElementById('jitsi-doctor-meet').innerHTML = ''; 
+            const domain = 'meet.element.io'; // Stable unrestricted Jitsi instance
+            const options = {
+                roomName: roomName,
+                width: '100%',
+                height: '100%',
+                parentNode: document.querySelector('#jitsi-doctor-meet'),
+                userInfo: { displayName: 'Dr. Varsha Bandi' }
+            };
+            const api = new JitsiMeetExternalAPI(domain, options);
+
+            const token = localStorage.getItem('doctorToken');
+            try {
+                const res = await fetch(`/api/notes/${appointmentId}`, { headers: { 'Authorization': 'Bearer ' + token } });
+                const data = await res.json();
+                if (data.success && data.note) {
+                    document.getElementById('soap-subjective').value = data.note.subjective || '';
+                    document.getElementById('soap-objective').value = data.note.objective || '';
+                    document.getElementById('soap-assessment').value = data.note.assessment || '';
+                    document.getElementById('soap-plan').value = data.note.plan || '';
+                }
+
+                const fupRes = await fetch(`/api/followups/${appointmentId}`, { headers: { 'Authorization': 'Bearer ' + token } });
+                const fupData = await fupRes.json();
+                if (fupData.success && fupData.followup) {
+                    document.getElementById('fup-date-input').value = fupData.followup.followup_date;
+                    document.getElementById('fup-summary-input').value = fupData.followup.doctor_notes;
+                } else {
+                    document.getElementById('fup-date-input').value = '';
+                    document.getElementById('fup-summary-input').value = '';
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function closeWorkspace() {
+            document.getElementById('consultationOverlay').classList.add('hidden');
+            document.getElementById('jitsi-doctor-meet').innerHTML = ''; 
+            activeAppointmentId = null;
+            loadAppointments();
+        }
+
+        async function confirmAndConnect(id, name, visitDate) {
+            const roomName = `TelehealthRoom-${id}`;
+            const token = localStorage.getItem('doctorToken');
+            try {
+                // Call meeting/start API to persist status 'Confirmed', meeting_status 'READY', and video_room in db.
+                await fetch('/api/meeting/start', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token
+                    },
+                    body: JSON.stringify({ appointmentId: id, roomName })
+                });
+
+                // Emitting the socket event as well to trigger direct page state adjustments on active dashboard
+                socket.emit('confirm_and_share_link', { appointmentId: id, roomName });
+
+                viewActiveWorkspace(id, name, roomName, visitDate);
+            } catch (err) {
+                console.error(err);
+                alert("Failed to start virtual room.");
+            }
+        }
+
+        async function saveClinicalNotes() {
+            if (!activeAppointmentId) return;
+
+            const payload = {
+                appointmentId: activeAppointmentId,
+                subjective: document.getElementById('soap-subjective').value,
+                objective: document.getElementById('soap-objective').value,
+                assessment: document.getElementById('soap-assessment').value,
+                plan: document.getElementById('soap-plan').value
+            };
+
+            const token = localStorage.getItem('doctorToken');
+            const saveStatus = document.getElementById('saveStatus');
+
+            try {
+                const res = await fetch('/api/notes', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (data.success) {
+                    saveStatus.classList.remove('hidden');
+                    setTimeout(() => saveStatus.classList.add('hidden'), 4000);
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        // ================= FEATURE 4: PATIENTS PORTAL ENGINE =================
+        async function loadPatients() {
+            const token = localStorage.getItem('doctorToken');
+            try {
+                const res = await fetch('/api/patients', { headers: { 'Authorization': 'Bearer ' + token } });
+                const data = await res.json();
+                if (data.success) {
+                    patientDirectoryList = data.patients;
+                    renderPatientsTable(patientDirectoryList);
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        // Fixed renderer to securely list all patient profiles
+        function renderPatientsTable(list) {
+            const tbody = document.getElementById('patientsTableBody');
+            tbody.innerHTML = '';
+            
+            list.forEach(pat => {
+                const tr = document.createElement('tr');
+                tr.className = "border-b border-[var(--border)] hover:bg-rose-950/10 transition";
+                tr.innerHTML = `
+                    <td class="p-4 font-mono text-gray-500 text-[10px]">${pat.id}</td>
+                    <td class="p-4 font-bold text-white">${pat.name}</td>
+                    <td class="p-4 text-gray-400">${pat.phone}</td>
+                    <td class="p-4">${pat.age || '--'} / ${pat.gender || '--'}</td>
+                    <td class="p-4 text-gray-500">${new Date(pat.created_at).toLocaleDateString()}</td>
+                    <td class="p-4 font-bold text-center">${pat.total_visits}</td>
+                    <td class="p-4 text-right">
+                        <button onclick="openTimeline('${pat.id}')" class="bg-[#1c1c1f] hover:bg-[#25252a] border border-[var(--border)] text-white px-3 py-1.5 rounded font-bold transition text-[10px]">
+                            Case Study Timeline
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function filterPatients() {
+            const query = document.getElementById('patientSearch').value.toLowerCase();
+            const filtered = patientDirectoryList.filter(pat => pat.name.toLowerCase().includes(query));
+            renderPatientsTable(filtered);
+        }
+
+        function openAddPatientModal() {
+            document.getElementById('addPatientModal').classList.remove('hidden');
+        }
+
+        function closeAddPatientModal() {
+            document.getElementById('addPatientModal').classList.add('hidden');
+            document.getElementById('addPatientForm').reset();
+        }
+
+        document.getElementById('addPatientForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const payload = {
+                name: document.getElementById('pat-name').value,
+                phone: document.getElementById('pat-phone').value,
+                age: parseInt(document.getElementById('pat-age').value),
+                gender: document.getElementById('pat-gender').value,
+                address: document.getElementById('pat-address').value,
+                medical_history: document.getElementById('pat-history').value,
+                notes: document.getElementById('pat-notes').value,
+            };
+
+            const token = localStorage.getItem('doctorToken');
+            try {
+                const res = await fetch('/api/patients', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (data.success) {
+                    closeAddPatientModal();
+                    loadPatients();
+                } else {
+                    alert(data.error);
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        });
+
+        // Case Study Timeline Renderer
+        async function openTimeline(patientId) {
+            const token = localStorage.getItem('doctorToken');
+            try {
+                const res = await fetch(`/api/patients/${patientId}/timeline`, { headers: { 'Authorization': 'Bearer ' + token } });
+                const data = await res.json();
+                if (data.success) {
+                    document.getElementById('timelinePatientName').innerText = data.patient.name;
+                    document.getElementById('timelinePatientDetails').innerText = `Phone: ${data.patient.phone} | Age: ${data.patient.age || 'N/A'}`;
+                    
+                    const container = document.getElementById('timelineContainer');
+                    container.innerHTML = '';
+
+                    if (data.visits.length === 0) {
+                        container.innerHTML = '<p class="text-gray-500 py-6">No visits charted yet.</p>';
+                    } else {
+                        data.visits.forEach((v, index) => {
+                            const node = document.createElement('div');
+                            node.className = "relative mb-6";
+                            node.innerHTML = `
+                                <div class="absolute -left-[30px] top-1.5 w-3.5 h-3.5 rounded-full bg-rose-500 border-4 border-[var(--bg)]"></div>
+                                <span class="text-[10px] text-gray-500 font-bold">VISIT ${data.visits.length - index} — ${v.date} (${v.time})</span>
+                                <h4 class="font-bold text-white text-xs mt-1">Reason: "${v.reason}"</h4>
+                                <div class="mt-2 bg-[#151518] p-3 rounded-lg border border-[var(--border)] space-y-2 text-[11px] text-white">
+                                    <p><strong class="text-rose-400">Subjective:</strong> ${v.subjective || 'N/A'}</p>
+                                    <p><strong class="text-rose-400">Objective:</strong> ${v.objective || 'N/A'}</p>
+                                    <p><strong class="text-rose-400">Assessment:</strong> ${v.assessment || 'N/A'}</p>
+                                    <p><strong class="text-rose-400">Plan/Prescription:</strong> ${v.plan || 'N/A'}</p>
+                                    ${v.followup_date ? `<p class="border-t border-[var(--border)] pt-2 mt-2"><strong class="text-yellow-400">Follow-up:</strong> Scheduled for ${v.followup_date} (${v.followup_summary})</p>` : ''}
+                                </div>
+                            `;
+                            container.appendChild(node);
+                        });
+                    }
+
+                    document.getElementById('patientTimelineDrawer').classList.remove('translate-x-full');
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function closeTimeline() {
+            document.getElementById('patientTimelineDrawer').classList.add('translate-x-full');
+        }
+
+        // ================= FEATURE 3: BOOKS & DOCUMENTS LIBRARY =================
+        async function loadDocuments() {
+            const token = localStorage.getItem('doctorToken');
+            const category = document.getElementById('docFolderSelect').value;
+            const tbody = document.getElementById('documentsTableBody');
+
+            try {
+                const res = await fetch('/api/documents', { headers: { 'Authorization': 'Bearer ' + token } });
+                const data = await res.json();
+                if (data.success) {
+                    tbody.innerHTML = '';
+                    const filtered = data.documents.filter(doc => doc.category === category);
+                    
+                    if (filtered.length === 0) {
+                        tbody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-gray-500">No documents found in folder "${category}".</td></tr>`;
+                        return;
+                    }
+
+                    filtered.forEach(doc => {
+                        const tr = document.createElement('tr');
+                        tr.className = "border-b border-[var(--border)] hover:bg-rose-950/10 transition";
+                        tr.innerHTML = `
+                            <td class="p-4 font-bold text-white">${doc.name}</td>
+                            <td class="p-4 text-gray-400">${doc.category}</td>
+                            <td class="p-4 text-gray-500">${new Date(doc.uploaded_at).toLocaleDateString()}</td>
+                            <td class="p-4 text-gray-500">${doc.size}</td>
+                            <td class="p-4 text-right space-x-2">
+                                <button onclick="previewDocument('${doc.id}')" class="bg-[#1c1c1f] hover:bg-rose-900/10 border border-[var(--border)] text-white px-3 py-1.5 rounded text-[10px] font-bold">Open</button>
+                                <button onclick="deleteDocument('${doc.id}')" class="text-red-400 hover:text-red-300 text-[10px] font-bold">Delete</button>
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function handleFileUpload() {
+            const fileInput = document.getElementById('fileUploadInput');
+            const file = fileInput.files[0];
+            if (!file) return;
+
+            const category = document.getElementById('docFolderSelect').value;
+            const reader = new FileReader();
+            
+            reader.onload = async () => {
+                const base64Data = reader.result;
+                const token = localStorage.getItem('doctorToken');
+                const size = (file.size / 1024).toFixed(1) + ' KB';
+
+                try {
+                    const res = await fetch('/api/documents', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                        body: JSON.stringify({
+                            name: file.name,
+                            category: category,
+                            size: size,
+                            file_data: base64Data
+                        })
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        loadDocuments();
+                    }
+                } catch (err) {
+                    console.error(err);
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+
+        async function previewDocument(id) {
+            const token = localStorage.getItem('doctorToken');
+            try {
+                const res = await fetch(`/api/documents/${id}/preview`, { headers: { 'Authorization': 'Bearer ' + token } });
+                const data = await res.json();
+                if (data.success) {
+                    const win = window.open();
+                    win.document.write(`<iframe src="${data.file.file_data}" frameborder="0" style="border:0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%;" allowfullscreen></iframe>`);
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function deleteDocument(id) {
+            if (!confirm("Are you sure you want to delete this document?")) return;
+            const token = localStorage.getItem('doctorToken');
+            try {
+                await fetch(`/api/documents/${id}`, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token } });
+                loadDocuments();
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        // ================= COHESIVE FOLLOWUP TABLE ENGINE =================
+        async function loadTodayFollowups() {
+            const token = localStorage.getItem('doctorToken');
+            const tbody = document.getElementById('followupTableBody');
+            try {
+                const res = await fetch('/api/dashboard/all-reminders', { headers: { 'Authorization': 'Bearer ' + token } });
+                const data = await res.json();
+                tbody.innerHTML = '';
+                if (!data.success || data.followupsToday.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="9" class="p-8 text-center text-gray-500">No active reminders scheduled for today.</td></tr>`;
+                    return;
+                }
+                followupsList = data.followupsToday;
+                renderFollowupTable(followupsList);
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function renderFollowupTable(list) {
+            const tbody = document.getElementById('followupTableBody');
+            tbody.innerHTML = '';
+
+            list.forEach(row => {
+                const stageBadge = getStageBadge(row.stage);
+                const summaryText = row.summary || 'No summary available';
+                const truncatedSummary = summaryText.length > 120 ? summaryText.slice(0, 117) + '...' : summaryText;
+                const showReadMore = summaryText.length > 120;
+
+                const tr = document.createElement('tr');
+                tr.className = "border-b border-[var(--border)] hover:bg-rose-950/10 transition";
+                tr.innerHTML = `
+                    <td class="p-4 font-bold text-white">${row.patient_name}</td>
+                    <td class="p-4 text-gray-400">${row.contact_number || 'N/A'}</td>
+                    <td class="p-4">${row.last_visit_date}</td>
+                    <td class="p-4">
+                        <span>${truncatedSummary}</span>
+                        ${showReadMore ? `<button onclick="openReadMore('${escapeJS(summaryText)}')" class="text-rose-400 ml-1 underline cursor-pointer">Read More</button>` : ''}
+                    </td>
+                    <td class="p-4 text-gray-400 font-bold">${row.followup_date}</td>
+                    <td class="p-4">${stageBadge}</td>
+                    <td class="p-4 text-gray-500 max-w-xs truncate" title="${row.prepared_message}">${row.prepared_message}</td>
+                    <td class="p-4"><span class="px-2 py-1 rounded text-[10px] font-bold ${row.reminder_status === 'Message Prepared' ? 'bg-green-950 text-green-400' : 'bg-yellow-950 text-yellow-400'}">${row.reminder_status}</span></td>
+                    <td class="p-4 text-right">
+                        <button onclick="sendWhatsApp('${row.reminder_id}', '${row.contact_number}', '${encodeURIComponent(row.prepared_message)}')" class="bg-green-600 hover:bg-green-700 text-white font-bold px-3 py-1.5 rounded transition">
+                            Send
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        async function sendWhatsApp(reminderId, phone, encodedMsg) {
+            if (!phone) return alert("Contact number not available.");
+            const token = localStorage.getItem('doctorToken');
+            await fetch('/api/reminders/mark-prepared', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                body: JSON.stringify({ reminderId })
+            });
+
+            const cleanedPhone = phone.replace(/\D/g, ''); 
+            window.open(`https://wa.me/${cleanedPhone}?text=${encodedMsg}`, '_blank');
+            loadTodayFollowups();
+        }
+
+        async function scheduleFollowup() {
+            if (!activeAppointmentId) return;
+            const followupDate = document.getElementById('fup-date-input').value;
+            const fupSummary = document.getElementById('fup-summary-input').value;
+
+            if (!followupDate) return alert("Please select a date.");
+
+            const token = localStorage.getItem('doctorToken');
+            try {
+                await fetch('/api/followups', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                    body: JSON.stringify({
+                        consultationId: activeAppointmentId,
+                        patientId: activePatientId,
+                        lastVisitDate: activeVisitDate,
+                        followupDate: followupDate,
+                        doctorNotes: fupSummary,
+                        disabled: false
+                    })
+                });
+                alert("Follow-up successfully scheduled.");
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function disableFollowup() {
+            if (!activeAppointmentId) return;
+            const token = localStorage.getItem('doctorToken');
+            try {
+                await fetch('/api/followups', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                    body: JSON.stringify({ consultationId: activeAppointmentId, disabled: true })
+                });
+                document.getElementById('fup-date-input').value = '';
+                document.getElementById('fup-summary-input').value = '';
+                alert("Follow-up disabled.");
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function filterFollowups() {
+            const query = document.getElementById('followupSearch').value.toLowerCase();
+            const stage = document.getElementById('stageFilter').value;
+            const filtered = followupsList.filter(item => {
+                const matchesSearch = item.patient_name.toLowerCase().includes(query);
+                const matchesStage = stage === "" ? true : item.stage === stage;
+                return matchesSearch && matchesStage;
+            });
+            renderFollowupTable(filtered);
+        }
+
+        // Helpers
+        function getStageBadge(stage) {
+            switch(stage) {
+                case 'DAY_MINUS_3': return '<span class="px-2 py-0.5 rounded bg-blue-950 text-blue-400 border border-blue-900 font-bold text-[10px]">3 Days Before</span>';
+                case 'DAY_MINUS_2': return '<span class="px-2 py-0.5 rounded bg-purple-950 text-purple-400 border border-purple-900 font-bold text-[10px]">2 Days Before</span>';
+                case 'DAY_MINUS_1': return '<span class="px-2 py-0.5 rounded bg-yellow-950 text-yellow-400 border border-yellow-900 font-bold text-[10px]">1 Day Before</span>';
+                case 'DAY_0': return '<span class="px-2 py-0.5 rounded bg-rose-950 text-rose-400 border border-rose-900 font-bold text-[10px]">Consultation Day</span>';
+                default: return '';
+            }
+        }
+
+        function openReadMore(text) {
+            document.getElementById('readMoreText').innerText = text;
+            document.getElementById('readMoreModal').classList.remove('hidden');
+        }
+
+        function closeReadMore() {
+            document.getElementById('readMoreModal').classList.add('hidden');
+        }
+
+        function escapeJS(str) {
+            return str.replace(/'/g, "\\'").replace(/"/g, '\\"');
+        }
+
+        function handleLogout() {
+            localStorage.removeItem('doctorToken');
+            localStorage.removeItem('doctorName');
+            window.location.href = '/login.html';
+        }
+
+        socket.on('new_booking_notification', () => {
+            loadAppointments();
+        });
+
+        loadAppointments();
+    </script>
+</body>
+</html>

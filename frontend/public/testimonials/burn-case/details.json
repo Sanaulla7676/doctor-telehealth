@@ -1,0 +1,68 @@
+{
+  "id": "burn-case-001",
+  "featured": true,
+  "published": true,
+
+  "type": "case-study",
+
+  "title": "Burn Injury Recovery",
+
+  "patient": {
+    "name": "Anonymous",
+    "age": null,
+    "gender": null
+  },
+
+  "condition": [
+    "Burn Injury"
+  ],
+
+  "duration": null,
+
+  "status": "Recovered",
+
+  "doctor": "Dr. Varsha Bandi",
+
+  "summary": "The patient presented with a burn injury and showed significant healing following homeopathic treatment. The before and after clinical photographs demonstrate the improvement in wound healing.",
+
+  "rating": 5,
+
+  "hasBeforeAfter": true,
+
+  "images": {
+    "before": [
+      "before/1.png"
+    ],
+    "after": [
+      "after/1.png"
+    ]
+  },
+
+  "feedback": null,
+
+  "treatmentHighlights": [
+    "Homeopathic treatment",
+    "Clinical wound healing",
+    "Regular follow-up"
+  ],
+
+  "results": [
+    "Visible wound healing",
+    "Healthy tissue regeneration",
+    "Improved skin condition"
+  ],
+
+  "tags": [
+    "Burn Injury",
+    "Wound Healing",
+    "Homeopathy",
+    "Case Study",
+    "Before After"
+  ],
+
+  "seo": {
+    "slug": "burn-injury-recovery",
+    "metaTitle": "Burn Injury Recovery | Before & After Case Study",
+    "metaDescription": "View the clinical before and after images demonstrating burn injury recovery following homeopathic treatment by Dr. Varsha Bandi."
+  }
+}
