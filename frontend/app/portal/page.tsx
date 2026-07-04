@@ -266,6 +266,29 @@ export default function PortalPage() {
                 </span>
               </h3>
 
+              {/* Live banner — Doctor is Ready */}
+              {appointments.some(a => a.status === "Confirmed" && a.meeting_status === "READY") && !activeRoom && (
+                <div className="bg-green-50 border border-green-200 rounded-2xl p-4 mb-4 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <span className="w-3 h-3 bg-green-500 rounded-full animate-ping shrink-0"></span>
+                    <div>
+                      <p className="text-xs font-extrabold text-green-800 uppercase tracking-wider">Doctor is Ready</p>
+                      <p className="text-[10px] text-green-700">Your consultation room is live — join now</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      const readyAppt = appointments.find(a => a.status === "Confirmed" && a.meeting_status === "READY");
+                      if (readyAppt) startVideoCall(readyAppt.video_room || readyAppt.videoRoom);
+                    }}
+                    className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 cursor-pointer transition"
+                  >
+                    <Video className="w-3.5 h-3.5" />
+                    Join Call Now
+                  </button>
+                </div>
+              )}
+
               {/* Jitsi active meeting frame inside portal */}
               {activeRoom && (
                 <div className="border border-luxAccent/20 rounded-2xl p-4 bg-luxBg mb-6">
@@ -315,15 +338,25 @@ export default function PortalPage() {
                         </div>
                       </div>
 
-                      {/* Launch room button if confirmed */}
-                      {app.status === "Confirmed" && app.videoRoom && (
+                      {/* Join button — shows only when doctor has set meeting to READY */}
+                      {app.status === "Confirmed" && app.meeting_status === "READY" && (
                         <button
-                          onClick={() => startVideoCall(app.videoRoom)}
-                          className="bg-luxDark hover:bg-luxAccent text-white px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition flex items-center gap-1.5 cursor-pointer shadow-sm shrink-0"
+                          onClick={() => startVideoCall(app.video_room || app.videoRoom)}
+                          className="bg-green-600 hover:bg-green-700 text-white px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition flex items-center gap-1.5 cursor-pointer shadow-sm shrink-0 animate-pulse"
                         >
                           <Video className="w-4 h-4" />
-                          <span>Join Video Consultation</span>
+                          <span>Join Consultation</span>
                         </button>
+                      )}
+                      {/* Doctor Confirmed badge */}
+                      {app.status === "Confirmed" && app.meeting_status !== "READY" && app.meeting_status !== "ENDED" && (
+                        <span className="flex items-center gap-1.5 text-[10px] font-bold text-green-700 bg-green-50 border border-green-200 px-3 py-1.5 rounded-full shrink-0">
+                          <CheckCircle className="w-3.5 h-3.5" />
+                          Doctor Confirmed
+                        </span>
+                      )}
+                      {app.meeting_status === "ENDED" && (
+                        <span className="text-[10px] text-luxMuted bg-gray-100 px-3 py-1.5 rounded-full shrink-0">Call Finished</span>
                       )}
                     </div>
                   ))}

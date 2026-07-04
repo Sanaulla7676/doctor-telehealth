@@ -21,7 +21,6 @@ export default function GallerySection() {
     { src: "/Pediatric.jpeg", category: "clinic", alt: "Pediatric Consultation Room" },
     { src: "/Womenwellness.jpeg", category: "clinic", alt: "Women's Wellness Evaluation" },
     { src: "/Dermatology.jpeg", category: "clinic", alt: "Dermatological Case Examination" },
-    { src: "/profile.png", category: "academics", alt: "Academic Lecture Presentation" }
   ];
 
   const filteredImages = activeCategory === "all" 
