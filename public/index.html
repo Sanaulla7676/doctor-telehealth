@@ -130,7 +130,7 @@
                 </div>
 
                 <!-- Desktop Navigation Links -->
-                <nav class="hidden md:flex space-x-6 text-xs font-semibold tracking-wider uppercase font-sans">
+                <nav class="hidden lg:flex space-x-6 text-xs font-semibold tracking-wider uppercase font-sans">
                     <button onclick="scrollToSection('home')" id="nav-home" class="hover:text-luxDark transition py-2 px-1 active-nav text-luxDark">Home</button>
                     <button onclick="scrollToSection('about')" id="nav-about" class="hover:text-luxDark transition py-2 px-1 text-luxMuted">Philosophy</button>
                     <button onclick="scrollToSection('doctor')" id="nav-doctor" class="hover:text-luxDark transition py-2 px-1 text-luxMuted">Our Specialist</button>
@@ -139,6 +139,11 @@
                     <button onclick="scrollToSection('testimonials')" id="nav-testimonials" class="hover:text-luxDark transition py-2 px-1 text-luxMuted">Testimonials</button>
                     <button onclick="scrollToSection('contact')" id="nav-contact" class="hover:text-luxDark transition py-2 px-1 text-luxMuted font-bold text-luxAccent">Book Consultation</button>
                 </nav>
+
+                <!-- Desktop Auth Links / Portal -->
+                <div class="hidden md:flex items-center space-x-4 text-xs font-semibold uppercase tracking-wider font-sans" id="desktop-auth-container">
+                    <!-- Dynamic -->
+                </div>
 
                 <!-- Mobile Menu Icon -->
                 <div class="md:hidden flex items-center">
@@ -158,6 +163,7 @@
             <button onclick="scrollToSection('products')" class="block w-full text-left py-2 text-luxMuted hover:text-luxDark font-semibold text-sm">Methodology</button>
             <button onclick="scrollToSection('testimonials')" class="block w-full text-left py-2 text-luxMuted hover:text-luxDark font-semibold text-sm">Testimonials</button>
             <button onclick="scrollToSection('contact')" class="block w-full text-left py-2 text-luxMuted hover:text-luxDark font-semibold text-sm">Book Consultation</button>
+            <div id="mobile-auth-container" class="pt-4 border-t border-black/[0.05] mt-3"></div>
         </div>
     </header>
 
@@ -902,6 +908,15 @@
             }
         }
 
+        // Global handleLogout function
+        function handleLogout() {
+            localStorage.removeItem('patientToken');
+            localStorage.removeItem('patientName');
+            localStorage.removeItem('patientEmail');
+            localStorage.removeItem('patientAccountId');
+            window.location.reload();
+        }
+
         // Toggle Expandable Mobile Menu Drawer
         function toggleMobileMenu() {
             const mobileMenu = document.getElementById('mobile-menu');
@@ -1240,24 +1255,38 @@
                 ease: "power3.out"
             });
 
-            // Add Patient Portal button if authenticated
+            // Dynamic Auth Loading Container
             const token = localStorage.getItem('patientToken');
+            const desktopAuth = document.getElementById('desktop-auth-container');
+            const mobileAuth = document.getElementById('mobile-auth-container');
+
             if (token) {
-                const nav = document.querySelector('nav');
-                if (nav) {
-                    const portalBtn = document.createElement('a');
-                    portalBtn.href = '/patient-portal.html';
-                    portalBtn.className = 'hover:text-luxDark transition py-2 px-1 text-luxAccent font-extrabold uppercase ml-2';
-                    portalBtn.innerText = 'Portal';
-                    nav.appendChild(portalBtn);
+                if (desktopAuth) {
+                    desktopAuth.innerHTML = `
+                        <a href="/patient-portal.html" class="bg-luxDark hover:bg-luxAccent text-white px-4 py-2 rounded-xl transition duration-200 uppercase tracking-wider font-bold">Portal</a>
+                        <button onclick="handleLogout()" class="text-luxMuted hover:text-luxDark transition font-semibold">Sign Out</button>
+                    `;
                 }
-                const mobileNav = document.getElementById('mobile-menu');
-                if (mobileNav) {
-                    const portalLink = document.createElement('a');
-                    portalLink.href = '/patient-portal.html';
-                    portalLink.className = 'block w-full text-left py-2 text-luxAccent font-extrabold text-sm border-t border-black/[0.05] mt-2';
-                    portalLink.innerText = 'Patient Portal';
-                    mobileNav.appendChild(portalLink);
+                if (mobileAuth) {
+                    mobileAuth.innerHTML = `
+                        <a href="/patient-portal.html" class="block w-full text-center py-2.5 bg-luxAccent hover:bg-luxDark text-white rounded-xl font-bold text-sm mb-2">Patient Portal</a>
+                        <button onclick="handleLogout()" class="block w-full text-center py-2.5 border border-black/[0.08] text-red-600 rounded-xl font-bold text-sm">Sign Out</button>
+                    `;
+                }
+            } else {
+                if (desktopAuth) {
+                    desktopAuth.innerHTML = `
+                        <a href="/patient-auth.html?tab=login" class="text-luxMuted hover:text-luxDark transition font-semibold mr-1">Login</a>
+                        <a href="/patient-auth.html?tab=register" class="bg-luxDark hover:bg-luxAccent text-white px-4 py-2 rounded-xl transition duration-200 uppercase tracking-wider font-bold">Register</a>
+                    `;
+                }
+                if (mobileAuth) {
+                    mobileAuth.innerHTML = `
+                        <div class="grid grid-cols-2 gap-3">
+                            <a href="/patient-auth.html?tab=login" class="block w-full text-center py-2.5 border border-black/[0.08] rounded-xl text-luxDark font-bold text-sm">Login</a>
+                            <a href="/patient-auth.html?tab=register" class="block w-full text-center py-2.5 bg-luxDark text-white rounded-xl font-bold text-sm">Register</a>
+                        </div>
+                    `;
                 }
             }
 
@@ -1283,6 +1312,20 @@
                 }
             }
 
+            // Scroll behavior for the floating Book Now button
+            window.addEventListener('scroll', () => {
+                const floatingBtn = document.getElementById('floating-book-btn');
+                if (floatingBtn) {
+                    if (window.scrollY > 300) {
+                        floatingBtn.classList.remove('translate-y-20', 'opacity-0', 'pointer-events-none');
+                        floatingBtn.classList.add('translate-y-0', 'opacity-100');
+                    } else {
+                        floatingBtn.classList.add('translate-y-20', 'opacity-0', 'pointer-events-none');
+                        floatingBtn.classList.remove('translate-y-0', 'opacity-100');
+                    }
+                }
+            });
+
             // Subtle parallax background watermark text scaling
             window.addEventListener('scroll', function() {
                 const scrolled = window.pageYOffset;
@@ -1294,5 +1337,11 @@
             });
         });
     </script>
+
+    <!-- Floating Book Now Button -->
+    <button id="floating-book-btn" onclick="scrollToSection('contact')" class="fixed bottom-6 right-6 z-50 flex items-center gap-2 bg-luxDark text-white px-5 py-3.5 rounded-full shadow-2xl hover:bg-luxAccent hover:scale-105 active:scale-95 transition-all duration-300 transform translate-y-20 opacity-0 font-sans text-xs font-bold uppercase tracking-wider pointer-events-none">
+        <i class="fa-solid fa-calendar-check text-sm"></i>
+        <span>Book Now</span>
+    </button>
 </body>
 </html>
