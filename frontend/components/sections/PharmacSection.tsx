@@ -1,5 +1,6 @@
 "use client";
 
+import { motion } from "framer-motion";
 import Image from "next/image";
 import { pharmacopoeiaData, classicalMethodologies } from "@/data/pharmacopoeia";
 
@@ -21,29 +22,37 @@ export default function PharmacSection() {
           Foundational Elements of our Pharmacopoeia
         </h3>
         
-        <div id="pharmacopoeia-grid" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 p-2">
-          {pharmacopoeiaData.map((item) => (
-            <div
-              key={item.id}
-              className="bg-white border border-black/[0.04] rounded-[20px] shadow-sm overflow-hidden flex flex-col justify-between hover:scale-[1.03] hover:shadow-lg transition duration-300"
-            >
-              <div className="h-44 overflow-hidden bg-gray-100 relative">
-                <Image
-                  src={item.imageUrl}
-                  fill
-                  className="object-cover"
-                  alt={item.title}
-                  sizes="(max-w-768px) 100vw, 25vw"
-                />
-              </div>
-              <div className="p-6">
-                <h4 className="font-bold text-luxDark text-sm mb-2">{item.title}</h4>
-                <p className="text-[11px] text-luxMuted leading-relaxed">
-                  {item.description}
-                </p>
-              </div>
-            </div>
-          ))}
+        <div id="pharmacopoeia-grid" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 p-2 overflow-hidden">
+          {pharmacopoeiaData.map((item, idx) => {
+            const isLeft = idx < 2;
+
+            return (
+              <motion.div
+                key={item.id}
+                className="bg-white border border-black/[0.04] rounded-[20px] shadow-sm overflow-hidden flex flex-col justify-between hover:scale-[1.03] hover:shadow-lg transition duration-300"
+                initial={{ opacity: 0, x: isLeft ? -70 : 70 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true, margin: "-100px" }}
+                transition={{ duration: 0.7, ease: "easeOut", delay: (idx % 2) * 0.15 }}
+              >
+                <div className="h-44 overflow-hidden bg-gray-100 relative">
+                  <Image
+                    src={item.imageUrl}
+                    fill
+                    className="object-cover"
+                    alt={item.title}
+                    sizes="(max-w-768px) 100vw, 25vw"
+                  />
+                </div>
+                <div className="p-6">
+                  <h4 className="font-bold text-luxDark text-sm mb-2">{item.title}</h4>
+                  <p className="text-[11px] text-luxMuted leading-relaxed">
+                    {item.description}
+                  </p>
+                </div>
+              </motion.div>
+            );
+          })}
         </div>
       </div>
 

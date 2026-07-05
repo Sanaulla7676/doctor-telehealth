@@ -5,6 +5,7 @@ import { useEffect, useState, useRef } from "react";
 import { doctorData } from "@/data/doctor";
 import { Award, Briefcase, GraduationCap, CheckCircle, Mail, Phone, MapPin } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
 
 // Stat counter sub-component
 function StatCounter({ value, label }: { value: string; label: string }) {
@@ -70,10 +71,16 @@ export default function DoctorSection() {
       </div>
 
       {/* Asymmetric Split Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start font-sans">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start font-sans overflow-hidden">
         
-        {/* Sticky Portrait Column (Left 5-Cols) */}
-        <div className="lg:col-span-5 lg:sticky lg:top-24 space-y-6">
+        {/* Sticky Portrait Column (Left 5-Cols) - slides/pops in from the left */}
+        <motion.div 
+          className="lg:col-span-5 lg:sticky lg:top-24 space-y-6"
+          initial={{ opacity: 0, x: -100 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+        >
           <div className="relative h-[65vh] min-h-[480px] w-full rounded-[32px] overflow-hidden doctor-portrait-container bg-luxDark">
             <Image
               src="/profile.png"
@@ -114,10 +121,16 @@ export default function DoctorSection() {
               <StatCounter key={i} value={stat.value} label={stat.label} />
             ))}
           </div>
-        </div>
+        </motion.div>
 
-        {/* Scrolling Biography & Qualifications (Right 7-Cols) */}
-        <div className="lg:col-span-7 space-y-12">
+        {/* Scrolling Biography & Qualifications (Right 7-Cols) - slides/pops in from the right */}
+        <motion.div 
+          className="lg:col-span-7 space-y-12"
+          initial={{ opacity: 0, x: 100 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+        >
           
           {/* Biography Objective */}
           <div className="bg-white border border-black/[0.04] p-8 rounded-[24px] shadow-sm hover:scale-[1.01] transition duration-300">
@@ -243,7 +256,7 @@ export default function DoctorSection() {
               ))}
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
     </section>
   );

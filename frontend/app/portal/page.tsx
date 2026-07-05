@@ -6,6 +6,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { useSocket } from "@/hooks/useSocket";
 import { User, Calendar, Bell, LogOut, Video, ClipboardList, CheckCircle, Clock } from "lucide-react";
 
+import { cn } from "@/lib/utils";
+
 declare const JitsiMeetExternalAPI: any;
 
 export default function PortalPage() {
@@ -338,23 +340,41 @@ export default function PortalPage() {
                         </div>
                       </div>
 
-                      {/* Join button — shows only when doctor has set meeting to READY */}
-                      {app.status === "Confirmed" && app.meeting_status === "READY" && (
-                        <button
-                          onClick={() => startVideoCall(app.video_room || app.videoRoom)}
-                          className="bg-green-600 hover:bg-green-700 text-white px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition flex items-center gap-1.5 cursor-pointer shadow-sm shrink-0 animate-pulse"
-                        >
-                          <Video className="w-4 h-4" />
-                          <span>Join Consultation</span>
-                        </button>
-                      )}
-                      {/* Doctor Confirmed badge */}
+                      {/* Join button — shown for all Pending & Confirmed appointments */}
+                      {(app.status === "Confirmed" || app.status === "Pending") && app.meeting_status !== "ENDED" ? (
+                        (() => {
+                          const isReady = app.status === "Confirmed" && app.meeting_status === "READY";
+                          return (
+                            <button
+                              onClick={() => startVideoCall(app.video_room || app.videoRoom || `TelehealthRoom-${app.id}`)}
+                              className={cn(
+                                "px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition flex items-center gap-1.5 cursor-pointer shadow-sm shrink-0",
+                                isReady 
+                                  ? "bg-green-600 hover:bg-green-700 text-white animate-pulse" 
+                                  : "border border-black/[0.08] text-luxDark bg-white hover:bg-gray-50"
+                              )}
+                            >
+                              {isReady && (
+                                <span className="relative flex h-2 w-2 mr-1">
+                                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-300 opacity-75"></span>
+                                  <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                                </span>
+                              )}
+                              <Video className="w-4 h-4" />
+                              <span>JOIN CONSULTATION</span>
+                            </button>
+                          );
+                        })()
+                      ) : null}
+
+                      {/* Doctor Confirmed badge (shown alongside neutral button if confirmed but not ready yet) */}
                       {app.status === "Confirmed" && app.meeting_status !== "READY" && app.meeting_status !== "ENDED" && (
                         <span className="flex items-center gap-1.5 text-[10px] font-bold text-green-700 bg-green-50 border border-green-200 px-3 py-1.5 rounded-full shrink-0">
                           <CheckCircle className="w-3.5 h-3.5" />
                           Doctor Confirmed
                         </span>
                       )}
+
                       {app.meeting_status === "ENDED" && (
                         <span className="text-[10px] text-luxMuted bg-gray-100 px-3 py-1.5 rounded-full shrink-0">Call Finished</span>
                       )}

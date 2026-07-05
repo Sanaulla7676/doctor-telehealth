@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { servicesData } from "@/data/services";
 import { HeartPulse, Baby, Venus, Brain, Sparkles, ShieldCheck, ArrowRight } from "lucide-react";
+import { motion } from "framer-motion";
 
 const iconMap: Record<string, any> = {
   HeartPulse: HeartPulse,
@@ -35,15 +36,20 @@ export default function ServicesSection() {
       </div>
 
       {/* Specialized Treatment Cards */}
-      <div id="services-grid" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-2 font-sans mb-16">
-        {servicesData.map((service) => {
+      <div id="services-grid" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-2 font-sans mb-16 overflow-hidden">
+        {servicesData.map((service, idx) => {
           const Icon = iconMap[service.icon] || HeartPulse;
+          const isEven = idx % 2 === 0;
 
           return (
-            <div
+            <motion.div
               key={service.id}
               onClick={scrollToContact}
               className="relative h-64 rounded-[24px] overflow-hidden shadow-sm border border-black/[0.04] group hover:scale-[1.03] hover:shadow-lg transition-all duration-500 cursor-pointer bg-luxDark"
+              initial={{ opacity: 0, x: isEven ? -60 : 60 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ duration: 0.6, delay: (idx % 3) * 0.1 }}
             >
               {service.mediaType === "video" ? (
                 <video
@@ -90,7 +96,7 @@ export default function ServicesSection() {
                   {service.description}
                 </p>
               </div>
-            </div>
+            </motion.div>
           );
         })}
       </div>

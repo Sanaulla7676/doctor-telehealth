@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { motion } from "framer-motion";
 import Image from "next/image";
 
 interface GalleryImage {
@@ -56,28 +57,36 @@ export default function GallerySection() {
       </div>
 
       {/* Grid Layout */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {filteredImages.map((img, idx) => (
-          <div
-            key={idx}
-            onClick={() => setSelectedImage(img.src)}
-            className="relative h-60 rounded-[20px] overflow-hidden border border-black/[0.04] group hover:scale-[1.02] transition duration-300 cursor-pointer shadow-sm bg-gray-100"
-          >
-            <Image
-              src={img.src}
-              fill
-              className="object-cover transition-transform duration-500 group-hover:scale-105"
-              alt={img.alt}
-              sizes="(max-w-768px) 100vw, 25vw"
-            />
-            {/* Hover overlay */}
-            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-              <span className="text-white font-bold text-xs uppercase tracking-wider border border-white/30 px-4 py-2 rounded-full backdrop-blur-sm">
-                View Fullscreen
-              </span>
-            </div>
-          </div>
-        ))}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 overflow-hidden p-2">
+        {filteredImages.map((img, idx) => {
+          const isEven = idx % 2 === 0;
+
+          return (
+            <motion.div
+              key={idx}
+              onClick={() => setSelectedImage(img.src)}
+              className="relative h-60 rounded-[20px] overflow-hidden border border-black/[0.04] group hover:scale-[1.02] transition duration-300 cursor-pointer shadow-sm bg-gray-100"
+              initial={{ opacity: 0, x: isEven ? -60 : 60 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ duration: 0.6, delay: (idx % 4) * 0.1 }}
+            >
+              <Image
+                src={img.src}
+                fill
+                className="object-cover transition-transform duration-500 group-hover:scale-105"
+                alt={img.alt}
+                sizes="(max-w-768px) 100vw, 25vw"
+              />
+              {/* Hover overlay */}
+              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                <span className="text-white font-bold text-xs uppercase tracking-wider border border-white/30 px-4 py-2 rounded-full backdrop-blur-sm">
+                  View Fullscreen
+                </span>
+              </div>
+            </motion.div>
+          );
+        })}
       </div>
 
       {/* Fullscreen Lightbox Modal */}
