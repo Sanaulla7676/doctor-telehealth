@@ -42,6 +42,12 @@ html.lenis, html.lenis body {
   pointer-events: none;
 }
 
+/* Keep video/Jitsi iframes always interactive — override lenis rule */
+.lenis.lenis-scrolling iframe[allow*="camera"],
+.lenis.lenis-scrolling iframe[title="Video Consultation"] {
+  pointer-events: auto !important;
+}
+
 /* Custom premium elements styling */
 .glass-nav {
   backdrop-filter: blur(16px);
