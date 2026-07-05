@@ -88,11 +88,21 @@ export default function PortalPage() {
     if (!socket || !isLoggedIn) return;
 
     socket.on("appointment_updated", (updatedApp: any) => {
-      setAppointments(prev => prev.map(app => app.id === updatedApp.id ? updatedApp : app));
-      
-      // Auto trigger video room launch if currently in active session
-      if (updatedApp.status === "Confirmed" && updatedApp.videoRoom && activeRoom === updatedApp.videoRoom) {
-        startVideoCall(updatedApp.videoRoom);
+      // Merge the update into the existing appointment so we don't lose fields
+      // (the socket event only sends partial data: id, status, meeting_status, video_room)
+      setAppointments(prev => prev.map(app => {
+        if (app.id === updatedApp.id) {
+          return { ...app, ...updatedApp };
+        }
+        return app;
+      }));
+
+      // Scroll the READY card into view so patient can see their unique Join button
+      if (updatedApp.meeting_status === "READY") {
+        setTimeout(() => {
+          const el = document.getElementById(`appt-card-${updatedApp.id}`);
+          if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+        }, 300);
       }
     });
 
@@ -268,26 +278,30 @@ export default function PortalPage() {
                 </span>
               </h3>
 
-              {/* Live banner — Doctor is Ready */}
+              {/* Live banner — Doctor is Ready — shows WHICH appointment is ready */}
               {appointments.some(a => a.status === "Confirmed" && a.meeting_status === "READY") && !activeRoom && (
-                <div className="bg-green-50 border border-green-200 rounded-2xl p-4 mb-4 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <span className="w-3 h-3 bg-green-500 rounded-full animate-ping shrink-0"></span>
-                    <div>
-                      <p className="text-xs font-extrabold text-green-800 uppercase tracking-wider">Doctor is Ready</p>
-                      <p className="text-[10px] text-green-700">Your consultation room is live — join now</p>
+                <div className="bg-green-50 border-2 border-green-400 rounded-2xl p-4 mb-4">
+                  {appointments.filter(a => a.status === "Confirmed" && a.meeting_status === "READY").map(readyAppt => (
+                    <div key={readyAppt.id} className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <span className="relative flex h-3 w-3 shrink-0">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+                        </span>
+                        <div>
+                          <p className="text-xs font-extrabold text-green-800 uppercase tracking-wider">Doctor is Ready — Appointment #{readyAppt.id}</p>
+                          <p className="text-[10px] text-green-700">Case: {readyAppt.reason} — Click the glowing green button on your card below ↓</p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => startVideoCall(readyAppt.video_room || readyAppt.videoRoom || `TelehealthRoom-${readyAppt.id}`)}
+                        className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 cursor-pointer transition shrink-0"
+                      >
+                        <Video className="w-3.5 h-3.5" />
+                        Join Now
+                      </button>
                     </div>
-                  </div>
-                  <button
-                    onClick={() => {
-                      const readyAppt = appointments.find(a => a.status === "Confirmed" && a.meeting_status === "READY");
-                      if (readyAppt) startVideoCall(readyAppt.video_room || readyAppt.videoRoom);
-                    }}
-                    className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 cursor-pointer transition"
-                  >
-                    <Video className="w-3.5 h-3.5" />
-                    Join Call Now
-                  </button>
+                  ))}
                 </div>
               )}
 
@@ -315,7 +329,12 @@ export default function PortalPage() {
                   {appointments.map((app) => (
                     <div
                       key={app.id}
-                      className="border border-black/[0.04] p-5 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 hover:bg-gray-50 transition duration-300"
+                      id={`appt-card-${app.id}`}
+                      className={`border p-5 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 transition duration-300 ${
+                        app.status === "Confirmed" && app.meeting_status === "READY"
+                          ? "border-green-400 bg-green-50/50 shadow-[0_0_16px_rgba(34,197,94,0.25)]"
+                          : "border-black/[0.04] hover:bg-gray-50"
+                      }`}
                     >
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
@@ -340,28 +359,30 @@ export default function PortalPage() {
                         </div>
                       </div>
 
-                      {/* Join button — shown for all Pending & Confirmed appointments */}
+                      {/* Each appointment card has its OWN unique Join button — linked to ITS room ID */}
                       {(app.status === "Confirmed" || app.status === "Pending") && app.meeting_status !== "ENDED" ? (
                         (() => {
                           const isReady = app.status === "Confirmed" && app.meeting_status === "READY";
+                          const roomId = app.video_room || app.videoRoom || `TelehealthRoom-${app.id}`;
                           return (
                             <button
-                              onClick={() => startVideoCall(app.video_room || app.videoRoom || `TelehealthRoom-${app.id}`)}
+                              onClick={() => startVideoCall(roomId)}
+                              title={`Join Room: ${roomId}`}
                               className={cn(
-                                "px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition flex items-center gap-1.5 cursor-pointer shadow-sm shrink-0",
+                                "px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition flex items-center gap-1.5 cursor-pointer shrink-0",
                                 isReady 
-                                  ? "bg-green-600 hover:bg-green-700 text-white animate-pulse" 
-                                  : "border border-black/[0.08] text-luxDark bg-white hover:bg-gray-50"
+                                  ? "bg-green-600 hover:bg-green-700 text-white shadow-[0_0_20px_rgba(34,197,94,0.6)] scale-105" 
+                                  : "border border-black/[0.08] text-luxDark bg-white hover:bg-gray-50 shadow-sm"
                               )}
                             >
                               {isReady && (
-                                <span className="relative flex h-2 w-2 mr-1">
+                                <span className="relative flex h-2.5 w-2.5 mr-0.5">
                                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-300 opacity-75"></span>
-                                  <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-white"></span>
                                 </span>
                               )}
                               <Video className="w-4 h-4" />
-                              <span>JOIN CONSULTATION</span>
+                              <span>{isReady ? "JOIN NOW" : "JOIN CONSULTATION"}</span>
                             </button>
                           );
                         })()
