@@ -16,7 +16,7 @@ export default function BookingSection() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
-  const [specialty, setSpecialty] = useState("Constitutional Chronic Consultation");
+  const [specialty, setSpecialty] = useState(""); // empty = none selected, button stays disabled
   const [reason, setReason] = useState("");
   const [consent, setConsent] = useState(false);
 
@@ -381,21 +381,52 @@ export default function BookingSection() {
                       />
                     </div>
                     
-                    <div>
-                      <label className="block text-[9px] font-semibold text-luxMuted mb-1">Specialty Focus</label>
-                      <select
-                        value={specialty}
-                        onChange={(e) => setSpecialty(e.target.value)}
-                        className="w-full bg-[#F5F5F7] border border-black/[0.08] rounded-xl px-4 py-3 text-xs text-luxDark focus:outline-none"
-                      >
-                        <option>Constitutional Chronic Consultation</option>
-                        <option>Pediatric Consultation</option>
-                        <option>Women's Health & PCOS</option>
-                        <option>Stress & Sleep Disorders</option>
-                        <option>Dermatology & Skin Disorders</option>
-                        <option>Immune / Allergy Consultations</option>
-                      </select>
+                  </div>
+
+                  {/* Service Selection Cards — mandatory */}
+                  <div>
+                    <label className="block text-[9px] font-semibold text-luxMuted mb-2 uppercase tracking-wider">
+                      Select Service <span className="text-red-500">*</span>
+                    </label>
+                    <div className="grid grid-cols-1 gap-3">
+                      {[
+                        { id: "homeo", name: "Homoeopathic Consultation", price: "₹800", desc: "Classical constitutional remedy evaluation & prescription" },
+                        { id: "nutrition", name: "Nutrition Consultation / Diet Plan", price: "₹5,000", desc: "Personalised clinical nutrition & therapeutic diet planning" },
+                        { id: "counseling", name: "Counselling", price: "₹3,000", desc: "Mind-body emotional wellness & stress resolution sessions" },
+                      ].map((service) => (
+                        <div
+                          key={service.id}
+                          onClick={() => setSpecialty(service.name)}
+                          className={`relative flex items-center justify-between gap-4 border-2 rounded-xl px-4 py-3.5 cursor-pointer transition-all duration-200 ${
+                            specialty === service.name
+                              ? "border-luxDark bg-luxDark text-white shadow-md"
+                              : "border-black/[0.08] bg-[#F5F5F7] hover:border-luxDark/40 hover:bg-white"
+                          }`}
+                        >
+                          <div className="flex-1 min-w-0">
+                            <p className={`text-xs font-bold leading-tight ${ specialty === service.name ? "text-white" : "text-luxDark" }`}>
+                              {service.name}
+                            </p>
+                            <p className={`text-[9px] mt-0.5 leading-relaxed ${ specialty === service.name ? "text-white/70" : "text-luxMuted" }`}>
+                              {service.desc}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-2 shrink-0">
+                            <span className={`text-sm font-extrabold font-serif ${ specialty === service.name ? "text-white" : "text-luxDark" }`}>
+                              {service.price}
+                            </span>
+                            {specialty === service.name && (
+                              <span className="w-5 h-5 rounded-full bg-white flex items-center justify-center shrink-0">
+                                <CheckCircle className="w-3.5 h-3.5 text-luxDark" />
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      ))}
                     </div>
+                    {!specialty && (
+                      <p className="text-[9px] text-red-400 mt-1.5 font-medium">Please select a service to continue</p>
+                    )}
                   </div>
 
                   <div>
@@ -440,12 +471,27 @@ export default function BookingSection() {
                 </div>
               )}
 
+              {/* Price summary shown when service is selected */}
+              {specialty && (
+                <div className="bg-luxDark/5 border border-luxDark/10 rounded-xl px-4 py-3 flex items-center justify-between">
+                  <div>
+                    <p className="text-[9px] text-luxMuted uppercase tracking-wider font-bold">Selected Service</p>
+                    <p className="text-xs font-bold text-luxDark mt-0.5">{specialty}</p>
+                  </div>
+                  <span className="text-lg font-extrabold text-luxDark font-serif">
+                    {specialty === "Homoeopathic Consultation" && "₹800"}
+                    {specialty === "Nutrition Consultation / Diet Plan" && "₹5,000"}
+                    {specialty === "Counselling" && "₹3,000"}
+                  </span>
+                </div>
+              )}
+
               <button
                 type="submit"
-                disabled={isSubmitting}
-                className="w-full bg-luxDark text-white hover:bg-luxMuted font-bold py-4 rounded-xl transition duration-300 uppercase text-[10px] tracking-wider cursor-pointer disabled:opacity-50"
+                disabled={isSubmitting || !specialty}
+                className="w-full bg-luxDark text-white hover:bg-luxMuted font-bold py-4 rounded-xl transition duration-300 uppercase text-[10px] tracking-wider cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isSubmitting ? "Confirming..." : "Confirm Appointment"}
+                {isSubmitting ? "Confirming..." : specialty ? `Book Consultation Now` : "Select a Service to Continue"}
               </button>
             </form>
           )}
