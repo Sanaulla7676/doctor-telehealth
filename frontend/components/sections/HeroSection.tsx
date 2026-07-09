@@ -27,8 +27,8 @@ export default function HeroSection() {
       {/* Subtle bottom gradient so button is readable */}
       <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent z-0" />
 
-      {/* Book Now button — bottom left */}
-      <div className="absolute bottom-10 left-8 md:left-12 z-10">
+      {/* Book Now button — bottom right */}
+      <div className="absolute bottom-10 right-8 md:right-12 z-10">
         <button
           onClick={handleConsultationClick}
           className="px-7 py-3.5 text-xs font-bold uppercase tracking-widest backdrop-blur-md bg-white/90 text-luxDark border border-black/10 rounded-full shadow-2xl transition duration-300 hover:scale-105 active:scale-95 cursor-pointer"
