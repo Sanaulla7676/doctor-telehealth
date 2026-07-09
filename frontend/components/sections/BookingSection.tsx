@@ -447,14 +447,39 @@ export default function BookingSection() {
               {mode === "video" && (
                 <div className="border border-black/[0.06] rounded-xl p-4 bg-[#F5F5F7] space-y-3 transition-all duration-500">
                   <label className="block text-[10px] font-bold uppercase tracking-widest text-luxMuted mb-1">
-                    4. Telemedicine Consent Form
+                    4. Telemedicine &amp; Research Consent
                   </label>
-                  <div className="h-24 overflow-y-auto text-[9px] text-luxMuted leading-relaxed border-b border-black/[0.05] pb-2 space-y-2">
-                    <p>By checking the box below, you acknowledge and agree to the following terms regarding virtual/telemedicine consultation with Aether Homeopathy:</p>
+
+                  {/* Scrollable consent body */}
+                  <div className="h-32 overflow-y-auto text-[9px] text-luxMuted leading-relaxed border-b border-black/[0.05] pb-2 space-y-2 pr-1">
+                    <p className="font-bold text-luxDark text-[10px]">Telemedicine Consultation Agreement</p>
+                    <p>By checking the box below, you acknowledge and agree to the following terms regarding virtual/telemedicine consultation with Homeopathway Clinic:</p>
                     <p>1. Tele-homeopathy is a supportive model used for consulting and evaluating constitutional patterns. It does not replace emergency medical interventions or acute critical surgical evaluations.</p>
-                    <p>2. The remedies recommended are prepared through standard homeopathic dilutions according to HPI standards, aimed at gentle systemic support.</p>
+                    <p>2. The remedies recommended are prepared through standard homoeopathic dilutions according to HPI standards, aimed at gentle systemic support.</p>
                     <p>3. You agree that information provided is fully accurate, and understand that remote assessments rely strictly on self-declared clinical reports.</p>
+
+                    {/* Research consent — highlighted */}
+                    <div className="mt-3 pt-3 border-t border-luxAccent/20 space-y-1.5">
+                      <p className="font-bold text-luxAccent text-[10px] uppercase tracking-wide">📋 Research &amp; Publication Consent (Video Consultation)</p>
+                      <p className="bg-luxAccent/10 border border-luxAccent/20 rounded-lg px-2 py-1.5 text-[9px] leading-relaxed">
+                        All personal identifiers will be <strong>removed or coded</strong> to ensure confidentiality.
+                      </p>
+                      <p className="bg-luxAccent/10 border border-luxAccent/20 rounded-lg px-2 py-1.5 text-[9px] leading-relaxed">
+                        Clinical information and treatment outcomes may be <strong>analysed for academic and research purposes</strong>.
+                      </p>
+                      <p className="bg-luxAccent/10 border border-luxAccent/20 rounded-lg px-2 py-1.5 text-[9px] leading-relaxed">
+                        Participation is <strong>voluntary</strong> and consent may be <strong>withdrawn at any time</strong>.
+                      </p>
+                      <p className="bg-luxAccent/10 border border-luxAccent/20 rounded-lg px-2 py-1.5 text-[9px] leading-relaxed">
+                        The study aims to contribute to <strong>scientific knowledge and improve future patient care</strong>.
+                      </p>
+                      <p className="bg-luxAccent/10 border border-luxAccent/20 rounded-lg px-2 py-1.5 text-[9px] leading-relaxed">
+                        Further information may be requested from the <strong>researcher at any time</strong>.
+                      </p>
+                    </div>
                   </div>
+
+                  {/* Telemedicine consent checkbox */}
                   <div className="flex items-start space-x-2">
                     <input
                       type="checkbox"
@@ -465,7 +490,19 @@ export default function BookingSection() {
                       required
                     />
                     <label htmlFor="checkbox-consent" className="text-[9px] text-luxMuted leading-normal">
-                      I have read the tele-homeopathy guidelines and agree to the virtual consultation policy.
+                      I have read the tele-homoeopathy guidelines and agree to the virtual consultation policy.
+                    </label>
+                  </div>
+
+                  {/* Research consent checkbox */}
+                  <div className="flex items-start space-x-2 bg-luxAccent/5 border border-luxAccent/20 rounded-xl p-2.5">
+                    <input
+                      type="checkbox"
+                      id="checkbox-research"
+                      className="mt-0.5 w-3.5 h-3.5 accent-[#708264]"
+                    />
+                    <label htmlFor="checkbox-research" className="text-[9px] text-luxDark leading-normal font-medium">
+                      I consent to the use of my anonymized medical information for research and publication.
                     </label>
                   </div>
                 </div>
