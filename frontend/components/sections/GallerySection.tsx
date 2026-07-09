@@ -1,7 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import { motion } from "framer-motion";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 
 interface GalleryImage {
@@ -13,6 +12,7 @@ interface GalleryImage {
 export default function GallerySection() {
   const [activeCategory, setActiveCategory] = useState<"all" | "clinic" | "remedies" | "academics">("all");
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const gridRef = useRef<HTMLDivElement>(null);
 
   const images: GalleryImage[] = [
     { src: "/botonical.png", category: "remedies", alt: "Botanical Plant Extractions" },
@@ -27,6 +27,41 @@ export default function GallerySection() {
   const filteredImages = activeCategory === "all" 
     ? images 
     : images.filter(img => img.category === activeCategory);
+
+  useEffect(() => {
+    let ctx: any;
+    (async () => {
+      const { gsap } = await import("gsap");
+      const { ScrollTrigger } = await import("gsap/ScrollTrigger");
+      gsap.registerPlugin(ScrollTrigger);
+
+      ctx = gsap.context(() => {
+        // Animate all grid items with a premium scale & slide-up stagger
+        const items = gridRef.current?.querySelectorAll(".gallery-item");
+        if (items && items.length > 0) {
+          gsap.fromTo(items, 
+            { opacity: 0, y: 50, scale: 0.9, rotate: 1 },
+            { 
+              opacity: 1, 
+              y: 0, 
+              scale: 1,
+              rotate: 0,
+              duration: 0.8, 
+              stagger: 0.1, 
+              ease: "power2.out",
+              scrollTrigger: {
+                trigger: gridRef.current,
+                start: "top 85%",
+                toggleActions: "play none none none"
+              }
+            }
+          );
+        }
+      });
+    })();
+
+    return () => ctx?.revert();
+  }, [activeCategory]); // Re-run GSAP when categories change for fresh stagger entry
 
   return (
     <section id="gallery" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 border-t border-black/[0.04] font-sans">
@@ -57,19 +92,13 @@ export default function GallerySection() {
       </div>
 
       {/* Grid Layout */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 overflow-hidden p-2">
+      <div ref={gridRef} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 p-2">
         {filteredImages.map((img, idx) => {
-          const isEven = idx % 2 === 0;
-
           return (
-            <motion.div
+            <div
               key={idx}
               onClick={() => setSelectedImage(img.src)}
-              className="relative h-60 rounded-[20px] overflow-hidden border border-black/[0.04] group hover:scale-[1.02] transition duration-300 cursor-pointer shadow-sm bg-gray-100"
-              initial={{ opacity: 0, x: isEven ? -60 : 60 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true, margin: "-50px" }}
-              transition={{ duration: 0.6, delay: (idx % 4) * 0.1 }}
+              className="gallery-item relative h-60 rounded-[20px] overflow-hidden border border-black/[0.04] group hover:scale-[1.02] transition duration-300 cursor-pointer shadow-sm bg-gray-100"
             >
               <Image
                 src={img.src}
@@ -84,7 +113,7 @@ export default function GallerySection() {
                   View Fullscreen
                 </span>
               </div>
-            </motion.div>
+            </div>
           );
         })}
       </div>
@@ -93,7 +122,7 @@ export default function GallerySection() {
       {selectedImage && (
         <div
           onClick={() => setSelectedImage(null)}
-          className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4 cursor-zoom-out"
+          className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4 cursor-zoom-out animate-fade-in"
         >
           <div className="relative max-w-5xl max-h-[90vh] w-full h-full flex items-center justify-center">
             <img

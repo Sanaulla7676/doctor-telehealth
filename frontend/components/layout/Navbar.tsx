@@ -58,8 +58,8 @@ export default function Navbar() {
           
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-3 cursor-pointer">
-            <div className="w-10 h-10 rounded-full bg-white border border-black/[0.06] flex items-center justify-center shadow-sm">
-              <Sprout className="text-luxAccent w-5 h-5" />
+            <div className="w-10 h-10 rounded-full bg-white border border-black/[0.06] flex items-center justify-center shadow-sm overflow-hidden">
+              <img src="/logo.png" alt="Dr. Varsha Bandi Logo" className="w-full h-full object-cover" />
             </div>
             <div>
               <span className="block text-xs font-extrabold tracking-tight text-luxDark uppercase">

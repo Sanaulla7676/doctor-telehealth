@@ -22,8 +22,8 @@ export default function Footer() {
           {/* Practice info */}
           <div className="space-y-4">
             <div className="flex items-center space-x-3">
-              <div className="bg-white border border-black/[0.05] p-2 rounded-xl shadow-sm">
-                <Sprout className="text-luxDark w-5 h-5" />
+              <div className="w-10 h-10 rounded-xl bg-white border border-black/[0.05] flex items-center justify-center shadow-sm overflow-hidden">
+                <img src="/logo.png" alt="Dr. Varsha Bandi Logo" className="w-full h-full object-cover" />
               </div>
               <div>
                 <span className="block text-xs font-black text-luxDark tracking-tight uppercase">
@@ -121,7 +121,7 @@ export default function Footer() {
           <span>&copy; {new Date().getFullYear()} Dr. Varsha Bandi. All Rights Reserved.</span>
           <span className="flex items-center space-x-1 mt-2 md:mt-0">
             <span>Text-based Classical Homeopathy.</span>
-            <Sprout className="text-luxDark w-3 h-3" />
+            <span className="text-luxAccent font-extrabold px-1">•</span>
             <span>Bengaluru, India</span>
           </span>
         </div>
