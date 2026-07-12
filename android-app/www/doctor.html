@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Homeopathway Doctor Workspace</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #030712;
+        }
+        .display-font {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+    </style>
+</head>
+<body class="text-slate-100 min-h-screen flex flex-col">
+    
+    <!-- Top Bar -->
+    <header class="border-b border-slate-900/80 bg-slate-950/80 backdrop-blur-md px-6 py-4 flex justify-between items-center sticky top-0 z-50">
+        <div class="flex items-center gap-2">
+            <span class="text-2xl animate-pulse">⚕️</span>
+            <div>
+                <h1 class="text-md font-black display-font tracking-tight text-white leading-none">HOMEOPATHWAY</h1>
+                <span class="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-0.5 block">EMR Doctor Workspace</span>
+            </div>
+        </div>
+        <div class="flex items-center gap-4">
+            <div class="flex items-center gap-2 text-right">
+                <span class="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-ping"></span>
+                <span class="text-xs text-slate-300 font-bold" id="docNameDisplay">Dr. Varsha Bandi</span>
+            </div>
+            <button onclick="logOut()" class="px-3.5 py-1.5 bg-rose-950/40 border border-rose-900/40 text-rose-400 hover:text-rose-300 hover:bg-rose-900/20 rounded-xl text-xs font-bold transition-all">
+                Sign Out
+            </button>
+        </div>
+    </header>
+
+    <div class="flex flex-grow max-w-7xl w-full mx-auto px-6 py-8 gap-8">
+        
+        <!-- Left Nav Panel -->
+        <aside class="w-64 space-y-2 shrink-0">
+            <button onclick="switchWorkspaceTab('dashboard')" id="tab-dashboard" class="w-full flex items-center justify-between px-4 py-3 bg-blue-600/10 border border-blue-500/20 text-blue-400 font-bold rounded-2xl transition-all">
+                <span class="text-xs tracking-tight">📊 Dashboard / Today's Appts</span>
+                <span class="text-base">📅</span>
+            </button>
+            <button onclick="switchWorkspaceTab('patients')" id="tab-patients" class="w-full flex items-center justify-between px-4 py-3 hover:bg-slate-900 border border-slate-900 text-slate-300 rounded-2xl transition-all">
+                <span class="text-xs tracking-tight">👥 Patient Database</span>
+                <span class="text-base">👤</span>
+            </button>
+            <button onclick="switchWorkspaceTab('followups')" id="tab-followups" class="w-full flex items-center justify-between px-4 py-3 hover:bg-slate-900 border border-slate-900 text-slate-300 rounded-2xl transition-all">
+                <span class="text-xs tracking-tight">✉️ WhatsApp Reminders</span>
+                <span class="text-base">💬</span>
+            </button>
+            <button onclick="switchWorkspaceTab('documents')" id="tab-documents" class="w-full flex items-center justify-between px-4 py-3 hover:bg-slate-900 border border-slate-900 text-slate-300 rounded-2xl transition-all">
+                <span class="text-xs tracking-tight">📚 Materia Medica / Docs</span>
+                <span class="text-base">📂</span>
+            </button>
+        </aside>
+
+        <!-- Main Workspace Area -->
+        <main class="flex-grow space-y-6">
+            
+            <!-- Real-Time Notification Toast Panel -->
+            <div id="bookingToast" class="hidden p-4 bg-emerald-600 border border-emerald-400/40 rounded-2xl flex items-center justify-between animate-bounce">
+                <div class="flex items-center gap-3">
+                    <span class="text-xl">🔔</span>
+                    <div>
+                        <h4 class="text-xs font-bold text-white">New Booking Broadcast Signal</h4>
+                        <p class="text-[10px] text-emerald-100" id="toastText">A patient just booked scheduled online.</p>
+                    </div>
+                </div>
+                <button onclick="dismissBookingToast()" class="text-xs font-bold text-white hover:bg-white/10 px-2 py-1 rounded">Got it</button>
+            </div>
+
+            <div id="tabContent" class="space-y-6">
+                <!-- Content injected dynamically -->
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Consult EMR SOAP Modal -->
+    <div id="soapModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center hidden z-50">
+        <div class="w-full max-w-2xl bg-slate-950 border border-slate-800 p-8 rounded-3xl space-y-5 relative">
+            <div class="flex justify-between items-start">
+                <div>
+                    <h3 class="text-md font-bold text-white">EMR SOAP Clinical Note</h3>
+                    <p class="text-[10px] text-slate-400" id="soapApptDetails">Patient details</p>
+                </div>
+                <button onclick="closeSoapModal()" class="text-slate-400 hover:text-white font-bold">✕</button>
+            </div>
+
+            <form id="soapForm" class="space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Subjective (Symptoms, Mood)</label>
+                        <textarea id="soapSubjective" rows="3" class="w-full bg-slate-900 border border-slate-800 p-3 rounded-xl focus:outline-none focus:border-blue-500 text-xs text-slate-100"></textarea>
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Objective (Exams, History)</label>
+                        <textarea id="soapObjective" rows="3" class="w-full bg-slate-900 border border-slate-800 p-3 rounded-xl focus:outline-none focus:border-blue-500 text-xs text-slate-100"></textarea>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Assessment (Miasm, Remedies)</label>
+                        <textarea id="soapAssessment" rows="3" class="w-full bg-slate-900 border border-slate-800 p-3 rounded-xl focus:outline-none focus:border-blue-500 text-xs text-slate-100"></textarea>
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Plan (Remedy, Dosage, Potency)</label>
+                        <textarea id="soapPlan" rows="3" class="w-full bg-slate-900 border border-slate-800 p-3 rounded-xl focus:outline-none focus:border-blue-500 text-xs text-slate-100"></textarea>
+                    </div>
+                </div>
+
+                <div class="border-t border-slate-900 pt-4 grid grid-cols-2 gap-4">
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-bold text-amber-400 uppercase tracking-wider block">Schedule Follow-up Date</label>
+                        <input type="date" id="soapFollowupDate" class="w-full bg-slate-900 border border-slate-800 p-2.5 rounded-xl text-xs text-slate-100">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-bold text-amber-400 uppercase tracking-wider block">Follow-up Notes / Targets</label>
+                        <input type="text" id="soapFollowupNotes" placeholder="Remedy efficacy assessment..." class="w-full bg-slate-900 border border-slate-800 p-2.5 rounded-xl text-xs text-slate-100">
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-3 pt-3">
+                    <button type="button" onclick="closeSoapModal()" class="px-4 py-2 bg-slate-900 border border-slate-800 text-xs font-bold rounded-xl text-slate-400 hover:text-white">Cancel</button>
+                    <button type="submit" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs rounded-xl shadow-lg">Commit Consultation Notes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const token = localStorage.getItem('doctorToken');
+        if (!token) {
+            window.location.href = '/login.html';
+        }
+
+        let currentTab = 'dashboard';
+        let appointments = [];
+        let patients = [];
+        let activeAppointmentId = null;
+
+        // Connect Socket.io for real-time broadcast triggers
+        const socket = io(window.location.origin);
+        socket.on('new_booking_notification', (data) => {
+            const toast = document.getElementById('bookingToast');
+            const toastText = document.getElementById('toastText');
+            toastText.innerText = `${data.appointment.name} booked scheduled today at ${data.appointment.time}!`;
+            toast.classList.remove('hidden');
+            
+            // Auto refresh state
+            loadCurrentTabData();
+        });
+
+        function dismissBookingToast() {
+            document.getElementById('bookingToast').classList.add('hidden');
+        }
+
+        async function apiFetch(endpoint, method = 'GET', body = null) {
+            const options = {
+                method,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
+            };
+            if (body) {
+                options.body = JSON.stringify(body);
+            }
+            const res = await fetch(endpoint, options);
+            if (res.status === 401 || res.status === 403) {
+                logOut();
+                return null;
+            }
+            return res.json();
+        }
+
+        function switchWorkspaceTab(tabId) {
+            currentTab = tabId;
+            const tabs = ['dashboard', 'patients', 'followups', 'documents'];
+            tabs.forEach(t => {
+                const btn = document.getElementById(`tab-${t}`);
+                if (t === tabId) {
+                    btn.className = "w-full flex items-center justify-between px-4 py-3 bg-blue-600/10 border border-blue-500/20 text-blue-400 font-bold rounded-2xl transition-all";
+                } else {
+                    btn.className = "w-full flex items-center justify-between px-4 py-3 hover:bg-slate-900 border border-slate-900 text-slate-300 rounded-2xl transition-all";
+                }
+            });
+            loadCurrentTabData();
+        }
+
+        function loadCurrentTabData() {
+            if (currentTab === 'dashboard') {
+                renderDashboard();
+            } else if (currentTab === 'patients') {
+                renderPatients();
+            } else if (currentTab === 'followups') {
+                renderFollowups();
+            } else if (currentTab === 'documents') {
+                renderDocuments();
+            }
+        }
+
+        async function renderDashboard() {
+            const container = document.getElementById('tabContent');
+            container.innerHTML = `<div class="text-xs text-slate-400">Loading appointments...</div>`;
+            
+            appointments = await apiFetch('/api/appointments');
+            if (!appointments) return;
+
+            let listHtml = '';
+            if (appointments.length === 0) {
+                listHtml = `<p class="text-xs text-slate-400 p-4 border border-slate-900 rounded-xl">No appointments booked today.</p>`;
+            } else {
+                appointments.forEach(appt => {
+                    const isConfirmed = appt.status === 'Confirmed';
+                    const confirmBtn = isConfirmed 
+                        ? `<span class="px-3 py-1.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-bold rounded-xl">Confirmed ✓</span>`
+                        : `<button onclick="confirmAppointment('${appt.id}')" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-bold rounded-xl">Confirm & Create Jitsi</button>`;
+
+                    listHtml += `
+                        <div class="bg-slate-900/40 border border-slate-800/80 p-5 rounded-2xl flex justify-between items-start">
+                            <div class="space-y-1">
+                                <div class="flex items-center gap-2">
+                                    <h3 class="text-sm font-bold text-white">${appt.name}</h3>
+                                    <span class="text-xs text-slate-400">• ${appt.time}</span>
+                                </div>
+                                <p class="text-xs text-slate-400">Reason: ${appt.reason}</p>
+                                <div class="text-[10px] text-slate-500 flex gap-4">
+                                    <span>📞 ${appt.phone}</span>
+                                    <span>✉️ ${appt.email}</span>
+                                </div>
+                                ${appt.videoRoom ? `
+                                    <div class="pt-2">
+                                        <a href="https://meet.jit.si/${appt.videoRoom}" target="_blank" class="px-3 py-1.5 bg-purple-500/15 border border-purple-500/20 text-purple-400 hover:bg-purple-500/25 text-[10px] font-extrabold rounded-xl inline-flex items-center gap-1.5 transition-all">
+                                            <span>🎥 Join Telehealth Consultation</span>
+                                        </a>
+                                    </div>
+                                ` : ''}
+                            </div>
+                            <div class="flex flex-col items-end gap-2">
+                                ${confirmBtn}
+                                <button onclick="openSoapNotes('${appt.id}')" class="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 text-[10px] font-bold rounded-xl transition-all">
+                                    SOAP Consult Note
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            container.innerHTML = `
+                <div class="space-y-4">
+                    <div>
+                        <h2 class="text-lg font-extrabold text-white">Daily Consultations Schedule</h2>
+                        <p class="text-xs text-slate-400">All live bookings coming from both patient portal and android devices.</p>
+                    </div>
+                    <div class="space-y-3">
+                        ${listHtml}
+                    </div>
+                </div>
+            `;
+        }
+
+        async function confirmAppointment(id) {
+            const data = await apiFetch(`/api/appointments/${id}/confirm`, 'POST');
+            if (data && data.success) {
+                loadCurrentTabData();
+            }
+        }
+
+        async function openSoapNotes(apptId) {
+            activeAppointmentId = apptId;
+            const appt = appointments.find(a => a.id === apptId);
+            document.getElementById('soapApptDetails').innerText = `Consultation with ${appt.name} (ID: ${apptId})`;
+            
+            // Pre-fill existing SOAP data
+            const response = await apiFetch(`/api/notes/${apptId}`);
+            if (response && response.success && response.note) {
+                document.getElementById('soapSubjective').value = response.note.subjective || '';
+                document.getElementById('soapObjective').value = response.note.objective || '';
+                document.getElementById('soapAssessment').value = response.note.assessment || '';
+                document.getElementById('soapPlan').value = response.note.plan || '';
+            } else {
+                document.getElementById('soapForm').reset();
+            }
+
+            // Pre-fill existing follow-up
+            const fupRes = await apiFetch(`/api/followups/${apptId}`);
+            if (fupRes && fupRes.success && fupRes.followup) {
+                document.getElementById('soapFollowupDate').value = fupRes.followup.followup_date || '';
+                document.getElementById('soapFollowupNotes').value = fupRes.followup.doctor_notes || '';
+            } else {
+                document.getElementById('soapFollowupDate').value = '';
+                document.getElementById('soapFollowupNotes').value = '';
+            }
+
+            document.getElementById('soapModal').classList.remove('hidden');
+        }
+
+        function closeSoapModal() {
+            document.getElementById('soapModal').classList.add('hidden');
+        }
+
+        document.getElementById('soapForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const subjective = document.getElementById('soapSubjective').value;
+            const objective = document.getElementById('soapObjective').value;
+            const assessment = document.getElementById('soapAssessment').value;
+            const plan = document.getElementById('soapPlan').value;
+            const followupDate = document.getElementById('soapFollowupDate').value;
+            const followupNotes = document.getElementById('soapFollowupNotes').value;
+
+            const appt = appointments.find(a => a.id === activeAppointmentId);
+
+            // Save Note
+            const noteRes = await apiFetch('/api/notes', 'POST', {
+                appointmentId: activeAppointmentId,
+                subjective,
+                objective,
+                assessment,
+                plan
+            });
+
+            // Save Follow-up if scheduled
+            if (followupDate) {
+                await apiFetch('/api/followups', 'POST', {
+                    consultationId: activeAppointmentId,
+                    patientId: appt.patientId,
+                    lastVisitDate: appt.date,
+                    followupDate,
+                    doctorNotes: followupNotes
+                });
+            }
+
+            if (noteRes && noteRes.success) {
+                closeSoapModal();
+                loadCurrentTabData();
+            }
+        });
+
+        async function renderPatients() {
+            const container = document.getElementById('tabContent');
+            container.innerHTML = `<div class="text-xs text-slate-400">Loading patient base...</div>`;
+
+            const data = await apiFetch('/api/patients');
+            if (!data) return;
+
+            let listHtml = '';
+            data.patients.forEach(pat => {
+                listHtml += `
+                    <div class="bg-slate-900/40 border border-slate-800/80 p-5 rounded-2xl space-y-3">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="text-sm font-bold text-white">${pat.name}</h3>
+                                <p class="text-[10px] text-slate-400">Registered since ${new Date(pat.created_at).toLocaleDateString()}</p>
+                            </div>
+                            <button onclick="viewPatientTimeline('${pat.id}')" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-bold rounded-xl">Audit Timeline</button>
+                        </div>
+                        <div class="text-xs text-slate-400 grid grid-cols-2 gap-4">
+                            <span>📞 Phone: ${pat.phone}</span>
+                            <span>🩺 History: ${pat.medical_history || 'N/A'}</span>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = `
+                <div class="space-y-4">
+                    <div>
+                        <h2 class="text-lg font-extrabold text-white">Patient Clinical Database</h2>
+                        <p class="text-xs text-slate-400">View and audit detailed homeopathic patient files and histories.</p>
+                    </div>
+                    <div class="space-y-3">
+                        ${listHtml}
+                    </div>
+                </div>
+            `;
+        }
+
+        async function viewPatientTimeline(patientId) {
+            const container = document.getElementById('tabContent');
+            container.innerHTML = `<div class="text-xs text-slate-400">Fetching timeline...</div>`;
+
+            const data = await apiFetch(`/api/patients/${patientId}/timeline`);
+            if (!data || !data.success) return;
+
+            let visitsHtml = '';
+            data.visits.forEach(vis => {
+                visitsHtml += `
+                    <div class="border-l border-slate-800 pl-4 py-2 space-y-2 relative">
+                        <span class="absolute -left-[5px] top-4 w-2.5 h-2.5 bg-blue-500 rounded-full"></span>
+                        <div class="flex justify-between items-start">
+                            <span class="text-xs font-bold text-white">${vis.date} (${vis.time})</span>
+                            <span class="px-2 py-0.5 bg-slate-900 border border-slate-800 text-[9px] text-slate-400 rounded-full">${vis.status}</span>
+                        </div>
+                        <p class="text-xs text-slate-300">Symptom Target: ${vis.reason}</p>
+                        ${vis.subjective ? `
+                            <div class="grid grid-cols-2 gap-3 bg-slate-950/40 p-3 rounded-xl border border-slate-900 text-[10px]">
+                                <div><strong class="text-blue-400">Subjective:</strong> ${vis.subjective}</div>
+                                <div><strong class="text-blue-400">Objective:</strong> ${vis.objective}</div>
+                                <div><strong class="text-blue-400">Assessment:</strong> ${vis.assessment}</div>
+                                <div><strong class="text-blue-400">Plan:</strong> ${vis.plan}</div>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            });
+
+            container.innerHTML = `
+                <div class="space-y-4">
+                    <button onclick="switchWorkspaceTab('patients')" class="text-xs text-blue-400 font-bold hover:underline">← Back to Patient Database</button>
+                    <div>
+                        <h2 class="text-lg font-extrabold text-white">Timeline audit for ${data.patient.name}</h2>
+                        <p class="text-xs text-slate-400">Complete clinical consultations and prescription historical records.</p>
+                    </div>
+                    <div class="space-y-4">
+                        ${visitsHtml || '<p class="text-xs text-slate-400">No consultation records on file.</p>'}
+                    </div>
+                </div>
+            `;
+        }
+
+        async function renderFollowups() {
+            const container = document.getElementById('tabContent');
+            container.innerHTML = `<div class="text-xs text-slate-400">Loading followup alerts...</div>`;
+
+            const data = await apiFetch('/api/dashboard/all-reminders');
+            if (!data || !data.success) return;
+
+            let listHtml = '';
+            data.followupsToday.forEach(rem => {
+                listHtml += `
+                    <div class="bg-slate-900/40 border border-slate-800/80 p-5 rounded-2xl flex justify-between items-start">
+                        <div class="space-y-1">
+                            <h3 class="text-sm font-bold text-white">${rem.patient_name}</h3>
+                            <span class="text-[9px] px-2 py-0.5 bg-amber-500/10 border border-amber-500/20 text-amber-400 font-bold rounded-full uppercase">${rem.stage}</span>
+                            <p class="text-xs text-slate-400">Target Action: ${rem.summary}</p>
+                            <div class="bg-slate-950 p-3 rounded-xl border border-slate-900 text-xs text-slate-300 italic mt-2">
+                                "${rem.prepared_message}"
+                            </div>
+                        </div>
+                        <div>
+                            ${rem.reminder_status === 'Message Prepared' 
+                                ? `<span class="px-3 py-1.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-bold rounded-xl">Prepared ✓</span>`
+                                : `<button onclick="markPrepared('${rem.reminder_id}')" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-white text-[10px] font-bold rounded-xl">Mark Prepared</button>`}
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = `
+                <div class="space-y-4">
+                    <div>
+                        <h2 class="text-lg font-extrabold text-white">WhatsApp Stage-Specific Reminders</h2>
+                        <p class="text-xs text-slate-400">Pre-compiled follow-up check-in copy templates for today.</p>
+                    </div>
+                    <div class="space-y-3">
+                        ${listHtml || '<p class="text-xs text-slate-400">No follow-up reminders scheduled for today.</p>'}
+                    </div>
+                </div>
+            `;
+        }
+
+        async function markPrepared(reminderId) {
+            const res = await apiFetch('/api/reminders/mark-prepared', 'POST', { reminderId });
+            if (res && res.success) {
+                loadCurrentTabData();
+            }
+        }
+
+        async function renderDocuments() {
+            const container = document.getElementById('tabContent');
+            container.innerHTML = `<div class="text-xs text-slate-400">Loading document list...</div>`;
+
+            const data = await apiFetch('/api/documents');
+            if (!data || !data.success) return;
+
+            let listHtml = '';
+            data.documents.forEach(doc => {
+                listHtml += `
+                    <div class="bg-slate-900/40 border border-slate-800/80 p-4 rounded-2xl flex justify-between items-center">
+                        <div>
+                            <h3 class="text-xs font-bold text-white">${doc.name}</h3>
+                            <span class="text-[9px] text-slate-400">${doc.category} • Size: ${doc.size}</span>
+                        </div>
+                        <button onclick="deleteDocument('${doc.id}')" class="px-2 py-1.5 bg-rose-950/40 border border-rose-900/40 text-rose-400 text-[10px] rounded-xl hover:bg-rose-900/20">Delete</button>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = `
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h2 class="text-lg font-extrabold text-white">Clinical Materia Medica & Docs</h2>
+                            <p class="text-xs text-slate-400">A central document repository for clinical reference books and guidelines.</p>
+                        </div>
+                        <button onclick="showUploadForm()" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl shadow-lg">Upload New Doc</button>
+                    </div>
+                    
+                    <div id="uploadBox" class="hidden bg-slate-900/40 border border-slate-800/80 p-4 rounded-2xl space-y-3">
+                        <h3 class="text-xs font-bold text-white">Upload Document Form</h3>
+                        <div class="space-y-2">
+                            <input type="text" id="docUploadName" placeholder="Document Display Title" class="w-full bg-[#050811] text-xs text-white border border-slate-800 p-2 rounded-xl focus:border-blue-500">
+                            <select id="docUploadCategory" class="w-full bg-[#050811] text-xs text-white border border-slate-800 p-2 rounded-xl focus:border-blue-500">
+                                <option value="Guidelines">Guidelines</option>
+                                <option value="Reference Books">Reference Books</option>
+                                <option value="Reports">Reports</option>
+                                <option value="Patient Documents">Patient Documents</option>
+                            </select>
+                            <button onclick="submitNewDoc()" class="w-full py-2 bg-blue-600 text-white font-extrabold text-xs rounded-xl hover:bg-blue-500 transition-all">Submit to EMR Storage</button>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3">
+                        ${listHtml || '<p class="text-xs text-slate-400">No reference documents stored on EMR.</p>'}
+                    </div>
+                </div>
+            `;
+        }
+
+        function showUploadForm() {
+            document.getElementById('uploadBox').classList.toggle('hidden');
+        }
+
+        async function submitNewDoc() {
+            const name = document.getElementById('docUploadName').value;
+            const category = document.getElementById('docUploadCategory').value;
+            if (!name) return;
+
+            const res = await apiFetch('/api/documents', 'POST', {
+                name,
+                category,
+                size: '232 KB',
+                file_data: 'dGVzdF9maWxlX2NvbnRlbnRzX2Jhc2U2NA=='
+            });
+
+            if (res && res.success) {
+                document.getElementById('docUploadName').value = '';
+                document.getElementById('uploadBox').classList.add('hidden');
+                loadCurrentTabData();
+            }
+        }
+
+        async function deleteDocument(id) {
+            const res = await apiFetch(`/api/documents/${id}`, 'DELETE');
+            if (res && res.success) {
+                loadCurrentTabData();
+            }
+        }
+
+        function logOut() {
+            localStorage.clear();
+            window.location.href = '/login.html';
+        }
+
+        // Initialize display
+        loadCurrentTabData();
+    </script>
+</body>
+</html>

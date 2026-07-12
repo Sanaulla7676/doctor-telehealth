@@ -1,0 +1,6 @@
+{
+  "name": "Homeopathway Clinical Dashboard",
+  "description": "Mobile clinical dashboard for Homeopathway featuring client management, SOAP consultation notes, WhatsApp reminders, and a document library.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

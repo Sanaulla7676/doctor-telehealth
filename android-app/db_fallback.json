@@ -1,0 +1,10 @@
+{
+  "patients": [],
+  "appointments": [],
+  "doctors": [],
+  "clinical_notes": [],
+  "followups": [],
+  "followup_reminders": [],
+  "documents": [],
+  "notifications": []
+}
