@@ -10,6 +10,18 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  async rewrites() {
+    return [
+      {
+        source: '/api/:path*',
+        destination: 'https://doctor-telehealth.onrender.com/api/:path*',
+      },
+      {
+        source: '/socket.io/:path*',
+        destination: 'https://doctor-telehealth.onrender.com/socket.io/:path*',
+      },
+    ];
+  },
 };
 
 export default nextConfig;
