@@ -189,6 +189,20 @@ async function initDb() {
             );
         `);
 
+        // Migration Alters
+        await pool.query(`ALTER TABLE appointments ADD COLUMN IF NOT EXISTS service_name VARCHAR(255);`);
+        await pool.query(`ALTER TABLE appointments ADD COLUMN IF NOT EXISTS consultation_fee INT;`);
+        await pool.query(`ALTER TABLE appointments ADD COLUMN IF NOT EXISTS payment_status VARCHAR(50) DEFAULT 'Unpaid';`);
+        await pool.query(`ALTER TABLE appointments ADD COLUMN IF NOT EXISTS consultation_status VARCHAR(50) DEFAULT 'Pending';`);
+
+        await pool.query(`ALTER TABLE clinical_notes ADD COLUMN IF NOT EXISTS prescription TEXT;`);
+        await pool.query(`ALTER TABLE clinical_notes ADD COLUMN IF NOT EXISTS medicines TEXT;`);
+        await pool.query(`ALTER TABLE clinical_notes ADD COLUMN IF NOT EXISTS advice TEXT;`);
+
+        await pool.query(`ALTER TABLE documents ADD COLUMN IF NOT EXISTS patient_id VARCHAR(255) REFERENCES patients(id) ON DELETE SET NULL;`);
+        await pool.query(`ALTER TABLE documents ADD COLUMN IF NOT EXISTS patient_account_id VARCHAR(255) REFERENCES patient_accounts(id) ON DELETE SET NULL;`);
+        await pool.query(`ALTER TABLE documents ADD COLUMN IF NOT EXISTS appointment_id VARCHAR(255) REFERENCES appointments(id) ON DELETE SET NULL;`);
+
         // Register default doctor
         const doctorEmail = 'drvarshabandi@gmail.com';
         const checkDoctor = await pool.query('SELECT * FROM doctors WHERE email = $1;', [doctorEmail]);
@@ -521,6 +535,7 @@ app.get('/api/patient/appointments', authenticatePatientToken, async (req, res) 
     try {
         const result = await pool.query(`
             SELECT a.*, cn.subjective, cn.objective, cn.assessment, cn.plan,
+                   cn.prescription, cn.medicines, cn.advice,
                    f.followup_date, f.doctor_notes as followup_notes
             FROM appointments a
             LEFT JOIN clinical_notes cn ON a.id = cn.appointment_id
@@ -540,6 +555,7 @@ app.get('/api/patient/appointments/:id', authenticatePatientToken, async (req, r
     try {
         const result = await pool.query(`
             SELECT a.*, cn.subjective, cn.objective, cn.assessment, cn.plan,
+                   cn.prescription, cn.medicines, cn.advice,
                    f.followup_date, f.doctor_notes as followup_notes
             FROM appointments a
             LEFT JOIN clinical_notes cn ON a.id = cn.appointment_id
@@ -682,7 +698,7 @@ app.post('/api/meeting/end', authenticateToken, async (req, res) => {
 // PUBLIC BOOKING API (now supports optional patient account link)
 // ─────────────────────────────────────────────────────────────
 app.post('/api/appointments', async (req, res) => {
-    let { name, email, phone, date, time, reason, patient_account_id } = req.body;
+    let { name, email, phone, date, time, reason, patient_account_id, service_name, consultation_fee } = req.body;
     const appointmentId = Date.now().toString();
 
     if (!phone || phone.trim() === "") {
@@ -712,11 +728,15 @@ app.post('/api/appointments', async (req, res) => {
         }
 
         const query = `
-            INSERT INTO appointments (id, name, email, phone, date, time, reason, status, meeting_status, patient_id, patient_account_id)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, 'Pending', 'PENDING', $8, $9)
+            INSERT INTO appointments (id, name, email, phone, date, time, reason, status, meeting_status, patient_id, patient_account_id, service_name, consultation_fee, payment_status, consultation_status)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, 'Pending', 'PENDING', $8, $9, $10, $11, 'Unpaid', 'Pending')
             RETURNING *;
         `;
-        const result = await pool.query(query, [appointmentId, name, email, phone, date, time, reason, patientId, verifiedAccountId]);
+        const result = await pool.query(query, [
+            appointmentId, name, email, phone, date, time, reason, patientId, verifiedAccountId,
+            service_name || 'Homoeopathic Consultation',
+            consultation_fee || 800
+        ]);
 
         const notificationId = 'notif_' + Date.now();
         await pool.query(`
@@ -973,55 +993,8 @@ app.post('/api/notifications/mark-read', authenticateToken, async (req, res) => 
 });
 
 // ─────────────────────────────────────────────────────────────
-// CLINICAL NOTES APIS
-// ─────────────────────────────────────────────────────────────
-app.post('/api/notes', authenticateToken, async (req, res) => {
-    const { appointmentId, subjective, objective, assessment, plan } = req.body;
-    const noteId = 'note_' + Date.now();
-    try {
-        const query = `
-            INSERT INTO clinical_notes (id, appointment_id, subjective, objective, assessment, plan)
-            VALUES ($1, $2, $3, $4, $5, $6)
-            ON CONFLICT (appointment_id)
-            DO UPDATE SET subjective = EXCLUDED.subjective, objective = EXCLUDED.objective, assessment = EXCLUDED.assessment, plan = EXCLUDED.plan
-            RETURNING *;
-        `;
-        const result = await pool.query(query, [noteId, appointmentId, subjective, objective, assessment, plan]);
-
-        // Notify patient that prescription/notes are available
-        const apptResult = await pool.query('SELECT patient_account_id FROM appointments WHERE id = $1;', [appointmentId]);
-        if (apptResult.rows[0] && apptResult.rows[0].patient_account_id) {
-            const notifId = 'pnotif_notes_' + Date.now();
-            await pool.query(`
-                INSERT INTO patient_notifications (id, patient_account_id, title, message, type, appointment_id)
-                VALUES ($1, $2, $3, $4, 'prescription', $5)
-                ON CONFLICT DO NOTHING;
-            `, [notifId, apptResult.rows[0].patient_account_id, 'Prescription Available', 'Your consultation notes and prescription have been updated. View them in your portal.', appointmentId]);
-
-            io.emit('appointment_updated', {
-                id: appointmentId,
-                type: 'notes_saved',
-                patient_account_id: apptResult.rows[0].patient_account_id
-            });
-        }
-
-        res.json({ success: true, note: result.rows[0] });
-    } catch (err) {
-        res.status(500).json({ success: false });
-    }
-});
-
-app.get('/api/notes/:appointmentId', authenticateToken, async (req, res) => {
-    try {
-        const result = await pool.query('SELECT * FROM clinical_notes WHERE appointment_id = $1;', [req.params.appointmentId]);
-        res.json({ success: true, note: result.rows[0] || null });
-    } catch (err) {
-        res.status(500).json({ success: false });
-    }
-});
-
-// ─────────────────────────────────────────────────────────────
 // FOLLOWUPS APIS
+
 // ─────────────────────────────────────────────────────────────
 app.post('/api/followups', authenticateToken, async (req, res) => {
     const { consultationId, patientId, lastVisitDate, followupDate, doctorNotes, disabled } = req.body;
@@ -1117,6 +1090,290 @@ app.post('/api/reminders/mark-prepared', authenticateToken, async (req, res) => 
         res.json({ success: true });
     } catch (err) {
         res.status(500).json({ success: false });
+    }
+});
+
+// ─────────────────────────────────────────────────────────────
+// FEATURE 4: WHATSAPP PAYMENT FLOW
+// ─────────────────────────────────────────────────────────────
+app.put('/api/appointments/:id/send-whatsapp', authenticateToken, async (req, res) => {
+    try {
+        await pool.query(
+            `UPDATE appointments SET status = 'WhatsApp Sent', payment_status = 'Payment Request Sent', consultation_status = 'Payment Request Sent' WHERE id = $1;`,
+            [req.params.id]
+        );
+        const updated = await pool.query('SELECT * FROM appointments WHERE id = $1;', [req.params.id]);
+        const appt = updated.rows[0];
+
+        // Notify patient
+        if (appt && appt.patient_account_id) {
+            const notifId = 'pnotif_wa_' + Date.now();
+            await pool.query(`
+                INSERT INTO patient_notifications (id, patient_account_id, title, message, type, appointment_id)
+                VALUES ($1, $2, $3, $4, 'payment', $5)
+                ON CONFLICT DO NOTHING;
+            `, [notifId, appt.patient_account_id, 'Payment Request Sent', `Dr. Varsha Bandi has sent you a WhatsApp payment request for your ${appt.service_name || 'consultation'}. Please complete the payment of ₹${appt.consultation_fee || ''} and send the screenshot on WhatsApp.`, appt.id]);
+        }
+
+        io.emit('appointment_updated', { ...appt, id: req.params.id });
+        res.json({ success: true, appointment: appt });
+    } catch (err) {
+        console.error('WhatsApp flow error:', err);
+        res.status(500).json({ success: false, error: 'Failed to update WhatsApp status.' });
+    }
+});
+
+// ─────────────────────────────────────────────────────────────
+// FEATURE 5: ACCEPT PAYMENT / CONFIRM APPOINTMENT
+// ─────────────────────────────────────────────────────────────
+app.put('/api/appointments/:id/accept', authenticateToken, async (req, res) => {
+    try {
+        await pool.query(
+            `UPDATE appointments SET status = 'Confirmed', payment_status = 'Paid', consultation_status = 'Doctor Accepted Your Consultation' WHERE id = $1;`,
+            [req.params.id]
+        );
+        const updated = await pool.query('SELECT * FROM appointments WHERE id = $1;', [req.params.id]);
+        const appt = updated.rows[0];
+
+        // Notify patient
+        if (appt && appt.patient_account_id) {
+            const notifId = 'pnotif_accept_' + Date.now();
+            await pool.query(`
+                INSERT INTO patient_notifications (id, patient_account_id, title, message, type, appointment_id)
+                VALUES ($1, $2, $3, $4, 'confirmed', $5)
+                ON CONFLICT DO NOTHING;
+            `, [notifId, appt.patient_account_id, '✅ Doctor Accepted Your Consultation', 'Your payment has been verified. Your appointment is now confirmed. You will be notified when the doctor joins the video consultation.', appt.id]);
+        }
+
+        io.emit('appointment_updated', { ...appt, id: req.params.id });
+        res.json({ success: true, appointment: appt });
+    } catch (err) {
+        console.error('Accept payment error:', err);
+        res.status(500).json({ success: false, error: 'Failed to confirm appointment.' });
+    }
+});
+
+// ─────────────────────────────────────────────────────────────
+// FEATURE 3/6: REJECT APPOINTMENT
+// ─────────────────────────────────────────────────────────────
+app.put('/api/appointments/:id/reject', authenticateToken, async (req, res) => {
+    try {
+        await pool.query(
+            `UPDATE appointments SET status = 'Rejected', consultation_status = 'Appointment Rejected' WHERE id = $1;`,
+            [req.params.id]
+        );
+        const updated = await pool.query('SELECT * FROM appointments WHERE id = $1;', [req.params.id]);
+        const appt = updated.rows[0];
+
+        if (appt && appt.patient_account_id) {
+            const notifId = 'pnotif_reject_' + Date.now();
+            await pool.query(`
+                INSERT INTO patient_notifications (id, patient_account_id, title, message, type, appointment_id)
+                VALUES ($1, $2, $3, $4, 'cancelled', $5)
+                ON CONFLICT DO NOTHING;
+            `, [notifId, appt.patient_account_id, 'Appointment Rejected', 'Your appointment request was not accepted at this time. Please try booking again or contact the clinic.', appt.id]);
+        }
+
+        io.emit('appointment_updated', { ...appt, id: req.params.id });
+        res.json({ success: true, appointment: appt });
+    } catch (err) {
+        res.status(500).json({ success: false, error: 'Failed to reject appointment.' });
+    }
+});
+
+// ─────────────────────────────────────────────────────────────
+// FEATURE 6: VIDEO CONSULTATION — DOCTOR JOINS
+// ─────────────────────────────────────────────────────────────
+app.put('/api/appointments/:id/join-video', authenticateToken, async (req, res) => {
+    const videoRoom = `HomeopathwayRoom-${req.params.id}`;
+    try {
+        await pool.query(
+            `UPDATE appointments SET meeting_status = 'READY', video_room = $1, consultation_status = 'Doctor Joined Video Consultation' WHERE id = $2;`,
+            [videoRoom, req.params.id]
+        );
+        const updated = await pool.query('SELECT * FROM appointments WHERE id = $1;', [req.params.id]);
+        const appt = updated.rows[0];
+
+        if (appt && appt.patient_account_id) {
+            const notifId = 'pnotif_video_' + Date.now();
+            await pool.query(`
+                INSERT INTO patient_notifications (id, patient_account_id, title, message, type, appointment_id)
+                VALUES ($1, $2, $3, $4, 'video', $5)
+                ON CONFLICT DO NOTHING;
+            `, [notifId, appt.patient_account_id, '📹 Doctor Joined Video Consultation', 'Dr. Varsha Bandi has joined the video consultation. Click "Join Now" in your portal to connect.', appt.id]);
+        }
+
+        io.emit('appointment_updated', { ...appt, id: req.params.id, videoRoom, meeting_status: 'READY' });
+        res.json({ success: true, appointment: appt, videoRoom });
+    } catch (err) {
+        console.error('Join video error:', err);
+        res.status(500).json({ success: false, error: 'Failed to start video session.' });
+    }
+});
+
+// ─────────────────────────────────────────────────────────────
+// UPDATED: CLINICAL NOTES WITH PRESCRIPTION / MEDICINES / ADVICE
+// ─────────────────────────────────────────────────────────────
+app.post('/api/notes', authenticateToken, async (req, res) => {
+    const { appointmentId, subjective, objective, assessment, plan, prescription, medicines, advice } = req.body;
+    const noteId = 'note_' + Date.now();
+    try {
+        const query = `
+            INSERT INTO clinical_notes (id, appointment_id, subjective, objective, assessment, plan, prescription, medicines, advice)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+            ON CONFLICT (appointment_id)
+            DO UPDATE SET
+                subjective = EXCLUDED.subjective,
+                objective = EXCLUDED.objective,
+                assessment = EXCLUDED.assessment,
+                plan = EXCLUDED.plan,
+                prescription = EXCLUDED.prescription,
+                medicines = EXCLUDED.medicines,
+                advice = EXCLUDED.advice
+            RETURNING *;
+        `;
+        const result = await pool.query(query, [noteId, appointmentId, subjective, objective, assessment, plan, prescription || null, medicines || null, advice || null]);
+
+        // Notify patient that prescription/notes are available
+        const apptResult = await pool.query('SELECT patient_account_id FROM appointments WHERE id = $1;', [appointmentId]);
+        if (apptResult.rows[0] && apptResult.rows[0].patient_account_id) {
+            const notifId = 'pnotif_notes_' + Date.now();
+            await pool.query(`
+                INSERT INTO patient_notifications (id, patient_account_id, title, message, type, appointment_id)
+                VALUES ($1, $2, $3, $4, 'prescription', $5)
+                ON CONFLICT DO NOTHING;
+            `, [notifId, apptResult.rows[0].patient_account_id, '💊 New Medical Update', 'Dr. Varsha Bandi has updated your prescription, medicines, and consultation notes. View them now in your portal.', appointmentId]);
+
+            io.emit('appointment_updated', {
+                id: appointmentId,
+                type: 'notes_saved',
+                patient_account_id: apptResult.rows[0].patient_account_id,
+                prescription, medicines, advice, subjective, objective, assessment, plan
+            });
+        }
+
+        res.json({ success: true, note: result.rows[0] });
+    } catch (err) {
+        console.error('Save notes error:', err);
+        res.status(500).json({ success: false });
+    }
+});
+
+app.get('/api/notes/:appointmentId', authenticateToken, async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM clinical_notes WHERE appointment_id = $1;', [req.params.appointmentId]);
+        res.json({ success: true, note: result.rows[0] || null });
+    } catch (err) {
+        res.status(500).json({ success: false });
+    }
+});
+
+// ─────────────────────────────────────────────────────────────
+// FEATURE 8: PATIENT DOCUMENT UPLOAD (from Patient Portal)
+// ─────────────────────────────────────────────────────────────
+app.post('/api/patient/documents', authenticatePatientToken, async (req, res) => {
+    const { name, category, size, file_data, appointment_id } = req.body;
+    const id = 'pdoc_' + Date.now();
+    try {
+        // Get patient_id from patient_account
+        const acctResult = await pool.query('SELECT patient_id FROM patient_accounts WHERE id = $1;', [req.patient.patientAccountId]);
+        const patientId = acctResult.rows[0]?.patient_id || null;
+
+        const query = `
+            INSERT INTO documents (id, name, category, size, file_data, patient_id, patient_account_id, appointment_id)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+            RETURNING id, name, category, size, uploaded_at;
+        `;
+        const result = await pool.query(query, [id, name, category, size, file_data, patientId, req.patient.patientAccountId, appointment_id || null]);
+
+        // Notify doctor via socket
+        io.emit('new_patient_document', {
+            document: result.rows[0],
+            patientId,
+            patient_account_id: req.patient.patientAccountId,
+            appointment_id: appointment_id || null
+        });
+
+        res.json({ success: true, document: result.rows[0] });
+    } catch (err) {
+        console.error('Patient document upload error:', err);
+        res.status(500).json({ success: false, error: 'Document upload failed.' });
+    }
+});
+
+// Get patient's own uploaded documents
+app.get('/api/patient/documents', authenticatePatientToken, async (req, res) => {
+    try {
+        const result = await pool.query(`
+            SELECT id, name, category, size, uploaded_at, appointment_id
+            FROM documents
+            WHERE patient_account_id = $1
+            ORDER BY uploaded_at DESC;
+        `, [req.patient.patientAccountId]);
+        res.json({ success: true, documents: result.rows });
+    } catch (err) {
+        res.status(500).json({ success: false, error: 'Failed to load documents.' });
+    }
+});
+
+// Get preview/file data for a patient document
+app.get('/api/patient/documents/:id/preview', authenticatePatientToken, async (req, res) => {
+    try {
+        const result = await pool.query(
+            'SELECT name, category, file_data FROM documents WHERE id = $1 AND patient_account_id = $2;',
+            [req.params.id, req.patient.patientAccountId]
+        );
+        if (result.rows.length === 0) return res.status(404).json({ success: false, error: 'File not found.' });
+        res.json({ success: true, file: result.rows[0] });
+    } catch (err) {
+        res.status(500).json({ success: false, error: 'Failed to load file.' });
+    }
+});
+
+// Doctor: Get all patient documents for a specific patient
+app.get('/api/patients/:id/documents', authenticateToken, async (req, res) => {
+    try {
+        const result = await pool.query(`
+            SELECT id, name, category, size, uploaded_at, appointment_id, patient_account_id
+            FROM documents
+            WHERE patient_id = $1
+            ORDER BY uploaded_at DESC;
+        `, [req.params.id]);
+        res.json({ success: true, documents: result.rows });
+    } catch (err) {
+        res.status(500).json({ success: false, error: 'Failed to load patient documents.' });
+    }
+});
+
+// Doctor: Preview patient document file data
+app.get('/api/documents/:id/preview', authenticateToken, async (req, res) => {
+    try {
+        const result = await pool.query('SELECT name, category, file_data FROM documents WHERE id = $1;', [req.params.id]);
+        if (result.rows.length === 0) return res.status(404).json({ success: false, error: 'File not found.' });
+        res.json({ success: true, file: result.rows[0] });
+    } catch (err) {
+        res.status(500).json({ success: false });
+    }
+});
+
+// ─────────────────────────────────────────────────────────────
+// FEATURE 3: DOCTOR APPOINTMENT LIST WITH FULL PATIENT INFO
+// ─────────────────────────────────────────────────────────────
+app.get('/api/appointments/enriched', authenticateToken, async (req, res) => {
+    try {
+        const result = await pool.query(`
+            SELECT
+                a.*,
+                p.age as patient_age,
+                p.gender as patient_gender,
+                p.phone as patient_phone_direct
+            FROM appointments a
+            LEFT JOIN patients p ON a.patient_id = p.id
+            ORDER BY a.id DESC;
+        `);
+        res.json({ success: true, appointments: result.rows });
+    } catch (err) {
+        res.status(500).json({ success: false, error: 'Failed to load enriched appointments.' });
     }
 });
 

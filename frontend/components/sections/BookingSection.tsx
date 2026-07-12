@@ -121,6 +121,13 @@ export default function BookingSection() {
 
     setIsSubmitting(true);
 
+    // Derive the consultation fee from selected specialty
+    const serviceFeeMap: Record<string, number> = {
+      "Homoeopathic Consultation": 800,
+      "Nutrition Consultation / Diet Plan": 5000,
+      "Counselling": 3000,
+    };
+
     const payload = {
       name,
       email,
@@ -128,7 +135,9 @@ export default function BookingSection() {
       date,
       time: formatTime12Hour(time),
       reason,
-      patient_account_id: patientAccountId
+      patient_account_id: patientAccountId,
+      service_name: specialty,
+      consultation_fee: serviceFeeMap[specialty] || 800
     };
 
     try {

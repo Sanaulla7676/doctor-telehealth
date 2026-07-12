@@ -393,26 +393,39 @@
                     <div id="jitsi-doctor-meet" class="flex-1 rounded-lg overflow-hidden bg-black"></div>
                 </div>
 
-                <!-- Interactive SOAP Form -->
+                <!-- Interactive SOAP Form + Prescription + Medicines + Advice -->
                 <div class="border border-[var(--border)] rounded-lg bg-rose-950/5 p-5 flex flex-col h-full overflow-y-auto space-y-4">
-                    <h3 class="text-xs font-bold uppercase tracking-wider border-b border-[var(--border)] pb-2 text-white">Clinical Case Notes (SOAP)</h3>
+                    <h3 class="text-xs font-bold uppercase tracking-wider border-b border-[var(--border)] pb-2 text-white">Clinical Case Notes — SOAP + Rx</h3>
                     
-                    <div class="space-y-4 text-xs text-[var(--text)]">
+                    <div class="space-y-3 text-xs text-[var(--text)]">
                         <div>
-                            <label class="block font-bold text-gray-500 mb-1">Subjective (S)</label>
-                            <textarea id="soap-subjective" rows="3" class="w-full bg-rose-950/10 border border-[var(--border)] text-[var(--text)] p-2 rounded outline-none resize-none"></textarea>
+                            <label class="block font-bold text-gray-500 mb-1">Subjective (S) — Patient Complaint</label>
+                            <textarea id="soap-subjective" rows="2" class="w-full bg-rose-950/10 border border-[var(--border)] text-[var(--text)] p-2 rounded outline-none resize-none"></textarea>
                         </div>
                         <div>
-                            <label class="block font-bold text-gray-500 mb-1">Objective (O)</label>
+                            <label class="block font-bold text-gray-500 mb-1">Objective (O) — Examination Findings</label>
                             <textarea id="soap-objective" rows="2" class="w-full bg-rose-950/10 border border-[var(--border)] text-[var(--text)] p-2 rounded outline-none resize-none"></textarea>
                         </div>
                         <div>
-                            <label class="block font-bold text-gray-500 mb-1">Assessment (A)</label>
+                            <label class="block font-bold text-gray-500 mb-1">Assessment (A) — Diagnosis</label>
                             <textarea id="soap-assessment" rows="2" class="w-full bg-rose-950/10 border border-[var(--border)] text-[var(--text)] p-2 rounded outline-none resize-none"></textarea>
                         </div>
                         <div>
-                            <label class="block font-bold text-gray-500 mb-1">Plan (P)</label>
-                            <textarea id="soap-plan" rows="3" class="w-full bg-rose-950/10 border border-[var(--border)] text-[var(--text)] p-2 rounded outline-none resize-none"></textarea>
+                            <label class="block font-bold text-gray-500 mb-1">Plan (P) — Treatment Plan</label>
+                            <textarea id="soap-plan" rows="2" class="w-full bg-rose-950/10 border border-[var(--border)] text-[var(--text)] p-2 rounded outline-none resize-none"></textarea>
+                        </div>
+                        <!-- NEW: Prescription, Medicines, Advice fields -->
+                        <div class="border-t border-rose-900/30 pt-3">
+                            <label class="block font-bold text-rose-400 mb-1">📋 Prescription (visible to patient)</label>
+                            <textarea id="soap-prescription" rows="2" placeholder="e.g. Sulphur 30C, Belladonna 200C..." class="w-full bg-rose-950/10 border border-rose-900/30 text-[var(--text)] p-2 rounded outline-none resize-none"></textarea>
+                        </div>
+                        <div>
+                            <label class="block font-bold text-rose-400 mb-1">💊 Medicines (dosage &amp; schedule)</label>
+                            <textarea id="soap-medicines" rows="2" placeholder="e.g. Sulphur 30C - 3 pellets twice daily for 1 week" class="w-full bg-rose-950/10 border border-rose-900/30 text-[var(--text)] p-2 rounded outline-none resize-none"></textarea>
+                        </div>
+                        <div>
+                            <label class="block font-bold text-rose-400 mb-1">💡 Doctor Advice (lifestyle / diet)</label>
+                            <textarea id="soap-advice" rows="2" placeholder="e.g. Avoid coffee, spicy food. Rest for 3 days." class="w-full bg-rose-950/10 border border-rose-900/30 text-[var(--text)] p-2 rounded outline-none resize-none"></textarea>
                         </div>
                     </div>
 
@@ -436,10 +449,10 @@
                     </div>
 
                     <button onclick="saveClinicalNotes()" class="w-full bg-rose-600 hover:bg-rose-700 text-white text-xs py-3 rounded-lg font-bold transition">
-                        Save Consultation Case Sheet
+                        💾 Save Case Sheet &amp; Send to Patient
                     </button>
                     <div id="saveStatus" class="hidden text-center text-xs py-2 bg-green-950 text-green-400 border border-green-900 rounded-lg font-bold">
-                        ✓ Case Sheet saved successfully.
+                        ✓ Case sheet saved. Patient notified instantly.
                     </div>
                 </div>
             </div>
@@ -591,59 +604,92 @@
             document.getElementById('statCompleted').innerText = list.filter(item => item.status === 'Confirmed').length;
         }
 
-        // Renders ALL today's active schedule appointments (RESTORED TO BEHAVE EXACTLY AS BEFORE)
+        // Renders ALL active appointments in the dashboard
         function renderAppointments(list) {
             const container = document.getElementById('appointmentsList');
             container.innerHTML = '';
-            
-            if(list.length === 0) {
+
+            if (list.length === 0) {
                 container.innerHTML = '<p class="text-gray-500 text-center py-10 text-xs">No appointments scheduled.</p>';
                 return;
             }
 
             list.forEach(item => {
                 const itemDiv = document.createElement('div');
-                itemDiv.className = `p-4 border rounded-xl transition ${item.status === 'Confirmed' ? 'border-green-300/30 bg-green-950/20' : item.status === 'Cancelled' ? 'border-red-900/30 bg-red-950/10 opacity-60' : 'border-[#1f1f23] bg-[#151518]'}`;
-                
+                const statusClass = item.status === 'Confirmed' ? 'border-green-300/30 bg-green-950/20'
+                    : item.status === 'WhatsApp Sent' ? 'border-blue-500/30 bg-blue-950/10'
+                    : (item.status === 'Cancelled' || item.status === 'Rejected') ? 'border-red-900/30 bg-red-950/10 opacity-60'
+                    : 'border-[#1f1f23] bg-[#151518]';
+                itemDiv.className = `p-4 border rounded-xl transition ${statusClass}`;
+
+                const statusBadge = item.status === 'Confirmed' ? 'bg-green-950 text-green-400 border border-green-900/30'
+                    : item.status === 'WhatsApp Sent' ? 'bg-blue-950 text-blue-400 border border-blue-900/30'
+                    : (item.status === 'Rejected' || item.status === 'Cancelled') ? 'bg-red-950 text-red-400 border border-red-900/30'
+                    : 'bg-rose-950 text-rose-400';
+
+                const paymentBadge = item.payment_status
+                    ? `<span class="text-[9px] px-2 py-0.5 rounded font-bold uppercase tracking-wider ${item.payment_status === 'Paid' ? 'bg-green-950 text-green-400' : item.payment_status === 'Payment Request Sent' ? 'bg-blue-950 text-blue-400' : 'bg-yellow-950 text-yellow-400'}">${item.payment_status}</span>`
+                    : '';
+
+                const serviceBadge = item.service_name
+                    ? `<p class="text-[10px] text-blue-300 mt-1">🩺 ${item.service_name} — ₹${(item.consultation_fee || 0).toLocaleString()}</p>`
+                    : '';
+
                 let actionButtons = '';
+
                 if (item.status === 'Pending') {
+                    const phone = (item.phone || '').replace(/\D/g, '');
+                    const waMsg = encodeURIComponent(`Dear ${item.name}, your appointment request for ${item.service_name || 'consultation'} on ${item.date} at ${item.time} has been received. Fee: ₹${item.consultation_fee || ''}. Please complete payment and send screenshot here. — Dr. Varsha Bandi, Homeopathway`);
                     actionButtons = `
-                        <div class="grid grid-cols-3 gap-2 mt-3">
-                            <button onclick="confirmAndConnect('${item.id}', '${item.name}', '${item.date}')" class="bg-rose-600 hover:bg-rose-700 text-white text-[9px] py-2 rounded-lg font-bold transition uppercase">Confirm</button>
+                        <div class="grid grid-cols-2 gap-2 mt-3">
+                            <button onclick="sendWhatsAppPayment('${item.id}', '${phone}', '${waMsg}')" class="bg-green-600 hover:bg-green-700 text-white text-[9px] py-2 rounded-lg font-bold transition uppercase">📲 WhatsApp</button>
                             <button onclick="rescheduleAppointment('${item.id}')" class="bg-zinc-800 hover:bg-zinc-700 text-gray-300 text-[9px] py-2 rounded-lg font-bold transition uppercase">Reschedule</button>
-                            <button onclick="cancelAppointment('${item.id}')" class="bg-red-950/40 hover:bg-red-900/40 text-red-400 text-[9px] py-2 rounded-lg font-bold transition uppercase border border-red-900/30">Cancel</button>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 mt-2">
+                            <button onclick="acceptAppointment('${item.id}')" class="bg-rose-600 hover:bg-rose-700 text-white text-[9px] py-2 rounded-lg font-bold transition uppercase">✅ Accept</button>
+                            <button onclick="rejectAppointment('${item.id}')" class="bg-red-950/40 hover:bg-red-900/40 text-red-400 text-[9px] py-2 rounded-lg font-bold transition uppercase border border-red-900/30">Reject</button>
+                        </div>
+                    `;
+                } else if (item.status === 'WhatsApp Sent') {
+                    actionButtons = `
+                        <div class="grid grid-cols-2 gap-2 mt-3">
+                            <button onclick="acceptAppointment('${item.id}')" class="bg-green-700 hover:bg-green-600 text-white text-[9px] py-2 rounded-lg font-bold transition uppercase">✅ Accept Payment</button>
+                            <button onclick="rejectAppointment('${item.id}')" class="bg-red-950/40 hover:bg-red-900/40 text-red-400 text-[9px] py-2 rounded-lg font-bold transition uppercase border border-red-900/30">Reject</button>
                         </div>
                     `;
                 } else if (item.status === 'Confirmed') {
                     const showComplete = item.meeting_status !== 'ENDED';
                     actionButtons = `
                         <div class="grid grid-cols-2 gap-2 mt-3">
-                            <button onclick="viewActiveWorkspace('${item.id}', '${item.name}', '${item.videoRoom}', '${item.date}')" class="bg-[#1c1c1f] hover:bg-[#25252a] text-white text-[9px] py-2 rounded-lg font-bold transition uppercase border border-[var(--border)]">Open Workspace</button>
-                            ${showComplete ? `
-                                <button onclick="completeConsultation('${item.id}')" class="bg-green-900 hover:bg-green-800 text-white text-[9px] py-2 rounded-lg font-bold transition uppercase">End Call</button>
-                            ` : `
-                                <span class="bg-zinc-900 text-zinc-500 text-[9px] py-2 rounded-lg font-bold text-center border border-zinc-800 uppercase select-none">Completed</span>
-                            `}
+                            <button onclick="joinVideoAndNotify('${item.id}', '${item.name}', '${item.date}')" class="bg-rose-600 hover:bg-rose-700 text-white text-[9px] py-2 rounded-lg font-bold transition uppercase">📹 Join Video</button>
+                            <button onclick="viewActiveWorkspace('${item.id}', '${item.name}', 'HomeopathwayRoom-${item.id}', '${item.date}')" class="bg-[#1c1c1f] hover:bg-[#25252a] text-white text-[9px] py-2 rounded-lg font-bold transition uppercase border border-[var(--border)]">Open Workspace</button>
                         </div>
                         <div class="grid grid-cols-2 gap-2 mt-2">
                             <button onclick="rescheduleAppointment('${item.id}')" class="bg-zinc-800 hover:bg-zinc-700 text-gray-300 text-[9px] py-1.5 rounded-lg font-bold transition uppercase">Reschedule</button>
-                            <button onclick="cancelAppointment('${item.id}')" class="bg-red-950/40 hover:bg-red-900/40 text-red-400 text-[9px] py-1.5 rounded-lg font-bold transition uppercase border border-red-900/30">Cancel</button>
+                            ${showComplete
+                                ? `<button onclick="completeConsultation('${item.id}')" class="bg-green-900 hover:bg-green-800 text-white text-[9px] py-1.5 rounded-lg font-bold transition uppercase">End Call</button>`
+                                : `<span class="bg-zinc-900 text-zinc-500 text-[9px] py-1.5 rounded-lg font-bold text-center border border-zinc-800 uppercase select-none">Completed</span>`}
                         </div>
                     `;
                 }
 
                 itemDiv.innerHTML = `
-                    <div class="flex justify-between items-start mb-2">
+                    <div class="flex justify-between items-start mb-2 flex-wrap gap-2">
                         <h4 class="font-bold text-white text-xs">${item.name}</h4>
-                        <span class="text-[9px] px-2 py-0.5 rounded font-bold uppercase tracking-wider ${item.status === 'Confirmed' ? 'bg-green-950 text-green-400 border border-green-900/30' : item.status === 'Cancelled' ? 'bg-red-950 text-red-400 border border-red-900/30' : 'bg-rose-950 text-rose-400'}">${item.status}</span>
+                        <div class="flex gap-1 flex-wrap">
+                            <span class="text-[9px] px-2 py-0.5 rounded font-bold uppercase tracking-wider ${statusBadge}">${item.status}</span>
+                            ${paymentBadge}
+                        </div>
                     </div>
                     <p class="text-[10px] text-gray-500">📅 ${item.date} at 🕒 ${item.time} (${item.phone || 'No phone'})</p>
+                    ${serviceBadge}
                     <p class="text-xs text-gray-400 mt-2 bg-rose-950/10 p-2 rounded border border-[var(--border)] italic">"${item.reason}"</p>
                     ${actionButtons}
                 `;
                 container.appendChild(itemDiv);
             });
         }
+
 
         async function cancelAppointment(id) {
             if (!confirm("Are you sure you want to cancel this appointment?")) return;
@@ -746,6 +792,13 @@
                     document.getElementById('soap-objective').value = data.note.objective || '';
                     document.getElementById('soap-assessment').value = data.note.assessment || '';
                     document.getElementById('soap-plan').value = data.note.plan || '';
+                    document.getElementById('soap-prescription').value = data.note.prescription || '';
+                    document.getElementById('soap-medicines').value = data.note.medicines || '';
+                    document.getElementById('soap-advice').value = data.note.advice || '';
+                } else {
+                    // Clear all fields for fresh entry
+                    ['soap-subjective','soap-objective','soap-assessment','soap-plan','soap-prescription','soap-medicines','soap-advice']
+                        .forEach(id => { document.getElementById(id).value = ''; });
                 }
 
                 const fupRes = await fetch(`/api/followups/${appointmentId}`, { headers: { 'Authorization': 'Bearer ' + token } });
@@ -770,26 +823,91 @@
         }
 
         async function confirmAndConnect(id, name, visitDate) {
-            const roomName = `TelehealthRoom-${id}`;
+            const roomName = `HomeopathwayRoom-${id}`;
             const token = localStorage.getItem('doctorToken');
             try {
-                // Call meeting/start API to persist status 'Confirmed', meeting_status 'READY', and video_room in db.
                 await fetch('/api/meeting/start', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ' + token
-                    },
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
                     body: JSON.stringify({ appointmentId: id, roomName })
                 });
-
-                // Emitting the socket event as well to trigger direct page state adjustments on active dashboard
                 socket.emit('confirm_and_share_link', { appointmentId: id, roomName });
-
                 viewActiveWorkspace(id, name, roomName, visitDate);
             } catch (err) {
                 console.error(err);
                 alert("Failed to start virtual room.");
+            }
+        }
+
+        // Feature 4: Send WhatsApp payment request
+        async function sendWhatsAppPayment(apptId, phone, encodedMsg) {
+            if (!phone) return alert('No phone number on this appointment.');
+            const token = localStorage.getItem('doctorToken');
+            try {
+                await fetch(`/api/appointments/${apptId}/send-whatsapp`, {
+                    method: 'PUT',
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                window.open(`https://wa.me/${phone}?text=${encodedMsg}`, '_blank');
+                loadAppointments();
+                showToast('WhatsApp Sent', 'Payment request sent. Waiting for patient to pay.');
+            } catch (err) {
+                console.error(err);
+                alert('Failed to send WhatsApp request.');
+            }
+        }
+
+        // Feature 5: Accept payment / confirm appointment
+        async function acceptAppointment(apptId) {
+            const token = localStorage.getItem('doctorToken');
+            try {
+                await fetch(`/api/appointments/${apptId}/accept`, {
+                    method: 'PUT',
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                loadAppointments();
+                showToast('Appointment Confirmed', 'Patient notified: Doctor accepted consultation.');
+            } catch (err) {
+                console.error(err);
+                alert('Failed to accept appointment.');
+            }
+        }
+
+        // Feature 3/6: Reject appointment
+        async function rejectAppointment(apptId) {
+            if (!confirm('Are you sure you want to reject this appointment?')) return;
+            const token = localStorage.getItem('doctorToken');
+            try {
+                await fetch(`/api/appointments/${apptId}/reject`, {
+                    method: 'PUT',
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                loadAppointments();
+                showToast('Appointment Rejected', 'Patient has been notified.');
+            } catch (err) {
+                console.error(err);
+                alert('Failed to reject appointment.');
+            }
+        }
+
+        // Feature 6: Doctor joins video — notifies patient
+        async function joinVideoAndNotify(apptId, name, visitDate) {
+            const token = localStorage.getItem('doctorToken');
+            try {
+                const res = await fetch(`/api/appointments/${apptId}/join-video`, {
+                    method: 'PUT',
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                const data = await res.json();
+                if (data.success) {
+                    viewActiveWorkspace(apptId, name, data.videoRoom || `HomeopathwayRoom-${apptId}`, visitDate);
+                    showToast('Video Started', 'Patient has been notified to join the consultation.');
+                } else {
+                    alert('Failed to start video session.');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Failed to start video session.');
             }
         }
 
@@ -801,7 +919,10 @@
                 subjective: document.getElementById('soap-subjective').value,
                 objective: document.getElementById('soap-objective').value,
                 assessment: document.getElementById('soap-assessment').value,
-                plan: document.getElementById('soap-plan').value
+                plan: document.getElementById('soap-plan').value,
+                prescription: document.getElementById('soap-prescription').value,
+                medicines: document.getElementById('soap-medicines').value,
+                advice: document.getElementById('soap-advice').value
             };
 
             const token = localStorage.getItem('doctorToken');
@@ -816,7 +937,8 @@
                 const data = await res.json();
                 if (data.success) {
                     saveStatus.classList.remove('hidden');
-                    setTimeout(() => saveStatus.classList.add('hidden'), 4000);
+                    setTimeout(() => saveStatus.classList.add('hidden'), 5000);
+                    showToast('Case Sheet Saved', 'Patient notified with prescription & medical update.');
                 }
             } catch (err) {
                 console.error(err);
