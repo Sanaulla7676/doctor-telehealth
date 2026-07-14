@@ -61,16 +61,16 @@ export default function DoctorSection() {
 
       ctx = gsap.context(() => {
         /* ── 1. Section heading fade+rise ── */
-        gsap.from(headingRef.current, {
-          y: 60, opacity: 0, duration: 1, ease: "power3.out",
-          scrollTrigger: { trigger: headingRef.current, start: "top 85%" },
-        });
+        gsap.fromTo(headingRef.current,
+          { y: 60, opacity: 0 },
+          { y: 0, opacity: 1, duration: 1, ease: "power3.out", scrollTrigger: { trigger: headingRef.current, start: "top 85%" } }
+        );
 
         /* ── 2. Portrait slides in from left, parallax on scroll ── */
-        gsap.from(portraitRef.current, {
-          x: -120, opacity: 0, duration: 1.1, ease: "power4.out",
-          scrollTrigger: { trigger: portraitRef.current, start: "top 80%" },
-        });
+        gsap.fromTo(portraitRef.current,
+          { x: -120, opacity: 0 },
+          { x: 0, opacity: 1, duration: 1.1, ease: "power4.out", scrollTrigger: { trigger: portraitRef.current, start: "top 80%" } }
+        );
         gsap.to(portraitRef.current, {
           y: -40,
           ease: "none",
@@ -83,57 +83,57 @@ export default function DoctorSection() {
         });
 
         /* ── 3. Overlay card on portrait reveals upward ── */
-        gsap.from(overlayRef.current, {
-          y: 50, opacity: 0, duration: 1, delay: 0.4, ease: "power3.out",
-          scrollTrigger: { trigger: portraitRef.current, start: "top 75%" },
-        });
+        gsap.fromTo(overlayRef.current,
+          { y: 50, opacity: 0 },
+          { y: 0, opacity: 1, duration: 1, delay: 0.4, ease: "power3.out", scrollTrigger: { trigger: portraitRef.current, start: "top 75%" } }
+        );
 
         /* ── 4. Stats bounce in staggered ── */
-        gsap.from(statsRef.current!.children, {
-          scale: 0.7, opacity: 0, duration: 0.6, stagger: 0.15, ease: "back.out(1.7)",
-          scrollTrigger: { trigger: statsRef.current, start: "top 85%" },
-        });
+        gsap.fromTo(statsRef.current!.children,
+          { scale: 0.7, opacity: 0 },
+          { scale: 1, opacity: 1, duration: 0.6, stagger: 0.15, ease: "back.out(1.7)", scrollTrigger: { trigger: statsRef.current, start: "top 85%" } }
+        );
 
         /* ── 5. Bio card slides from right ── */
-        gsap.from(bioRef.current, {
-          x: 100, opacity: 0, duration: 1, ease: "power3.out",
-          scrollTrigger: { trigger: bioRef.current, start: "top 80%" },
-        });
+        gsap.fromTo(bioRef.current,
+          { x: 100, opacity: 0 },
+          { x: 0, opacity: 1, duration: 1, ease: "power3.out", scrollTrigger: { trigger: bioRef.current, start: "top 80%" } }
+        );
 
         /* ── 6. Qualification cards stagger from right ── */
         if (qualRef.current) {
-          gsap.from(qualRef.current.querySelectorAll(".qual-card"), {
-            x: 80, opacity: 0, duration: 0.7, stagger: 0.15, ease: "power3.out",
-            scrollTrigger: { trigger: qualRef.current, start: "top 80%" },
-          });
+          gsap.fromTo(qualRef.current.querySelectorAll(".qual-card"),
+            { x: 80, opacity: 0 },
+            { x: 0, opacity: 1, duration: 0.7, stagger: 0.15, ease: "power3.out", scrollTrigger: { trigger: qualRef.current, start: "top 80%" } }
+          );
         }
 
         /* ── 7. Timeline entries slide in one by one (storytelling) ── */
         if (expRef.current) {
-          gsap.from(expRef.current.querySelectorAll(".exp-item"), {
-            x: 60, opacity: 0, duration: 0.65, stagger: 0.18, ease: "power2.out",
-            scrollTrigger: { trigger: expRef.current, start: "top 80%" },
-          });
+          gsap.fromTo(expRef.current.querySelectorAll(".exp-item"),
+            { x: 60, opacity: 0 },
+            { x: 0, opacity: 1, duration: 0.65, stagger: 0.18, ease: "power2.out", scrollTrigger: { trigger: expRef.current, start: "top 80%" } }
+          );
           /* line draws downward */
-          gsap.from(expRef.current.querySelector(".timeline-line"), {
-            scaleY: 0, transformOrigin: "top center", duration: 1.5, ease: "power2.inOut",
-            scrollTrigger: { trigger: expRef.current, start: "top 80%", scrub: 0.5 },
-          });
+          gsap.fromTo(expRef.current.querySelector(".timeline-line"),
+            { scaleY: 0 },
+            { scaleY: 1, transformOrigin: "top center", duration: 1.5, ease: "power2.inOut", scrollTrigger: { trigger: expRef.current, start: "top 80%", scrub: 0.5 } }
+          );
         }
 
         /* ── 8. Skills & achievements flip in ── */
         if (skillsRef.current) {
-          gsap.from(skillsRef.current.children, {
-            rotateY: 15, opacity: 0, duration: 0.8, stagger: 0.2, ease: "power3.out",
-            scrollTrigger: { trigger: skillsRef.current, start: "top 82%" },
-          });
+          gsap.fromTo(skillsRef.current.children,
+            { rotateY: 15, opacity: 0 },
+            { rotateY: 0, opacity: 1, duration: 0.8, stagger: 0.2, ease: "power3.out", scrollTrigger: { trigger: skillsRef.current, start: "top 82%" } }
+          );
         }
 
         /* ── 9. Certs reveal from bottom ── */
-        gsap.from(certsRef.current, {
-          y: 50, opacity: 0, duration: 0.9, ease: "power3.out",
-          scrollTrigger: { trigger: certsRef.current, start: "top 85%" },
-        });
+        gsap.fromTo(certsRef.current,
+          { y: 50, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.9, ease: "power3.out", scrollTrigger: { trigger: certsRef.current, start: "top 85%" } }
+        );
 
       }, sectionRef);
     })();

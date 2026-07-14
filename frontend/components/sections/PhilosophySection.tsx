@@ -83,28 +83,36 @@ export default function PhilosophySection() {
       gsap.registerPlugin(ScrollTrigger);
       ctx = gsap.context(() => {
         gsap.utils.toArray<HTMLElement>(".reveal-up").forEach((el) => {
-          gsap.from(el, {
-            y: 50, opacity: 0, duration: 0.8, ease: "power3.out",
-            scrollTrigger: { trigger: el, start: "top 85%", once: true },
-          });
+          gsap.fromTo(el, 
+            { y: 50, opacity: 0 },
+            { y: 0, opacity: 1, duration: 0.8, ease: "power3.out",
+              scrollTrigger: { trigger: el, start: "top 85%", once: true }
+            }
+          );
         });
         gsap.utils.toArray<HTMLElement>(".reveal-left").forEach((el) => {
-          gsap.from(el, {
-            x: -60, opacity: 0, duration: 0.8, ease: "power3.out",
-            scrollTrigger: { trigger: el, start: "top 85%", once: true },
-          });
+          gsap.fromTo(el, 
+            { x: -60, opacity: 0 },
+            { x: 0, opacity: 1, duration: 0.8, ease: "power3.out",
+              scrollTrigger: { trigger: el, start: "top 85%", once: true }
+            }
+          );
         });
         gsap.utils.toArray<HTMLElement>(".reveal-right").forEach((el) => {
-          gsap.from(el, {
-            x: 60, opacity: 0, duration: 0.8, ease: "power3.out",
-            scrollTrigger: { trigger: el, start: "top 85%", once: true },
-          });
+          gsap.fromTo(el, 
+            { x: 60, opacity: 0 },
+            { x: 0, opacity: 1, duration: 0.8, ease: "power3.out",
+              scrollTrigger: { trigger: el, start: "top 85%", once: true }
+            }
+          );
         });
         gsap.utils.toArray<HTMLElement>(".stagger-children").forEach((parent) => {
-          gsap.from((parent as HTMLElement).children, {
-            y: 30, opacity: 0, stagger: 0.08, duration: 0.55, ease: "power2.out",
-            scrollTrigger: { trigger: parent, start: "top 82%", once: true },
-          });
+          gsap.fromTo((parent as HTMLElement).children, 
+            { y: 30, opacity: 0 },
+            { y: 0, opacity: 1, stagger: 0.08, duration: 0.55, ease: "power2.out",
+              scrollTrigger: { trigger: parent, start: "top 82%", once: true }
+            }
+          );
         });
       }, sectionRef);
     })();
