@@ -42,7 +42,7 @@ export default function HeroSection() {
         playsInline
         className="absolute inset-0 w-full h-full object-cover opacity-0"
       >
-        <source src="/Healthcare_hero_section_animation_202606212301.mp4" type="video/mp4" />
+        <source src="/Untitled_Scene_07-14_14_16_48_202607142043.mp4" type="video/mp4" />
         Your browser does not support the video tag.
       </video>
 
