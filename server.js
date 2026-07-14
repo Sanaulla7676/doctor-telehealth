@@ -413,6 +413,31 @@ app.post('/api/patient/register', async (req, res) => {
             VALUES ($1, $2, $3, $4, $5, $6);
         `, [accountId, patientId, email, phone || null, passwordHash, full_name]);
 
+        // Auto-link any existing appointments that don't have patient_account_id set yet
+        const emailClean = email ? email.trim().toLowerCase() : '';
+        const phoneClean = phone ? phone.trim() : '';
+        if (emailClean || phoneClean) {
+            if (emailClean && phoneClean) {
+                await pool.query(`
+                    UPDATE appointments 
+                    SET patient_account_id = $1 
+                    WHERE patient_account_id IS NULL AND (LOWER(email) = $2 OR phone = $3);
+                `, [accountId, emailClean, phoneClean]);
+            } else if (emailClean) {
+                await pool.query(`
+                    UPDATE appointments 
+                    SET patient_account_id = $1 
+                    WHERE patient_account_id IS NULL AND LOWER(email) = $2;
+                `, [accountId, emailClean]);
+            } else {
+                await pool.query(`
+                    UPDATE appointments 
+                    SET patient_account_id = $1 
+                    WHERE patient_account_id IS NULL AND phone = $2;
+                `, [accountId, phoneClean]);
+            }
+        }
+
         const token = jwt.sign(
             { patientAccountId: accountId, email, full_name, patientId },
             process.env.JWT_SECRET,
@@ -724,6 +749,36 @@ app.post('/api/appointments', async (req, res) => {
             const acctCheck = await pool.query('SELECT id FROM patient_accounts WHERE id = $1;', [patient_account_id]);
             if (acctCheck.rows.length > 0) {
                 verifiedAccountId = patient_account_id;
+            }
+        }
+
+        // If not provided/verified, lookup matching account by email or phone
+        if (!verifiedAccountId) {
+            const emailClean = email ? email.trim().toLowerCase() : '';
+            const phoneClean = (phone && !phone.startsWith('no_phone_')) ? phone.trim() : '';
+            
+            if (emailClean || phoneClean) {
+                let acctCheck;
+                if (emailClean && phoneClean) {
+                    acctCheck = await pool.query(
+                        'SELECT id FROM patient_accounts WHERE LOWER(email) = $1 OR phone = $2 LIMIT 1;',
+                        [emailClean, phoneClean]
+                    );
+                } else if (emailClean) {
+                    acctCheck = await pool.query(
+                        'SELECT id FROM patient_accounts WHERE LOWER(email) = $1 LIMIT 1;',
+                        [emailClean]
+                    );
+                } else {
+                    acctCheck = await pool.query(
+                        'SELECT id FROM patient_accounts WHERE phone = $1 LIMIT 1;',
+                        [phoneClean]
+                    );
+                }
+                
+                if (acctCheck && acctCheck.rows.length > 0) {
+                    verifiedAccountId = acctCheck.rows[0].id;
+                }
             }
         }
 
