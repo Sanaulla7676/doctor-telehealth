@@ -813,6 +813,7 @@ app.post('/api/appointments', async (req, res) => {
 app.get('/api/appointments', authenticateToken, async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM appointments ORDER BY date ASC, time ASC;');
+        // Return full field set compatible with both website dashboard and Android ClinicApiService
         res.json(result.rows.map(row => ({
             id: row.id,
             name: row.name,
@@ -824,8 +825,14 @@ app.get('/api/appointments', authenticateToken, async (req, res) => {
             status: row.status,
             meeting_status: row.meeting_status || 'PENDING',
             videoRoom: row.video_room,
+            video_room: row.video_room,
             patientId: row.patient_id,
-            patient_account_id: row.patient_account_id
+            patient_account_id: row.patient_account_id,
+            // Billing & consultation workflow fields (Android Feature 4/5/6)
+            service_name: row.service_name || 'Homoeopathic Consultation',
+            consultation_fee: row.consultation_fee || 800,
+            payment_status: row.payment_status || 'Unpaid',
+            consultation_status: row.consultation_status || 'Pending'
         })));
     } catch (err) {
         res.status(500).json({ success: false });
@@ -973,7 +980,8 @@ app.get('/api/patients/:id/timeline', authenticateToken, async (req, res) => {
 // ─────────────────────────────────────────────────────────────
 app.get('/api/documents', authenticateToken, async (req, res) => {
     try {
-        const result = await pool.query('SELECT id, name, category, size, uploaded_at FROM documents ORDER BY uploaded_at DESC;');
+        // Include file_data and appointment_id so Android can sync document content offline
+        const result = await pool.query('SELECT id, name, category, size, uploaded_at, file_data, appointment_id FROM documents ORDER BY uploaded_at DESC;');
         res.json({ success: true, documents: result.rows });
     } catch (err) {
         res.status(500).json({ success: false });
@@ -1049,6 +1057,24 @@ app.post('/api/notifications/mark-read', authenticateToken, async (req, res) => 
 
 // ─────────────────────────────────────────────────────────────
 // FOLLOWUPS APIS
+
+// ─────────────────────────────────────────────────────────────
+// ANDROID REQUIRED: GET all followups (bulk list for calendar & dashboard sync)
+// This is called by ClinicSyncManager.getAllFollowUps() on every sync cycle
+app.get('/api/followups', authenticateToken, async (req, res) => {
+    try {
+        const result = await pool.query(`
+            SELECT f.*, p.name as patient_name, p.phone as patient_phone
+            FROM followups f
+            LEFT JOIN patients p ON f.patient_id = p.id
+            ORDER BY f.followup_date ASC;
+        `);
+        res.json({ success: true, followups: result.rows });
+    } catch (err) {
+        console.error('Get all followups error:', err);
+        res.status(500).json({ success: false, followups: [] });
+    }
+});
 
 // ─────────────────────────────────────────────────────────────
 app.post('/api/followups', authenticateToken, async (req, res) => {
