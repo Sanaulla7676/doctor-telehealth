@@ -1,5 +1,8 @@
 package com.example.network
 
+import android.content.Context
+import com.squareup.moshi.Moshi
+import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Response
@@ -7,6 +10,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import retrofit2.http.*
 import java.util.concurrent.TimeUnit
+
 
 // ─── Auth DTOs ───────────────────────────────────────────────
 data class LoginRequest(val email: String, val password: String)
@@ -64,6 +68,10 @@ data class AppointmentsListContainerDto(val success: Boolean, val appointments: 
 // Generic action response
 data class ActionResponse(val success: Boolean, val error: String?)
 
+// Meeting lifecycle DTOs
+data class StartMeetingRequest(val appointmentId: String, val roomName: String)
+data class StartMeetingResponse(val success: Boolean, val roomName: String?)
+
 // ─── Clinical Notes DTOs ──────────────────────────────────────
 data class NoteRequest(
     val appointmentId: String,
@@ -111,6 +119,22 @@ data class FollowUpResponseDto(
     val message_status: String?
 )
 data class FollowUpContainerDto(val success: Boolean, val followup: FollowUpResponseDto?)
+
+// All followups (bulk GET) DTOs
+data class AllFollowUpDto(
+    val followup_id: String,
+    val patient_id: String?,
+    val consultation_id: String?,
+    val last_visit_date: String?,
+    val followup_date: String?,
+    val doctor_notes: String?,
+    val current_stage: String?,
+    val message: String?,
+    val message_status: String?,
+    val patient_name: String?,
+    val patient_phone: String?
+)
+data class AllFollowUpsContainerDto(val success: Boolean, val followups: List<AllFollowUpDto>)
 
 // ─── Reminder DTOs ────────────────────────────────────────────
 data class ReminderDto(
@@ -194,41 +218,13 @@ interface ClinicApiService {
     @POST("/api/appointments")
     suspend fun createAppointment(@Body request: AppointmentDto): Response<AppointmentContainerDto>
 
-    @POST("/api/appointments/{id}/confirm")
-    suspend fun confirmAppointment(
+    @POST("/api/meeting/start")
+    suspend fun startMeeting(
         @Header("Authorization") tokenHeader: String,
-        @Path("id") id: String
-    ): Response<AppointmentContainerDto>
+        @Body request: StartMeetingRequest
+    ): Response<StartMeetingResponse>
 
-    // Feature 4 — Send WhatsApp payment request
-    @PUT("/api/appointments/{id}/send-whatsapp")
-    suspend fun sendWhatsAppPayment(
-        @Header("Authorization") tokenHeader: String,
-        @Path("id") id: String
-    ): Response<AppointmentContainerDto>
-
-    // Feature 5 — Accept payment / confirm consultation
-    @PUT("/api/appointments/{id}/accept")
-    suspend fun acceptAppointment(
-        @Header("Authorization") tokenHeader: String,
-        @Path("id") id: String
-    ): Response<AppointmentContainerDto>
-
-    // Feature 3/6 — Reject appointment
-    @PUT("/api/appointments/{id}/reject")
-    suspend fun rejectAppointment(
-        @Header("Authorization") tokenHeader: String,
-        @Path("id") id: String
-    ): Response<AppointmentContainerDto>
-
-    // Feature 6 — Doctor joins video (notifies patient)
-    @PUT("/api/appointments/{id}/join-video")
-    suspend fun joinVideo(
-        @Header("Authorization") tokenHeader: String,
-        @Path("id") id: String
-    ): Response<AppointmentContainerDto>
-
-    // Update status (cancel, reschedule)
+    // Update status (cancel, reschedule, reject, whatsapp, accept)
     @PUT("/api/appointments/{id}/status")
     suspend fun updateAppointmentStatus(
         @Header("Authorization") tokenHeader: String,
@@ -242,13 +238,13 @@ interface ClinicApiService {
         @Header("Authorization") tokenHeader: String
     ): Response<AppointmentsListContainerDto>
 
-    // Patient — Notifications
-    @GET("/api/patient/notifications")
+    // Doctor — Notifications (server.js: /api/notifications)
+    @GET("/api/notifications")
     suspend fun getPatientNotifications(
         @Header("Authorization") tokenHeader: String
     ): Response<PatientNotificationsContainerDto>
 
-    @POST("/api/patient/notifications/mark-read")
+    @POST("/api/notifications/mark-read")
     suspend fun markPatientNotificationsRead(
         @Header("Authorization") tokenHeader: String
     ): Response<ActionResponse>
@@ -282,6 +278,11 @@ interface ClinicApiService {
         @Header("Authorization") tokenHeader: String,
         @Body request: FollowUpRequest
     ): Response<FollowUpContainerDto>
+
+    @GET("/api/followups")
+    suspend fun getAllFollowUps(
+        @Header("Authorization") tokenHeader: String
+    ): Response<AllFollowUpsContainerDto>
 
     @GET("/api/followups/{appointmentId}")
     suspend fun getFollowUp(
@@ -330,25 +331,64 @@ interface ClinicApiService {
 
 // ─── Retrofit Client Provider ─────────────────────────────────
 object RetrofitClient {
-    private const val BASE_URL = "https://ais-pre-odhqgf7uzczd2dwh4i45wy-403938223786.asia-southeast1.run.app/"
+    private const val DEFAULT_URL = "https://doctor-telehealth.onrender.com/"
 
-    val apiService: ClinicApiService by lazy {
+    @Volatile
+    private var instance: ClinicApiService? = null
+    private var currentUrl: String? = null
+
+    fun getApiService(context: Context): ClinicApiService {
+        val prefs = AuthPreferences(context)
+        val url = prefs.serverUrl ?: DEFAULT_URL
+        val baseUrl = if (url.endsWith("/")) url else "$url/"
+
+        return instance?.let {
+            if (currentUrl == baseUrl) {
+                it
+            } else {
+                buildService(baseUrl)
+            }
+        } ?: synchronized(this) {
+            instance?.let {
+                if (currentUrl == baseUrl) it else buildService(baseUrl)
+            } ?: buildService(baseUrl)
+        }
+    }
+
+    private fun buildService(baseUrl: String): ClinicApiService {
+        currentUrl = baseUrl
         val logging = HttpLoggingInterceptor().apply {
             level = HttpLoggingInterceptor.Level.BODY
         }
 
         val client = OkHttpClient.Builder()
             .addInterceptor(logging)
-            .connectTimeout(30, TimeUnit.SECONDS)
-            .readTimeout(30, TimeUnit.SECONDS)
+            .connectTimeout(90, TimeUnit.SECONDS)
+            .readTimeout(90, TimeUnit.SECONDS)
+            .build()
+
+        val moshi = Moshi.Builder()
+            .addLast(KotlinJsonAdapterFactory())
             .build()
 
         val retrofit = Retrofit.Builder()
-            .baseUrl(BASE_URL)
+            .baseUrl(baseUrl)
             .client(client)
-            .addConverterFactory(MoshiConverterFactory.create())
+            .addConverterFactory(MoshiConverterFactory.create(moshi))
             .build()
 
-        retrofit.create(ClinicApiService::class.java)
+        val service = retrofit.create(ClinicApiService::class.java)
+        instance = service
+        return service
+    }
+
+    val apiService: ClinicApiService
+        get() = instance ?: buildService(DEFAULT_URL)
+
+    fun resetInstance() {
+        synchronized(this) {
+            instance = null
+            currentUrl = null
+        }
     }
 }

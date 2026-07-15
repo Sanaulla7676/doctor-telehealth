@@ -10,7 +10,7 @@ class ClinicRepository(private val context: Context) {
 
     private val db = ClinicDatabase.getDatabase(context)
     private val dao = db.clinicDao()
-    private val api = RetrofitClient.apiService
+    private val api = RetrofitClient.getApiService(context)
     private val auth = AuthPreferences(context)
 
     private fun getHeader(): String? {
@@ -22,6 +22,13 @@ class ClinicRepository(private val context: Context) {
     fun getAllAppointmentsFlow(): Flow<List<AppointmentEntity>> = dao.getAllAppointmentsFlow()
     fun getAllFollowUpsFlow(): Flow<List<FollowUpEntity>> = dao.getAllFollowUpsFlow()
     fun getAllDocumentsFlow(): Flow<List<DocumentEntity>> = dao.getAllDocumentsFlow()
+    fun getUnreadNotificationCountFlow(): Flow<Int> = dao.getUnreadNotificationCountFlow()
+
+    suspend fun getAllNotifications(): List<PatientNotificationEntity> = dao.getAllPatientNotifications()
+
+    suspend fun markAllNotificationsRead() {
+        dao.markAllPatientNotificationsRead()
+    }
 
     suspend fun getPatientById(id: String): PatientEntity? = dao.getPatientById(id)
     suspend fun getAppointmentById(id: String): AppointmentEntity? = dao.getAppointmentById(id)
@@ -77,8 +84,9 @@ class ClinicRepository(private val context: Context) {
     suspend fun confirmAppointment(appointmentId: String): Boolean {
         val header = getHeader() ?: return false
         return try {
-            val response = api.confirmAppointment(header, appointmentId)
-            if (response.isSuccessful) {
+            val roomName = "TelehealthRoom-$appointmentId"
+            val response = api.startMeeting(header, StartMeetingRequest(appointmentId, roomName))
+            if (response.isSuccessful && response.body()?.success == true) {
                 syncAll()
                 true
             } else {
@@ -93,7 +101,7 @@ class ClinicRepository(private val context: Context) {
     suspend fun sendWhatsAppPayment(appointmentId: String): Boolean {
         val header = getHeader() ?: return false
         return try {
-            val response = api.sendWhatsAppPayment(header, appointmentId)
+            val response = api.updateAppointmentStatus(header, appointmentId, mapOf("status" to "Pending Payment"))
             if (response.isSuccessful) {
                 syncAll()
                 true
@@ -109,8 +117,9 @@ class ClinicRepository(private val context: Context) {
     suspend fun acceptAppointment(appointmentId: String): Boolean {
         val header = getHeader() ?: return false
         return try {
-            val response = api.acceptAppointment(header, appointmentId)
-            if (response.isSuccessful) {
+            val roomName = "TelehealthRoom-$appointmentId"
+            val response = api.startMeeting(header, StartMeetingRequest(appointmentId, roomName))
+            if (response.isSuccessful && response.body()?.success == true) {
                 syncAll()
                 true
             } else {
@@ -125,7 +134,7 @@ class ClinicRepository(private val context: Context) {
     suspend fun rejectAppointment(appointmentId: String): Boolean {
         val header = getHeader() ?: return false
         return try {
-            val response = api.rejectAppointment(header, appointmentId)
+            val response = api.updateAppointmentStatus(header, appointmentId, mapOf("status" to "Rejected"))
             if (response.isSuccessful) {
                 syncAll()
                 true
@@ -140,18 +149,18 @@ class ClinicRepository(private val context: Context) {
 
     suspend fun joinVideo(appointmentId: String): String? {
         val header = getHeader() ?: return null
+        val roomName = "TelehealthRoom-$appointmentId"
         return try {
-            val response = api.joinVideo(header, appointmentId)
+            val response = api.startMeeting(header, StartMeetingRequest(appointmentId, roomName))
             if (response.isSuccessful && response.body()?.success == true) {
                 syncAll()
-                val room = response.body()?.appointment?.videoRoom ?: response.body()?.appointment?.video_room
-                room ?: "HomeopathwayRoom-$appointmentId"
+                response.body()?.roomName ?: roomName
             } else {
-                null
+                roomName // fallback
             }
         } catch (e: Exception) {
             e.printStackTrace()
-            null
+            roomName // fallback
         }
     }
 

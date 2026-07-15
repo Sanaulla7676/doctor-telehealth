@@ -1,16 +1,11 @@
 {
-  "name": "doctor-telehealth",
+  "name": "homeopathway-clinical-dashboard-server",
   "version": "1.0.0",
-  "description": "Production-grade telemedicine EMR for Dr. Varsha Bandi",
+  "description": "Full-stack EMR and Clinical Portal server for Homeopathway.",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "node server.js"
+    "start": "node server.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
   "dependencies": {
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.5",
@@ -19,5 +14,6 @@
     "jsonwebtoken": "^9.0.3",
     "pg": "^8.22.0",
     "socket.io": "^4.8.3"
-  }
+  },
+  "private": true
 }

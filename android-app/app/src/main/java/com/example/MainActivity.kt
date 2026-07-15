@@ -57,6 +57,16 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
+        // Migrate server URL: always ensure Render backend is used
+        val authPrefs = com.example.network.AuthPreferences(this)
+        val savedUrl = authPrefs.serverUrl
+        val renderUrl = "https://doctor-telehealth.onrender.com"
+        if (savedUrl == null || savedUrl.contains("asia-southeast") || savedUrl.contains("ais-pre-")) {
+            authPrefs.serverUrl = renderUrl
+            com.example.network.RetrofitClient.resetInstance()
+        }
+
+
         // Prompt for Android 13+ Notification Permissions dynamically
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
@@ -212,7 +222,8 @@ fun MainAppLayout(
                         onProfileClick = { showProfileScreen = true },
                         onNotificationsClick = { showNotificationCenter = true },
                         toastTrigger = { toastMessage = it },
-                        onLogoutClick = onLogout
+                        onLogoutClick = onLogout,
+                        viewModel = viewModel
                     )
 
                     // Main Workspace depending on Tab selection
@@ -336,6 +347,7 @@ fun MainAppLayout(
                 if (showNotificationCenter) {
                     NotificationCenterSheet(
                         isDark = isDark,
+                        viewModel = viewModel,
                         onDismiss = { showNotificationCenter = false },
                         onOpenSettings = {
                             showNotificationCenter = false
@@ -357,7 +369,8 @@ fun ClinicHeader(
     onProfileClick: () -> Unit,
     onNotificationsClick: () -> Unit,
     toastTrigger: (String) -> Unit,
-    onLogoutClick: () -> Unit = {}
+    onLogoutClick: () -> Unit = {},
+    viewModel: com.example.ui.ClinicViewModel? = null
 ) {
     var clockTime by remember { mutableStateOf("03:47 PM") }
     var clockDate by remember { mutableStateOf("21 June 2026") }
@@ -422,7 +435,7 @@ fun ClinicHeader(
                 )
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = "Dr. Varsha Bandi",
+                        text = "DrVarsha bandi",
                         fontSize = 15.sp,
                         fontWeight = FontWeight.Black,
                         color = if (isDark) Color.White else ClinicColors.LightText
@@ -464,16 +477,24 @@ fun ClinicHeader(
                 contentAlignment = Alignment.Center
             ) {
                 Text("🔔", fontSize = 14.sp)
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(2.dp)
-                        .size(12.dp)
-                        .clip(CircleShape)
-                        .background(Color.Red),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text("3", fontSize = 8.sp, color = Color.White, fontWeight = FontWeight.Bold)
+                val unreadCount by (viewModel?.unreadNotificationCount ?: kotlinx.coroutines.flow.MutableStateFlow(0)).collectAsState()
+                if (unreadCount > 0) {
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(2.dp)
+                            .size(14.dp)
+                            .clip(CircleShape)
+                            .background(Color.Red),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = if (unreadCount > 9) "9+" else unreadCount.toString(),
+                            fontSize = 7.sp,
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
             }
 
@@ -858,6 +879,45 @@ fun AppointmentItem(
         if (isDark) ClinicColors.DarkBorder else ClinicColors.LightBorder
     }
     val cardBg = if (isDark) ClinicColors.DarkCard else ClinicColors.LightCard
+    var showRejectDialog by remember { mutableStateOf(false) }
+
+    // Reject Confirmation Dialog
+    if (showRejectDialog) {
+        AlertDialog(
+            onDismissRequest = { showRejectDialog = false },
+            containerColor = if (isDark) ClinicColors.DarkCard else ClinicColors.LightCard,
+            title = {
+                Text(
+                    "Reject Appointment?",
+                    fontWeight = FontWeight.Black,
+                    color = if (isDark) Color.White else ClinicColors.LightText
+                )
+            },
+            text = {
+                Text(
+                    "Are you sure you want to reject ${appt.patientName}'s appointment on ${appt.date} at ${appt.time}? This cannot be undone.",
+                    fontSize = 13.sp,
+                    color = ClinicColors.DarkTextMuted
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        viewModel.rejectAppointment(appt.id)
+                        showRejectDialog = false
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
+                ) {
+                    Text("Yes, Reject", color = Color.White, fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                OutlinedButton(onClick = { showRejectDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
 
     val statusColor = when (appt.status) {
         "Confirmed" -> Color(0xFF10B981)
@@ -1005,7 +1065,7 @@ fun AppointmentItem(
                             onClick = {
                                 viewModel.sendWhatsAppPayment(appt.id)
                                 val cleanPhone = appt.phone.replace(Regex("[^0-9+]"), "")
-                                val msg = "Dear ${appt.patientName}, your appointment request for ${appt.serviceName.ifBlank { "consultation" }} on ${appt.date} at ${appt.time} has been received. Fee: ₹${appt.consultationFee}. Please complete payment and send screenshot here. — Dr. Varsha Bandi, Homeopathway"
+                                val msg = "Dear ${appt.patientName}, your appointment request for ${appt.serviceName.ifBlank { "consultation" }} on ${appt.date} at ${appt.time} has been received. Fee: ₹${appt.consultationFee}. Please complete payment and send screenshot here. — DrVarsha bandi, Homeopathway"
                                 val url = "https://api.whatsapp.com/send?phone=$cleanPhone&text=${Uri.encode(msg)}"
                                 val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
                                 context.startActivity(intent)
@@ -1026,7 +1086,7 @@ fun AppointmentItem(
                         }
                     }
                     Button(
-                        onClick = { viewModel.rejectAppointment(appt.id) },
+                        onClick = { showRejectDialog = true },
                         colors = ButtonDefaults.buttonColors(containerColor = Color.Red.copy(alpha = 0.8f)),
                         shape = RoundedCornerShape(10.dp),
                         modifier = Modifier.fillMaxWidth()
@@ -1048,7 +1108,7 @@ fun AppointmentItem(
                         Text("✅ Accept Payment", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color.White)
                     }
                     Button(
-                        onClick = { viewModel.rejectAppointment(appt.id) },
+                        onClick = { showRejectDialog = true },
                         colors = ButtonDefaults.buttonColors(containerColor = Color.Red.copy(alpha = 0.8f)),
                         shape = RoundedCornerShape(10.dp),
                         modifier = Modifier.weight(1f)
@@ -2925,6 +2985,7 @@ fun SettingsScreen(
 @Composable
 fun NotificationCenterSheet(
     isDark: Boolean,
+    viewModel: com.example.ui.ClinicViewModel,
     onDismiss: () -> Unit,
     onOpenSettings: () -> Unit,
     toastTrigger: (String) -> Unit
@@ -2934,12 +2995,12 @@ fun NotificationCenterSheet(
     val borderCol = if (isDark) ClinicColors.DarkBorder else ClinicColors.LightBorder
     val textColor = if (isDark) Color.White else ClinicColors.LightText
 
-    // Grouped simulated real alerts to avoid tech larping or mock indicators
-    val dummyAlerts = listOf(
-        Triple("New Urgent Booking", "Meera Nair requested a cardiac consultation session at 02:15 PM.", "Just Now"),
-        Triple("Urgent Portal Alert", "Siddharth Sharma registered via website form citing computer-screen migraines.", "2 Hours Ago"),
-        Triple("Case Sheet Synced", "Reconciled clinical notes safely with main database server for patient Vikram Nair.", "Yesterday")
-    )
+    val notifications by viewModel.notifications.collectAsState()
+
+    // Load notifications when sheet opens
+    LaunchedEffect(Unit) {
+        viewModel.loadNotifications()
+    }
 
     Box(
         modifier = Modifier
@@ -2995,56 +3056,127 @@ fun NotificationCenterSheet(
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold,
                             color = ClinicColors.Rose600,
-                            modifier = Modifier.clickable { toastTrigger("All alerts marked as read") }
+                            modifier = Modifier.clickable {
+                                viewModel.markAllNotificationsRead()
+                                toastTrigger("All alerts marked as read")
+                            }
                         )
                     }
                 }
 
-                items(dummyAlerts) { alert ->
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(cardBg, RoundedCornerShape(16.dp))
-                            .border(1.dp, borderCol, RoundedCornerShape(16.dp))
-                            .padding(16.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
+                if (notifications.isEmpty()) {
+                    item {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 40.dp),
+                            contentAlignment = Alignment.Center
                         ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(8.dp)
-                                        .clip(CircleShape)
-                                        .background(ClinicColors.Rose600)
-                                )
-                                Spacer(modifier = Modifier.width(8.dp))
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text("🔔", fontSize = 36.sp)
+                                Spacer(modifier = Modifier.height(12.dp))
                                 Text(
-                                    text = alert.first,
-                                    fontSize = 12.sp,
+                                    "No new notifications",
+                                    fontSize = 13.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = textColor
                                 )
+                                Text(
+                                    "New patient bookings will appear here in real-time",
+                                    fontSize = 10.sp,
+                                    color = ClinicColors.DarkTextMuted,
+                                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                                )
                             }
-                            Text(
-                                text = alert.third,
-                                fontSize = 8.sp,
-                                color = ClinicColors.DarkTextMuted
-                            )
+                        }
+                    }
+                } else {
+                    items(notifications) { notif ->
+                        val isUnread = notif.status == "Unread"
+                        val dotColor = when (notif.type) {
+                            "appointment" -> ClinicColors.Rose600
+                            "payment" -> Color(0xFF10B981)
+                            "video" -> Color(0xFF3B82F6)
+                            else -> Color(0xFF8B5CF6)
+                        }
+                        val typeIcon = when (notif.type) {
+                            "appointment" -> "📅"
+                            "payment" -> "💳"
+                            "video" -> "📹"
+                            else -> "🔔"
                         }
 
-                        Spacer(modifier = Modifier.height(6.dp))
-                        Text(
-                            text = alert.second,
-                            fontSize = 10.sp,
-                            color = if (isDark) Color.LightGray else Color.DarkGray,
-                            lineHeight = 14.sp
-                        )
+                        // Relative time
+                        val relativeTime = run {
+                            val diffMs = System.currentTimeMillis() - notif.createdAt
+                            when {
+                                diffMs < 60_000 -> "Just Now"
+                                diffMs < 3_600_000 -> "${diffMs / 60_000}m ago"
+                                diffMs < 86_400_000 -> "${diffMs / 3_600_000}h ago"
+                                diffMs < 172_800_000 -> "Yesterday"
+                                else -> SimpleDateFormat("dd MMM", Locale.getDefault()).format(java.util.Date(notif.createdAt))
+                            }
+                        }
+
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(
+                                    if (isUnread) cardBg else cardBg.copy(alpha = 0.6f),
+                                    RoundedCornerShape(16.dp)
+                                )
+                                .border(
+                                    1.dp,
+                                    if (isUnread) dotColor.copy(alpha = 0.3f) else borderCol.copy(alpha = 0.3f),
+                                    RoundedCornerShape(16.dp)
+                                )
+                                .padding(16.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    if (isUnread) {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(8.dp)
+                                                .clip(CircleShape)
+                                                .background(dotColor)
+                                        )
+                                        Spacer(modifier = Modifier.width(6.dp))
+                                    }
+                                    Text(typeIcon, fontSize = 14.sp)
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text(
+                                        text = notif.title,
+                                        fontSize = 12.sp,
+                                        fontWeight = if (isUnread) FontWeight.Bold else FontWeight.Medium,
+                                        color = textColor,
+                                        modifier = Modifier.weight(1f, fill = false)
+                                    )
+                                }
+                                Text(
+                                    text = relativeTime,
+                                    fontSize = 8.sp,
+                                    color = ClinicColors.DarkTextMuted
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(6.dp))
+                            Text(
+                                text = notif.message,
+                                fontSize = 10.sp,
+                                color = if (isDark) Color.LightGray else Color.DarkGray,
+                                lineHeight = 14.sp
+                            )
+                        }
                     }
                 }
             }
         }
     }
 }
+
+

@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Homeopathway Clinical Portal & Distribution</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <script>
+        // Define configuration on window before script loads to avoid race conditions
+        window.tailwind = {
+            config: {
+                darkMode: 'class',
+                theme: {
+                    extend: {
+                        fontFamily: {
+                            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                            display: ['"Space Grotesk"', 'sans-serif'],
+                            mono: ['"JetBrains Mono"', 'monospace'],
+                        },
+                        colors: {
+                            slate: {
+                                850: '#0b1329',
+                                900: '#070b14',
+                                950: '#04060c',
+                            },
+                            rose: {
+                                950: '#1e3a8a',
+                                900: '#1e40af',
+                                700: '#1d4ed8',
+                                600: '#2563eb',
+                                500: '#3b82f6',
+                                400: '#60a5fa',
+                                300: '#93c5fd',
+                                50: '#eff6ff',
+                            }
+                        }
+                    }
+                }
+            }
+        };
+    </script>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .glow-button {
+            box-shadow: 0 0 20px rgba(37, 99, 235, 0.4);
+            transition: all 0.3s ease-in-out;
+        }
+        .glow-button:hover {
+            box-shadow: 0 0 35px rgba(59, 130, 246, 0.7);
+            transform: translateY(-2px);
+        }
+        .fade-in {
+            animation: fadeIn 0.8s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        /* Custom scrollbar for simulator */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        /* Glassmorphism utility */
+        .glass-panel {
+            background: rgba(15, 22, 38, 0.75);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(30, 46, 74, 0.5);
+        }
+        .glass-panel-light {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+        }
+        /* Pulse Animation */
+        .pulse-ring {
+            animation: pulseRing 2s cubic-bezier(0.215, 0.610, 0.355, 1) infinite;
+        }
+        @keyframes pulseRing {
+            0% { transform: scale(0.95); opacity: 0.8; }
+            50% { transform: scale(1.1); opacity: 0.4; }
+            100% { transform: scale(0.95); opacity: 0.8; }
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans min-h-screen selection:bg-blue-600 selection:text-white overflow-x-hidden transition-colors duration-300">
+
+    <!-- Header / Nav -->
+    <header class="border-b border-slate-900 bg-slate-950/90 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-blue-600/10 border border-blue-500/20 rounded-xl flex items-center justify-center">
+                    <span class="text-xl">🩺</span>
+                </div>
+                <div>
+                    <h1 class="font-display font-extrabold text-lg tracking-tight text-white leading-none">Homeopathway</h1>
+                    <span class="text-[10px] text-blue-500 font-bold uppercase tracking-widest block mt-0.5">Clinical Dashboard</span>
+                </div>
+            </div>
+            <div class="flex items-center gap-4">
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    Latest Base URL Added Version (22.1 MB)
+                </span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Grid -->
+    <main class="max-w-7xl mx-auto px-6 py-10 md:py-14 fade-in">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
+            
+            <!-- Left Column: Marketing, Download APK, and Emulator Controls (7 Columns) -->
+            <div class="lg:col-span-6 space-y-8">
+                
+                <!-- Hero Badge and Title -->
+                <div class="space-y-4">
+                    <div class="inline-block px-3 py-1 rounded-full text-xs font-bold bg-blue-900/40 text-blue-400 border border-blue-800/60 uppercase tracking-wide">
+                        Premium Android Application
+                    </div>
+                    <h2 class="text-4xl md:text-5xl font-display font-extrabold text-white tracking-tight leading-tight">
+                        Download the <span class="bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">Clinical Dashboard</span> App
+                    </h2>
+                    <p class="text-slate-400 text-base leading-relaxed max-w-xl">
+                        Experience our ultra-premium dark glassmorphic design. Built native with Jetpack Compose, offering offline database synchronization, real-time consultation logs, and robust haptic feedback.
+                    </p>
+                </div>
+
+                <!-- Main Download Call to Action Card -->
+                <div class="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-6 md:p-8 space-y-6">
+                    <div class="flex flex-col sm:flex-row gap-5 items-stretch sm:items-center justify-between">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 bg-blue-500/10 rounded-xl flex items-center justify-center text-2xl">
+                                🤖
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-white text-base">Android Production Build</h4>
+                                <p class="text-xs text-emerald-400 font-semibold">Latest Base URL Added Version (v1.0.1)</p>
+                                <p class="text-[10px] text-slate-400">Compatible with Android 10 and above</p>
+                            </div>
+                        </div>
+                        <a href="/app-debug.apk" class="glow-button inline-flex items-center justify-center gap-3 px-6 py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-extrabold rounded-xl text-center text-sm transition-all duration-200">
+                            <span>📥</span>
+                            Download APK (22.1 MB)
+                        </a>
+                    </div>
+
+                    <div class="border-t border-slate-800/80 pt-4 flex flex-wrap gap-x-6 gap-y-2 text-xs text-slate-400">
+                        <span class="flex items-center gap-1.5">
+                            <span class="text-blue-400">✓</span> High-density SQLite DB
+                        </span>
+                        <span class="flex items-center gap-1.5">
+                            <span class="text-blue-400">✓</span> Custom vibrations enabled
+                        </span>
+                        <span class="flex items-center gap-1.5">
+                            <span class="text-blue-400">✓</span> Secure offline-first sandbox
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Interactive Emulator Remote Control Panel -->
+                <div class="bg-slate-900/30 border border-slate-800/50 rounded-2xl p-6 space-y-4">
+                    <div class="flex items-center gap-2">
+                        <span class="text-lg">🎮</span>
+                        <h3 class="text-sm font-bold uppercase tracking-wider text-blue-500">Live Simulator Controls</h3>
+                    </div>
+                    <p class="text-xs text-slate-400 leading-relaxed">
+                        Control the smartphone mockup on the right in real-time. Trigger simulated events to test the app's dynamic UI.
+                    </p>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                        <button onclick="triggerSimulatedAppointment()" class="flex items-center justify-between px-4 py-3 bg-slate-900/80 border border-slate-800 hover:border-blue-500/50 rounded-xl text-left transition-all group">
+                            <div class="space-y-0.5">
+                                <span class="text-xs font-bold text-white block">Simulate New Patient</span>
+                                <span class="text-[10px] text-slate-400 block">Adds "Priya Sharma" with asthma</span>
+                            </div>
+                            <span class="text-lg group-hover:translate-x-1 transition-transform">➕</span>
+                        </button>
+                        <button onclick="triggerAlertNotification()" class="flex items-center justify-between px-4 py-3 bg-slate-900/80 border border-slate-800 hover:border-blue-500/50 rounded-xl text-left transition-all group">
+                            <div class="space-y-0.5">
+                                <span class="text-xs font-bold text-white block">Simulate Urgent Call</span>
+                                <span class="text-[10px] text-slate-400 block">Triggers notification & haptic pulse</span>
+                            </div>
+                            <span class="text-lg group-hover:animate-bounce">🔔</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Installation Steps (High Contrast Cards) -->
+                <div class="space-y-4">
+                    <h3 class="text-sm font-bold uppercase tracking-wider text-blue-500">Fast Installation Steps</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="bg-slate-900/40 border border-slate-800/40 rounded-xl p-4 space-y-2">
+                            <div class="w-6 h-6 rounded-full bg-blue-600/10 text-blue-400 font-bold flex items-center justify-center text-xs border border-blue-500/20">1</div>
+                            <h4 class="font-bold text-white text-xs">Save APK File</h4>
+                            <p class="text-[11px] text-slate-400 leading-relaxed">Tap the download button and save the file to your mobile storage.</p>
+                        </div>
+                        <div class="bg-slate-900/40 border border-slate-800/40 rounded-xl p-4 space-y-2">
+                            <div class="w-6 h-6 rounded-full bg-blue-600/10 text-blue-400 font-bold flex items-center justify-center text-xs border border-blue-500/20">2</div>
+                            <h4 class="font-bold text-white text-xs">Allow Unknown</h4>
+                            <p class="text-[11px] text-slate-400 leading-relaxed">Open the APK. When prompted, allow installations from "This Source".</p>
+                        </div>
+                        <div class="bg-slate-900/40 border border-slate-800/40 rounded-xl p-4 space-y-2">
+                            <div class="w-6 h-6 rounded-full bg-blue-600/10 text-blue-400 font-bold flex items-center justify-center text-xs border border-blue-500/20">3</div>
+                            <h4 class="font-bold text-white text-xs">Launch and Enjoy</h4>
+                            <p class="text-[11px] text-slate-400 leading-relaxed">Open Homeopathway and experience immediate haptic consultation tools!</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Right Column: Smartphone Mockup with Live Android App (6 Columns) -->
+            <div class="lg:col-span-6 flex justify-center sticky top-24">
+                
+                <!-- Phone Wrapper Card with Outer Glow -->
+                <div class="relative w-[375px] h-[780px] bg-slate-950 border-[10px] border-slate-800 rounded-[50px] shadow-2xl shadow-blue-900/30 overflow-hidden flex flex-col justify-between">
+                    
+                    <!-- Dynamic Island / Speaker notch -->
+                    <div class="absolute top-2 left-1/2 transform -translate-x-1/2 w-32 h-6 bg-black rounded-full z-50 flex items-center justify-center">
+                        <div class="w-3 h-3 bg-slate-900 rounded-full mr-2"></div>
+                        <div class="w-10 h-1 bg-slate-800 rounded-full"></div>
+                    </div>
+
+                    <!-- Android Status Bar -->
+                    <div class="bg-[#050811] text-slate-400 text-[10px] font-mono px-6 pt-3 pb-1 flex justify-between items-center z-40 select-none">
+                        <!-- Left Status: Time + Whatsapp Indicators -->
+                        <div class="flex items-center gap-1.5">
+                            <span id="simulator-time">02:10 PM</span>
+                            <span class="text-[8px]">💬</span>
+                            <span class="text-[8px]">✉️</span>
+                        </div>
+                        <!-- Right Status: 5G, Wifi, Battery -->
+                        <div class="flex items-center gap-1.5">
+                            <span class="text-[8px] font-bold tracking-tighter">5G</span>
+                            <span>📶</span>
+                            <span>🔋 91%</span>
+                        </div>
+                    </div>
+
+                    <!-- Inner Phone Screen Area -->
+                    <div class="flex-grow bg-[#080c14] relative flex flex-col justify-between overflow-hidden select-none" id="app-screen">
+                        
+                        <!-- Floating Custom Notification (Simulated Ringing) -->
+                        <div id="simulated-notification" class="absolute top-4 left-4 right-4 bg-blue-600 text-white p-3.5 rounded-2xl shadow-xl z-50 hidden border border-blue-400/30 flex items-center justify-between transform -translate-y-20 transition-all duration-300">
+                            <div class="flex items-center gap-3">
+                                <span class="text-xl animate-bounce">🚨</span>
+                                <div>
+                                    <h5 class="text-xs font-bold">New Booking Scheduled</h5>
+                                    <p class="text-[10px] text-blue-100 mt-0.5">Priya Sharma is waiting for asthma remedy.</p>
+                                </div>
+                            </div>
+                            <button onclick="dismissNotification()" class="text-xs font-bold text-white hover:bg-white/10 px-2 py-1 rounded">Ok</button>
+                        </div>
+
+                        <!-- Active Toast Alert -->
+                        <div id="toast-message" class="absolute bottom-20 left-1/2 transform -translate-x-1/2 bg-slate-900/90 text-slate-100 border border-slate-800 px-4 py-2 rounded-xl text-xs font-medium tracking-tight z-50 shadow-xl opacity-0 transition-all duration-300 pointer-events-none">
+                            Action completed successfully
+                        </div>
+
+                        <!-- Dynamic Content Container -->
+                        <div id="screen-viewport" class="flex-grow overflow-y-auto no-scrollbar pb-4">
+                            <!-- Dashboard View Content (Rendered by JS by default) -->
+                        </div>
+
+                        <!-- App Bottom Navigation Bar -->
+                        <div class="bg-[#080c14]/90 backdrop-blur-md border-t border-slate-900 py-3.5 px-4 flex justify-between items-center z-40">
+                            
+                            <!-- Tab: Dashboard -->
+                            <button onclick="switchTab('dashboard')" id="nav-dashboard" class="flex flex-col items-center gap-1 flex-1 py-1 px-3 rounded-2xl transition-all text-blue-500 font-bold bg-blue-500/10">
+                                <span class="text-lg">📊</span>
+                                <span class="text-[9px] tracking-tight">Dashboard</span>
+                            </button>
+
+                            <!-- Tab: Patients -->
+                            <button onclick="switchTab('patients')" id="nav-patients" class="flex flex-col items-center gap-1 flex-1 py-1 px-3 rounded-2xl transition-all text-slate-400 hover:text-white">
+                                <span class="text-lg">👥</span>
+                                <span class="text-[9px] tracking-tight">Patients</span>
+                            </button>
+
+                            <!-- Tab: Follow-ups -->
+                            <button onclick="switchTab('followups')" id="nav-followups" class="flex flex-col items-center gap-1 flex-1 py-1 px-3 rounded-2xl transition-all text-slate-400 hover:text-white">
+                                <span class="text-lg">📅</span>
+                                <span class="text-[9px] tracking-tight">Follow-ups</span>
+                            </button>
+
+                            <!-- Tab: Books -->
+                            <button onclick="switchTab('books')" id="nav-books" class="flex flex-col items-center gap-1 flex-1 py-1 px-3 rounded-2xl transition-all text-slate-400 hover:text-white">
+                                <span class="text-lg">📚</span>
+                                <span class="text-[9px] tracking-tight">Books</span>
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                    <!-- Virtual Screen Home Button indicator bar -->
+                    <div class="absolute bottom-1.5 left-1/2 transform -translate-x-1/2 w-32 h-1 bg-slate-800 rounded-full z-50"></div>
+
+                </div>
+
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-900 bg-slate-950 py-10 mt-16 text-center text-xs text-slate-500">
+        <div class="max-w-7xl mx-auto px-6 space-y-3">
+            <p class="font-medium">Homeopathway Clinical Dashboard Mobile Distribution Portal</p>
+            <p>© 2026 Homeopathway. All Rights Reserved. Crafted with Premium High-Density Styling.</p>
+        </div>
+    </footer>
+
+    <!-- Interactive Simulator Javascript Engine -->
+    <script>
+        // Default Simulated Database
+        const state = {
+            clinicStatus: "Open & Accepting",
+            doctorActive: true,
+            totalPatients: 5,
+            todayAppts: 5,
+            followups: 1,
+            completed: 1,
+            currentTab: 'dashboard',
+            notificationsCount: 3,
+            patients: [
+                { id: 1, name: "Kabir Mehta", type: "New Consultation", phone: "+91 76543 21098", symptom: "Dry red patches on skin with intense nocturnal itching", time: "02:00 PM", status: "Pending" },
+                { id: 2, name: "Ananya Sen", type: "Chronic Case Study", phone: "+91 88473 19283", symptom: "Recurrent migraines triggered by weather changes", time: "03:30 PM", status: "Completed" },
+                { id: 3, name: "Rahul Sharma", type: "Remedy Follow-up", phone: "+91 99283 48371", symptom: "Post-influenza extreme exhaustion & dry croupy cough", time: "04:45 PM", status: "Pending" },
+                { id: 4, name: "Arjun Verma", type: "Urgent Audit", phone: "+91 90123 45678", symptom: "Sore throat with dynamic pharyngitis & fever", time: "05:15 PM", status: "Pending" },
+                { id: 5, name: "Siddharth Roy", type: "Routine Checkup", phone: "+91 98765 43210", symptom: "Stomach bloating after small meals & mental fatigue", time: "06:00 PM", status: "Pending" }
+            ],
+            followupsData: [
+                { id: 101, name: "Aarav Patel", reason: "Chronic respiratory allergy", remedy: "Arsenicum Album 30C", date: "Due Today", status: "Active" },
+                { id: 102, name: "Priya Nair", reason: "Joint inflammation & stiffness", remedy: "Rhus Tox 200C", date: "Due Today", status: "Active" }
+            ],
+            books: [
+                { title: "Organon of Medicine", author: "Dr. Samuel Hahnemann", desc: "The foundational text outlining the laws of homeopathic practice, detailing the dynamic theory of disease, vital force, and individualization.", category: "Guidelines" },
+                { title: "Materia Medica Guide", author: "Dr. William Boericke", desc: "A comprehensive reference of natural remedy profiles, symptoms, physiological actions, and therapeutic modalities.", category: "Reference Books" },
+                { title: "Pocket Repertory", author: "Dr. J.T. Kent", desc: "An index of homeopathic clinical rubrics, symptoms, and corresponding remedies mapped to systematic rubrics.", category: "Guidelines" },
+                { title: "Clinical Guidelines 2026", author: "Homeopathic Committee", desc: "Modern clinical recommendations for acute care and dynamic pathology integration in high-density practices.", category: "Reports" }
+            ]
+        };
+
+        // Live updating clock on Android Status Bar & Hero Header
+        function updateLiveClocks() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+            
+            // Format Day and Date
+            const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+            const dayStr = days[now.getDay()];
+            const dateStr = now.getDate() + ' ' + months[now.getMonth()] + ' ' + now.getFullYear();
+
+            // Status Bar
+            document.getElementById('simulator-time').innerText = timeStr;
+            
+            // Header (If Dashboard is currently displayed)
+            const headerDateElement = document.getElementById('header-date');
+            if (headerDateElement) {
+                headerDateElement.innerText = `${dayStr}, ${dateStr} • ${timeStr}`;
+            }
+        }
+        setInterval(updateLiveClocks, 1000);
+
+        // Switch bottom tabs
+        function switchTab(tabId) {
+            state.currentTab = tabId;
+            const tabs = ['dashboard', 'patients', 'followups', 'books'];
+            
+            // Update active styling on tabs
+            tabs.forEach(t => {
+                const btn = document.getElementById(`nav-${t}`);
+                if (t === tabId) {
+                    btn.className = "flex flex-col items-center gap-1 flex-1 py-1 px-3 rounded-2xl transition-all text-blue-500 font-bold bg-blue-500/10";
+                } else {
+                    btn.className = "flex flex-col items-center gap-1 flex-1 py-1 px-3 rounded-2xl transition-all text-slate-400 hover:text-white";
+                }
+            });
+
+            renderViewportContent();
+            showToast(`Switched to ${tabId.charAt(0).toUpperCase() + tabId.slice(1)}`);
+        }
+
+        // Show a brief Toast on the Phone screen
+        function showToast(message) {
+            const toast = document.getElementById('toast-message');
+            toast.innerText = message;
+            toast.className = toast.className.replace('opacity-0', 'opacity-100');
+            setTimeout(() => {
+                toast.className = toast.className.replace('opacity-100', 'opacity-0');
+            }, 2000);
+        }
+
+        // Toggle Clinic Status
+        function toggleClinicStatus() {
+            if (state.clinicStatus === "Open & Accepting") {
+                state.clinicStatus = "Closed & Away";
+                state.doctorActive = false;
+                showToast("Clinic closed. Doctor is now Away.");
+            } else {
+                state.clinicStatus = "Open & Accepting";
+                state.doctorActive = true;
+                showToast("Clinic opened! Now accepting patients.");
+            }
+            renderViewportContent();
+        }
+
+        // Trigger simulated appointment addition (Remote control action)
+        function triggerSimulatedAppointment() {
+            // Check if Priya already exists to prevent duplicate spam
+            if (state.patients.some(p => p.name === "Priya Sharma")) {
+                showToast("Simulated patient 'Priya Sharma' already added.");
+                return;
+            }
+
+            // Append new patient
+            const newPat = {
+                id: Date.now(),
+                name: "Priya Sharma",
+                type: "New Consultation",
+                phone: "+91 91283 48192",
+                symptom: "Severe asthmatic wheezing triggered by seasonal pollen",
+                time: "07:30 PM",
+                status: "Pending"
+            };
+            
+            state.patients.unshift(newPat);
+            state.totalPatients += 1;
+            state.todayAppts += 1;
+            
+            // Switch to dashboard view to showcase the visual update
+            switchTab('dashboard');
+            
+            // Show alert modal on top of emulator
+            const alertBox = document.getElementById('simulated-notification');
+            alertBox.classList.remove('hidden');
+            alertBox.classList.remove('-translate-y-20');
+            alertBox.classList.add('translate-y-0');
+
+            // Sound effect emulation via audio context
+            try {
+                const actx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = actx.createOscillator();
+                const gain = actx.createGain();
+                osc.connect(gain);
+                gain.connect(actx.destination);
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(587.33, actx.currentTime); // D5
+                gain.gain.setValueAtTime(0.1, actx.currentTime);
+                osc.start();
+                osc.stop(actx.currentTime + 0.15);
+            } catch(e) {}
+        }
+
+        // Dismiss Simulated Call alert modal
+        function dismissNotification() {
+            const alertBox = document.getElementById('simulated-notification');
+            alertBox.classList.add('-translate-y-20');
+            alertBox.classList.remove('translate-y-0');
+            setTimeout(() => {
+                alertBox.classList.add('hidden');
+            }, 3000);
+        }
+
+        // Trigger Simulated Notification and Haptic Indicator
+        function triggerAlertNotification() {
+            state.notificationsCount += 1;
+            const notifCountBadge = document.getElementById('notif-count');
+            if (notifCountBadge) {
+                notifCountBadge.innerText = state.notificationsCount;
+                notifCountBadge.classList.add('animate-ping');
+                setTimeout(() => notifCountBadge.classList.remove('animate-ping'), 1000);
+            }
+            showToast("Haptic Feedback Triggered! [Double Pulse]");
+        }
+
+        // Add Patient Form (Local to Simulator viewport)
+        function addPatientFromViewport(e) {
+            e.preventDefault();
+            const name = document.getElementById('new-pat-name').value;
+            const phone = document.getElementById('new-pat-phone').value;
+            const symptom = document.getElementById('new-pat-symptom').value;
+            
+            if(!name || !phone || !symptom) {
+                showToast("Please fill all patient fields");
+                return;
+            }
+
+            const newPat = {
+                id: Date.now(),
+                name: name,
+                type: "Walk-in Consultation",
+                phone: phone,
+                symptom: symptom,
+                time: "08:15 PM",
+                status: "Pending"
+            };
+
+            state.patients.unshift(newPat);
+            state.totalPatients += 1;
+            state.todayAppts += 1;
+
+            switchTab('dashboard');
+            showToast(`Registered patient ${name} successfully!`);
+        }
+
+        // Complete follow-up action
+        function completeFollowup(id) {
+            const idx = state.followupsData.findIndex(f => f.id === id);
+            if (idx !== -1) {
+                const item = state.followupsData[idx];
+                state.followupsData.splice(idx, 1);
+                state.followups -= 1;
+                state.completed += 1;
+                showToast(`Completed follow-up for ${item.name}!`);
+                renderViewportContent();
+            }
+        }
+
+        // Viewport Dynamic Template Renderer
+        function renderViewportContent() {
+            const view = document.getElementById('screen-viewport');
+            
+            if (state.currentTab === 'dashboard') {
+                const statusColor = state.clinicStatus === "Open & Accepting" ? "text-emerald-400 border-emerald-500/20 bg-emerald-500/10" : "text-rose-400 border-rose-500/20 bg-rose-500/10";
+                const activeLabel = state.clinicStatus === "Open & Accepting" ? "Active" : "Away";
+                const availabilityText = state.clinicStatus === "Open & Accepting" ? "You are available now" : "Unavailable for consultation";
+                const activeColor = state.clinicStatus === "Open & Accepting" ? "text-emerald-400" : "text-rose-400";
+                
+                view.innerHTML = `
+                    <div class="px-5 pt-4 space-y-5">
+                        
+                        <!-- Doctor Profile Header -->
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="relative">
+                                    <img src="https://images.unsplash.com/photo-1594824813573-246434de83fb?auto=format&fit=crop&q=80&w=120&h=120" class="w-12 h-12 rounded-full border-2 border-slate-800 object-cover" alt="Dr Varsha">
+                                    <span class="absolute bottom-0.5 right-0.5 w-3 h-3 bg-emerald-500 border border-[#080c14] rounded-full animate-pulse"></span>
+                                </div>
+                                <div class="space-y-0.5">
+                                    <span class="text-[10px] text-slate-400 block font-semibold">Good Afternoon,</span>
+                                    <div class="flex items-center gap-1.5">
+                                        <h3 class="text-sm font-extrabold text-white">Dr. Varsha Bandi</h3>
+                                        <span class="text-blue-500 text-xs">✔</span>
+                                    </div>
+                                    <span id="header-date" class="text-[9px] text-slate-400 block">Thursday, 02 July 2026 • 02:10 PM</span>
+                                </div>
+                            </div>
+
+                            <!-- Header Control Icons -->
+                            <div class="flex items-center gap-2">
+                                <button onclick="triggerAlertNotification()" class="w-9 h-9 glass-panel rounded-full flex items-center justify-center relative">
+                                    <span class="text-xs">🔔</span>
+                                    <span id="notif-count" class="absolute -top-1 -right-1 w-4 h-4 bg-rose-500 text-white font-bold text-[8px] rounded-full flex items-center justify-center">${state.notificationsCount}</span>
+                                </button>
+                                <button onclick="toggleClinicStatus()" class="w-9 h-9 glass-panel rounded-full flex items-center justify-center text-xs">
+                                    🌙
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Clinic Status Indicator Card -->
+                        <div class="glass-panel rounded-[24px] p-4 flex items-center justify-between border-t border-t-slate-800/80 relative overflow-hidden group">
+                            <div class="flex items-center gap-3.5 z-10">
+                                <div class="w-11 h-11 bg-emerald-500/10 rounded-full flex items-center justify-center text-xl">
+                                    🏥
+                                </div>
+                                <div class="space-y-0.5">
+                                    <span class="text-[9px] text-slate-400 uppercase tracking-wider block font-bold">Clinic Status</span>
+                                    <div class="flex items-center gap-1">
+                                        <h4 class="text-sm font-extrabold text-white">${state.clinicStatus}</h4>
+                                        <span class="text-emerald-400 text-xs">✔</span>
+                                    </div>
+                                    <span class="text-[10px] text-slate-400 block">You are available for consultations.</span>
+                                </div>
+                            </div>
+                            <button onclick="toggleClinicStatus()" class="px-3.5 py-1.5 bg-slate-900 border border-slate-800 text-slate-300 font-bold text-[10px] rounded-full hover:bg-slate-800 transition-all z-10 flex items-center gap-1">
+                                Manage <span>›</span>
+                            </button>
+                            <!-- Subtle card background mesh -->
+                            <div class="absolute inset-0 bg-gradient-to-r from-emerald-500/5 to-transparent"></div>
+                        </div>
+
+                        <!-- Grid: Four Bento Metric Cards -->
+                        <div class="grid grid-cols-2 gap-3">
+                            
+                            <!-- Patients Card -->
+                            <div class="glass-panel rounded-[24px] p-3.5 relative overflow-hidden flex flex-col justify-between h-28 border border-slate-800/80">
+                                <div class="flex justify-between items-start">
+                                    <div class="w-8 h-8 rounded-full bg-blue-500/15 flex items-center justify-center text-sm">👥</div>
+                                    <div class="text-right">
+                                        <span class="text-[9px] text-slate-400 block font-bold">Patients</span>
+                                        <span class="text-xl font-extrabold text-white">${state.totalPatients}</span>
+                                    </div>
+                                </div>
+                                <div class="flex justify-between items-end z-10">
+                                    <span class="text-[8px] text-slate-400">All registered</span>
+                                    <span class="text-[8px] text-blue-400 font-bold">+12% ↗</span>
+                                </div>
+                                <!-- Floating Sparkline SVG wave -->
+                                <div class="absolute bottom-0 left-0 right-0 h-10 pointer-events-none opacity-40">
+                                    <svg viewBox="0 0 100 40" class="w-full h-full">
+                                        <path d="M 0 30 Q 20 15 40 32 T 80 15 T 100 25 L 100 40 L 0 40 Z" fill="url(#blue-grad)" stroke="#3b82f6" stroke-width="1.5"></path>
+                                        <defs>
+                                            <linearGradient id="blue-grad" x1="0" y1="0" x2="0" y2="1">
+                                                <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.4"></stop>
+                                                <stop offset="100%" stop-color="#3b82f6" stop-opacity="0"></stop>
+                                            </linearGradient>
+                                        </defs>
+                                    </svg>
+                                </div>
+                            </div>
+
+                            <!-- Today's Appointments Card -->
+                            <div class="glass-panel rounded-[24px] p-3.5 relative overflow-hidden flex flex-col justify-between h-28 border border-slate-800/80">
+                                <div class="flex justify-between items-start">
+                                    <div class="w-8 h-8 rounded-full bg-cyan-500/15 flex items-center justify-center text-sm">📅</div>
+                                    <div class="text-right">
+                                        <span class="text-[9px] text-slate-400 block font-bold">Today's Appts</span>
+                                        <span class="text-xl font-extrabold text-white">${state.todayAppts}</span>
+                                    </div>
+                                </div>
+                                <div class="flex justify-between items-end z-10">
+                                    <span class="text-[8px] text-slate-400">Scheduled</span>
+                                    <span class="text-[8px] text-cyan-400 font-bold">+8% ↗</span>
+                                </div>
+                                <!-- Floating Sparkline SVG wave -->
+                                <div class="absolute bottom-0 left-0 right-0 h-10 pointer-events-none opacity-40">
+                                    <svg viewBox="0 0 100 40" class="w-full h-full">
+                                        <path d="M 0 25 Q 30 10 60 30 T 100 12 L 100 40 L 0 40 Z" fill="url(#cyan-grad)" stroke="#06b6d4" stroke-width="1.5"></path>
+                                        <defs>
+                                            <linearGradient id="cyan-grad" x1="0" y1="0" x2="0" y2="1">
+                                                <stop offset="0%" stop-color="#06b6d4" stop-opacity="0.4"></stop>
+                                                <stop offset="100%" stop-color="#06b6d4" stop-opacity="0"></stop>
+                                            </linearGradient>
+                                        </defs>
+                                    </svg>
+                                </div>
+                            </div>
+
+                            <!-- Follow-ups Card -->
+                            <div class="glass-panel rounded-[24px] p-3.5 relative overflow-hidden flex flex-col justify-between h-28 border border-slate-800/80">
+                                <div class="flex justify-between items-start">
+                                    <div class="w-8 h-8 rounded-full bg-amber-500/15 flex items-center justify-center text-sm">⌛</div>
+                                    <div class="text-right">
+                                        <span class="text-[9px] text-slate-400 block font-bold">Follow-ups</span>
+                                        <span class="text-xl font-extrabold text-white">${state.followups}</span>
+                                    </div>
+                                </div>
+                                <div class="flex justify-between items-end z-10">
+                                    <span class="text-[8px] text-slate-400">Pending</span>
+                                    <span class="text-[8px] text-amber-400 font-bold">+5% ↗</span>
+                                </div>
+                                <!-- Floating Sparkline SVG wave -->
+                                <div class="absolute bottom-0 left-0 right-0 h-10 pointer-events-none opacity-40">
+                                    <svg viewBox="0 0 100 40" class="w-full h-full">
+                                        <path d="M 0 35 Q 25 20 50 30 T 100 15 L 100 40 L 0 40 Z" fill="url(#amber-grad)" stroke="#f59e0b" stroke-width="1.5"></path>
+                                        <defs>
+                                            <linearGradient id="amber-grad" x1="0" y1="0" x2="0" y2="1">
+                                                <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.4"></stop>
+                                                <stop offset="100%" stop-color="#f59e0b" stop-opacity="0"></stop>
+                                            </linearGradient>
+                                        </defs>
+                                    </svg>
+                                </div>
+                            </div>
+
+                            <!-- Completed Card -->
+                            <div class="glass-panel rounded-[24px] p-3.5 relative overflow-hidden flex flex-col justify-between h-28 border border-slate-800/80">
+                                <div class="flex justify-between items-start">
+                                    <div class="w-8 h-8 rounded-full bg-pink-500/15 flex items-center justify-center text-sm">✅</div>
+                                    <div class="text-right">
+                                        <span class="text-[9px] text-slate-400 block font-bold">Completed</span>
+                                        <span class="text-xl font-extrabold text-white">${state.completed}</span>
+                                    </div>
+                                </div>
+                                <div class="flex justify-between items-end z-10">
+                                    <span class="text-[8px] text-slate-400">Consultations</span>
+                                    <span class="text-[8px] text-pink-400 font-bold">+15% ↗</span>
+                                </div>
+                                <!-- Floating Sparkline SVG wave -->
+                                <div class="absolute bottom-0 left-0 right-0 h-10 pointer-events-none opacity-40">
+                                    <svg viewBox="0 0 100 40" class="w-full h-full">
+                                        <path d="M 0 32 Q 35 15 70 35 T 100 20 L 100 40 L 0 40 Z" fill="url(#pink-grad)" stroke="#ec4899" stroke-width="1.5"></path>
+                                        <defs>
+                                            <linearGradient id="pink-grad" x1="0" y1="0" x2="0" y2="1">
+                                                <stop offset="0%" stop-color="#ec4899" stop-opacity="0.4"></stop>
+                                                <stop offset="100%" stop-color="#ec4899" stop-opacity="0"></stop>
+                                            </linearGradient>
+                                        </defs>
+                                    </svg>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <!-- Micro Metrics Row -->
+                        <div class="glass-panel rounded-2xl p-3 flex justify-between items-center border border-slate-800/60 divide-x divide-slate-800/80">
+                            
+                            <!-- Metric 1 -->
+                            <div class="flex-1 flex flex-col items-center justify-center text-center space-y-0.5">
+                                <div class="flex items-center gap-1.5">
+                                    <span class="text-xs">🕒</span>
+                                    <span class="text-[8px] text-slate-400 uppercase tracking-wider font-semibold">Availability</span>
+                                </div>
+                                <span class="text-[10px] font-extrabold ${activeColor}">${activeLabel}</span>
+                                <span class="text-[7px] text-slate-500">${availabilityText}</span>
+                            </div>
+
+                            <!-- Metric 2 -->
+                            <div class="flex-1 flex flex-col items-center justify-center text-center space-y-0.5 px-1">
+                                <div class="flex items-center gap-1.5">
+                                    <span class="text-xs">🩺</span>
+                                    <span class="text-[8px] text-slate-400 uppercase tracking-wider font-semibold">Active Cases</span>
+                                </div>
+                                <span class="text-[10px] font-extrabold text-blue-400">1</span>
+                                <span class="text-[7px] text-slate-500">In progress right now</span>
+                            </div>
+
+                            <!-- Metric 3 -->
+                            <div class="flex-1 flex flex-col items-center justify-center text-center space-y-0.5">
+                                <div class="flex items-center gap-1.5">
+                                    <span class="text-xs">👥</span>
+                                    <span class="text-[8px] text-slate-400 uppercase tracking-wider font-semibold">Queue</span>
+                                </div>
+                                <span class="text-[10px] font-extrabold text-purple-400">2</span>
+                                <span class="text-[7px] text-slate-500">Patients waiting</span>
+                            </div>
+
+                        </div>
+
+                        <!-- Today's Schedule Section -->
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center">
+                                <h4 class="text-xs font-bold text-white uppercase tracking-wider">Today's Schedule</h4>
+                                <button onclick="showToast('Loading calendar grid...')" class="text-[10px] text-blue-400 font-bold hover:underline flex items-center gap-1">
+                                    View Calendar <span>📅</span>
+                                </button>
+                            </div>
+
+                            <!-- Kabir Mehta Live Card -->
+                            <div class="glass-panel rounded-3xl p-4 border border-slate-800/80 relative overflow-hidden flex flex-col space-y-3">
+                                <div class="absolute left-0 top-0 bottom-0 w-1 bg-amber-500 rounded-l-3xl"></div>
+                                
+                                <div class="flex justify-between items-start">
+                                    <div class="flex items-center gap-2.5">
+                                        <!-- Time slot -->
+                                        <div class="bg-slate-900 border border-slate-800 px-2 py-1 rounded-xl text-center">
+                                            <span class="text-[10px] font-black text-white block leading-none">02:00</span>
+                                            <span class="text-[7px] text-slate-500 block font-bold uppercase mt-0.5">PM</span>
+                                        </div>
+                                        <div>
+                                            <div class="flex items-center gap-2">
+                                                <h5 class="text-xs font-extrabold text-white">Kabir Mehta</h5>
+                                                <span class="px-2 py-0.5 bg-amber-500/10 border border-amber-500/20 text-amber-400 font-bold text-[8px] rounded-full uppercase">Pending</span>
+                                            </div>
+                                            <span class="text-[9px] text-slate-400 block mt-0.5">New Consultation • 📞 +91 76543 21098</span>
+                                        </div>
+                                    </div>
+                                    <span class="text-slate-500 text-xs">›</span>
+                                </div>
+
+                                <!-- Symptom quotation block -->
+                                <div class="bg-slate-950/50 rounded-2xl p-3 border border-slate-900 flex items-start gap-2">
+                                    <span class="text-blue-500 text-base font-serif leading-none">“</span>
+                                    <p class="text-[10px] text-slate-300 italic leading-relaxed">
+                                        Dry red patches on skin with intense nocturnal itching.
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <!-- Secondary Pending Patient: Rahul Sharma -->
+                            <div class="glass-panel rounded-3xl p-4 border border-slate-800/80 relative overflow-hidden flex flex-col space-y-3 opacity-80">
+                                <div class="absolute left-0 top-0 bottom-0 w-1 bg-blue-500 rounded-l-3xl"></div>
+                                
+                                <div class="flex justify-between items-start">
+                                    <div class="flex items-center gap-2.5">
+                                        <div class="bg-slate-900 border border-slate-800 px-2 py-1 rounded-xl text-center">
+                                            <span class="text-[10px] font-black text-white block leading-none">04:45</span>
+                                            <span class="text-[7px] text-slate-500 block font-bold uppercase mt-0.5">PM</span>
+                                        </div>
+                                        <div>
+                                            <div class="flex items-center gap-2">
+                                                <h5 class="text-xs font-extrabold text-white">Rahul Sharma</h5>
+                                                <span class="px-2 py-0.5 bg-blue-500/10 border border-blue-500/20 text-blue-400 font-bold text-[8px] rounded-full uppercase">Pending</span>
+                                            </div>
+                                            <span class="text-[9px] text-slate-400 block mt-0.5">Remedy Follow-up • 📞 +91 99283 48371</span>
+                                        </div>
+                                    </div>
+                                    <span class="text-slate-500 text-xs">›</span>
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>
+                `;
+            } else if (state.currentTab === 'patients') {
+                let listItems = "";
+                state.patients.forEach(pat => {
+                    const statusColor = pat.status === "Completed" ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/20" : "bg-amber-500/15 text-amber-400 border border-amber-500/20";
+                    listItems += `
+                        <div class="glass-panel rounded-2xl p-3.5 border border-slate-800/60 relative flex flex-col space-y-2">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <h5 class="text-xs font-extrabold text-white">${pat.name}</h5>
+                                    <span class="text-[8px] text-slate-500 font-bold block">${pat.type}</span>
+                                </div>
+                                <span class="px-2 py-0.5 rounded-full text-[8px] font-bold uppercase ${statusColor}">${pat.status}</span>
+                            </div>
+                            <p class="text-[9px] text-slate-300 leading-relaxed bg-slate-950/40 p-2 rounded-xl border border-slate-900">
+                                <span class="text-blue-500 font-bold">Remedy Target:</span> ${pat.symptom}
+                            </p>
+                            <div class="flex justify-between items-center text-[8px] text-slate-500">
+                                <span>📞 ${pat.phone}</span>
+                                <span>Appointment: ${pat.time}</span>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                view.innerHTML = `
+                    <div class="px-5 pt-4 space-y-4">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <h3 class="text-sm font-extrabold text-white">Patients Database</h3>
+                                <span class="text-[9px] text-slate-400 block">Total registered: ${state.totalPatients} profiles</span>
+                            </div>
+                            <button onclick="showToast('Modal active')" class="text-[10px] bg-blue-600 hover:bg-blue-500 text-white font-extrabold px-3 py-1.5 rounded-full shadow-lg">
+                                Add Patient
+                            </button>
+                        </div>
+
+                        <!-- Fast Patient Registration Box -->
+                        <div class="glass-panel rounded-2xl p-4 border border-slate-800/80 space-y-3">
+                            <h4 class="text-[10px] text-blue-400 font-bold uppercase tracking-wider">Quick Registration</h4>
+                            <form onsubmit="addPatientFromViewport(event)" class="space-y-2">
+                                <input type="text" id="new-pat-name" placeholder="Patient Full Name" class="w-full bg-[#050811] text-xs text-white border border-slate-800 p-2 rounded-xl focus:border-blue-500 focus:outline-none">
+                                <input type="text" id="new-pat-phone" placeholder="Contact Mobile (e.g. +91 91122...)" class="w-full bg-[#050811] text-xs text-white border border-slate-800 p-2 rounded-xl focus:border-blue-500 focus:outline-none">
+                                <textarea id="new-pat-symptom" rows="2" placeholder="Primary symptoms & homeopathic targets" class="w-full bg-[#050811] text-xs text-white border border-slate-800 p-2 rounded-xl focus:border-blue-500 focus:outline-none"></textarea>
+                                <button type="submit" class="w-full py-2 bg-blue-600 hover:bg-blue-500 text-white font-extrabold text-xs rounded-xl shadow-lg transition-all">
+                                    Register Patient Profile
+                                </button>
+                            </form>
+                        </div>
+
+                        <!-- Patients List -->
+                        <div class="space-y-2.5">
+                            <h4 class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Active Consultation Queue</h4>
+                            ${listItems}
+                        </div>
+                    </div>
+                `;
+            } else if (state.currentTab === 'followups') {
+                let listItems = "";
+                if(state.followupsData.length === 0) {
+                    listItems = `
+                        <div class="text-center py-8">
+                            <span class="text-3xl block">🎉</span>
+                            <span class="text-xs text-slate-400 block mt-2 font-medium">All pending follow-ups completed!</span>
+                        </div>
+                    `;
+                } else {
+                    state.followupsData.forEach(f => {
+                        listItems += `
+                            <div class="glass-panel rounded-2xl p-4 border border-slate-800/60 flex flex-col space-y-3">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <h5 class="text-xs font-extrabold text-white">${f.name}</h5>
+                                        <span class="text-[8px] text-amber-400 font-bold uppercase block">${f.date}</span>
+                                    </div>
+                                    <button onclick="completeFollowup(${f.id})" class="px-2.5 py-1 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-[9px] rounded-lg transition-all">
+                                        Done
+                                    </button>
+                                </div>
+                                <div class="bg-slate-950/40 border border-slate-900 p-2.5 rounded-xl space-y-1">
+                                    <div class="flex justify-between text-[8px]">
+                                        <span class="text-slate-500">Remedy:</span>
+                                        <span class="text-blue-400 font-bold">${f.remedy}</span>
+                                    </div>
+                                    <div class="flex justify-between text-[8px]">
+                                        <span class="text-slate-500">Diagnosis:</span>
+                                        <span class="text-slate-300 font-semibold text-right">${f.reason}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+
+                view.innerHTML = `
+                    <div class="px-5 pt-4 space-y-4">
+                        <div>
+                            <h3 class="text-sm font-extrabold text-white">Pending Follow-ups</h3>
+                            <span class="text-[9px] text-slate-400 block">Requires clinical review and remedy updates.</span>
+                        </div>
+
+                        <div class="space-y-3">
+                            ${listItems}
+                        </div>
+                    </div>
+                `;
+            } else if (state.currentTab === 'books') {
+                let bookItems = "";
+                state.books.forEach(b => {
+                    bookItems += `
+                        <div class="glass-panel rounded-2xl p-4 border border-slate-800/60 space-y-2">
+                            <div class="flex justify-between items-center">
+                                <h5 class="text-xs font-extrabold text-white">${b.title}</h5>
+                                <span class="px-2 py-0.5 bg-blue-900/40 text-blue-400 text-[8px] font-bold rounded-md">${b.category}</span>
+                            </div>
+                            <span class="text-[8px] text-slate-500 font-bold block">Author: ${b.author}</span>
+                            <p class="text-[10px] text-slate-400 leading-relaxed">
+                                ${b.desc}
+                            </p>
+                        </div>
+                    `;
+                });
+
+                view.innerHTML = `
+                    <div class="px-5 pt-4 space-y-4">
+                        <div>
+                            <h3 class="text-sm font-extrabold text-white">Homeopathic Reference Books</h3>
+                            <span class="text-[9px] text-slate-400 block">Access guidelines and principles directly on your mobile interface.</span>
+                        </div>
+
+                        <div class="space-y-3">
+                            ${bookItems}
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // Initialize view on first load
+        renderViewportContent();
+    </script>
+</body>
+</html>

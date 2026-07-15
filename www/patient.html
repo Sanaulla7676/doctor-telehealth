@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Homeopathway Patient Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #030712;
+        }
+        .display-font {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+    </style>
+</head>
+<body class="text-slate-100 min-h-screen flex flex-col justify-between">
+    
+    <!-- Navigation Header -->
+    <header class="border-b border-slate-900/80 bg-slate-950/60 backdrop-blur-md sticky top-0 z-50 px-6 py-4">
+        <div class="max-w-6xl mx-auto flex justify-between items-center">
+            <a href="/" class="flex items-center gap-2 group">
+                <span class="text-2xl group-hover:rotate-12 transition-transform duration-300">🌿</span>
+                <span class="text-lg font-black tracking-tight display-font text-white">HOMEOPATHWAY</span>
+            </a>
+            <div class="flex items-center gap-4">
+                <a href="/login.html" class="text-xs font-bold text-slate-400 hover:text-white transition-all">Doctor Portal 🔑</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Booking Main Form Section -->
+    <main class="max-w-xl w-full mx-auto px-6 py-12 flex-grow">
+        <div class="bg-slate-900/40 border border-slate-800/80 p-8 rounded-3xl relative overflow-hidden backdrop-blur-md shadow-2xl space-y-6">
+            
+            <div class="absolute -top-12 -right-12 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl"></div>
+
+            <div class="text-center space-y-1">
+                <span class="text-2xl">📅</span>
+                <h1 class="text-xl font-black text-white display-font tracking-tight">Book Your Consultation</h1>
+                <p class="text-xs text-slate-400 leading-relaxed">Schedule a secure, remote telehealth consultation with Dr. Varsha Bandi</p>
+            </div>
+
+            <form id="bookingForm" class="space-y-4">
+                <div id="successMsg" class="hidden p-4 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs rounded-xl text-center font-semibold">
+                    🎉 Appointment Booked Successfully! We have sent a confirmation email.
+                </div>
+                <div id="errorMsg" class="hidden p-4 bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs rounded-xl text-center"></div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="space-y-1.5">
+                        <label class="text-xs font-bold text-slate-400 block">Your Full Name</label>
+                        <input type="text" id="name" required placeholder="Priya Sharma" class="w-full bg-slate-950/80 border border-slate-800 focus:border-emerald-500 text-slate-100 px-4 py-2.5 rounded-xl focus:outline-none text-sm transition-all">
+                    </div>
+                    <div class="space-y-1.5">
+                        <label class="text-xs font-bold text-slate-400 block">Phone Number</label>
+                        <input type="text" id="phone" required placeholder="+91 9876543210" class="w-full bg-slate-950/80 border border-slate-800 focus:border-emerald-500 text-slate-100 px-4 py-2.5 rounded-xl focus:outline-none text-sm transition-all">
+                    </div>
+                </div>
+
+                <div class="space-y-1.5">
+                    <label class="text-xs font-bold text-slate-400 block">Email Address</label>
+                    <input type="email" id="email" required placeholder="priya@sharma.com" class="w-full bg-slate-950/80 border border-slate-800 focus:border-emerald-500 text-slate-100 px-4 py-2.5 rounded-xl focus:outline-none text-sm transition-all">
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="space-y-1.5">
+                        <label class="text-xs font-bold text-slate-400 block">Preferred Date</label>
+                        <input type="date" id="date" required class="w-full bg-slate-950/80 border border-slate-800 focus:border-emerald-500 text-slate-100 px-4 py-2.5 rounded-xl focus:outline-none text-sm transition-all">
+                    </div>
+                    <div class="space-y-1.5">
+                        <label class="text-xs font-bold text-slate-400 block">Preferred Time</label>
+                        <select id="time" required class="w-full bg-slate-950/80 border border-slate-800 focus:border-emerald-500 text-slate-100 px-4 py-2.5 rounded-xl focus:outline-none text-sm transition-all">
+                            <option value="">Select slot</option>
+                            <option value="09:00 AM">09:00 AM</option>
+                            <option value="10:00 AM">10:00 AM</option>
+                            <option value="11:30 AM">11:30 AM</option>
+                            <option value="02:00 PM">02:00 PM</option>
+                            <option value="03:30 PM">03:30 PM</option>
+                            <option value="05:00 PM">05:00 PM</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="space-y-1.5">
+                    <label class="text-xs font-bold text-slate-400 block">Primary Symptoms / Reasons for Visit</label>
+                    <textarea id="reason" rows="3" required placeholder="Severe dry coughing fits triggered by climate, feeling low-grade fever..." class="w-full bg-slate-950/80 border border-slate-800 focus:border-emerald-500 text-slate-100 px-4 py-2.5 rounded-xl focus:outline-none text-sm transition-all"></textarea>
+                </div>
+
+                <button type="submit" id="btnSubmit" class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-extrabold text-sm rounded-xl shadow-lg transition-all flex items-center justify-center gap-2">
+                    <span>Schedule Appointment</span>
+                    <span>🌿</span>
+                </button>
+            </form>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-900 bg-slate-950 py-6 text-center text-xs text-slate-500">
+        <p>© 2026 Homeopathway. Secured EMR and Telehealth System.</p>
+    </footer>
+
+    <script>
+        // Pre-fill today's date
+        const todayStr = new Date().toISOString().split('T')[0];
+        document.getElementById('date').value = todayStr;
+
+        document.getElementById('bookingForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const successMsg = document.getElementById('successMsg');
+            const errorMsg = document.getElementById('errorMsg');
+            const btnSubmit = document.getElementById('btnSubmit');
+
+            const name = document.getElementById('name').value;
+            const phone = document.getElementById('phone').value;
+            const email = document.getElementById('email').value;
+            const date = document.getElementById('date').value;
+            const time = document.getElementById('time').value;
+            const reason = document.getElementById('reason').value;
+
+            successMsg.classList.add('hidden');
+            errorMsg.classList.add('hidden');
+            btnSubmit.disabled = true;
+            btnSubmit.innerText = 'Transmitting Booking...';
+
+            try {
+                const res = await fetch('/api/appointments', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, phone, email, date, time, reason })
+                });
+                const data = await res.json();
+                
+                if (data.success) {
+                    successMsg.classList.remove('hidden');
+                    document.getElementById('bookingForm').reset();
+                    document.getElementById('date').value = todayStr;
+                } else {
+                    errorMsg.innerText = data.error || 'Booking execution failed. Please verify detail parameters.';
+                    errorMsg.classList.remove('hidden');
+                }
+            } catch (err) {
+                errorMsg.innerText = 'Network communication failure. Please verify backend is live.';
+                errorMsg.classList.remove('hidden');
+            } finally {
+                btnSubmit.disabled = false;
+                btnSubmit.innerHTML = '<span>Schedule Appointment</span><span>🌿</span>';
+            }
+        });
+    </script>
+</body>
+</html>

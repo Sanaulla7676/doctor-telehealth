@@ -25,7 +25,7 @@ object ClinicSyncManager {
     suspend fun syncAllData(context: Context, onNewBookingDetected: (String, String, String) -> Unit = { _, _, _ -> }) {
         val auth = AuthPreferences(context)
         val token = auth.token ?: return
-        val api = RetrofitClient.apiService
+        val api = RetrofitClient.getApiService(context)
         val db = ClinicDatabase.getDatabase(context)
         val dao = db.clinicDao()
 
@@ -131,6 +131,23 @@ object ClinicSyncManager {
                 // Trigger real alert for newly fetched website bookings!
                 if (appointmentsBefore.isNotEmpty() && !appointmentsBefore.contains(dto.id)) {
                     onNewBookingDetected(dto.name, dto.time, dto.reason)
+
+                    // Persist notification to local DB for NotificationCenter
+                    val notifId = "notif_booking_${dto.id}"
+                    val existingNotifs = dao.getAllPatientNotifications()
+                    if (existingNotifs.none { it.id == notifId }) {
+                        dao.insertPatientNotification(
+                            PatientNotificationEntity(
+                                id = notifId,
+                                title = "New Appointment Booking",
+                                message = "${dto.name} booked a consultation at ${dto.time} on ${dto.date}. Reason: ${dto.reason}",
+                                type = "appointment",
+                                status = "Unread",
+                                appointmentId = dto.id,
+                                createdAt = System.currentTimeMillis()
+                            )
+                        )
+                    }
                 }
             }
 
@@ -162,12 +179,41 @@ object ClinicSyncManager {
                 }
             }
 
-            // 4. Fetch Remote Reminders (Follow-ups)
+            // 4. Fetch ALL Follow-ups (bulk - for calendar & dashboard)
+            try {
+                val allFollowupsResponse = api.getAllFollowUps(tokenHeader)
+                if (allFollowupsResponse.isSuccessful && allFollowupsResponse.body()?.success == true) {
+                    val allFollowups = allFollowupsResponse.body()?.followups ?: emptyList()
+                    allFollowups.forEach { dto ->
+                        // Create a unique follow-up ID since it's a bulk response (no reminder_id)
+                        val entityId = "fup_all_${dto.followup_id}"
+                        val entity = FollowUpEntity(
+                            id = entityId,
+                            appointmentId = dto.consultation_id ?: dto.followup_id,
+                            patientId = dto.patient_id ?: "",
+                            patientName = dto.patient_name ?: "Unknown Patient",
+                            contactNumber = dto.patient_phone ?: "",
+                            lastVisitDate = dto.last_visit_date ?: "",
+                            followupDate = dto.followup_date ?: "",
+                            doctorNotes = dto.doctor_notes ?: "",
+                            stage = dto.current_stage ?: "DAY_0",
+                            preparedMessage = dto.message ?: "",
+                            reminderStatus = dto.message_status ?: "Pending"
+                        )
+                        dao.insertFollowUp(entity)
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+
+            // 5. Fetch Today's Reminders (for WhatsApp messaging with prepared messages)
             val remindersResponse = api.getReminders(tokenHeader)
             if (remindersResponse.isSuccessful && remindersResponse.body()?.success == true) {
                 val remoteReminders = remindersResponse.body()?.followupsToday ?: emptyList()
                 
                 remoteReminders.forEach { dto ->
+                    // Today's reminders have a specific reminder_id for tracking WhatsApp send status
                     val entity = FollowUpEntity(
                         id = dto.reminder_id,
                         appointmentId = dto.followup_id,
@@ -184,8 +230,13 @@ object ClinicSyncManager {
                     dao.insertFollowUp(entity)
                 }
             }
+
+            // Clean up old notifications
+            dao.pruneOldNotifications()
+
         } catch (e: Exception) {
             e.printStackTrace()
         }
     }
 }
+

@@ -24,14 +24,35 @@ class ClinicViewModel(application: Application) : AndroidViewModel(application) 
     val documents: StateFlow<List<DocumentEntity>> = repository.getAllDocumentsFlow()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
+    val unreadNotificationCount: StateFlow<Int> = repository.getUnreadNotificationCountFlow()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
+
+    private val _notifications = MutableStateFlow<List<com.example.db.PatientNotificationEntity>>(emptyList())
+    val notifications: StateFlow<List<com.example.db.PatientNotificationEntity>> = _notifications
+
     init {
         // Run full cache refresh on load to ensure absolute state conformity
         refreshAll()
+        loadNotifications()
     }
 
     fun refreshAll() {
         viewModelScope.launch(Dispatchers.IO) {
             repository.syncAll()
+            loadNotifications()
+        }
+    }
+
+    fun loadNotifications() {
+        viewModelScope.launch(Dispatchers.IO) {
+            _notifications.value = repository.getAllNotifications()
+        }
+    }
+
+    fun markAllNotificationsRead() {
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.markAllNotificationsRead()
+            _notifications.value = repository.getAllNotifications()
         }
     }
 

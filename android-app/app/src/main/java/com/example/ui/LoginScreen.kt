@@ -12,6 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -19,9 +20,13 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.network.AuthPreferences
 import com.example.network.LoginRequest
 import com.example.network.RetrofitClient
 import kotlinx.coroutines.launch
+
+private const val DEFAULT_SERVER_URL =
+    "https://doctor-telehealth.onrender.com"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -29,11 +34,18 @@ fun LoginScreen(
     isDark: Boolean,
     onLoginSuccess: (String, String, String) -> Unit
 ) {
+    val context = LocalContext.current
+    val authPrefs = remember { AuthPreferences(context) }
+
     var email by remember { mutableStateOf("drvarshabandi@gmail.com") }
     var password by remember { mutableStateOf("drvarsha@07") }
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
-    
+    var showServerDialog by remember { mutableStateOf(false) }
+    var serverUrlInput by remember {
+        mutableStateOf(authPrefs.serverUrl ?: DEFAULT_SERVER_URL)
+    }
+
     val scope = rememberCoroutineScope()
 
     val bgCol = if (isDark) ClinicColors.DarkBg else ClinicColors.LightBg
@@ -41,6 +53,60 @@ fun LoginScreen(
     val borderCol = if (isDark) ClinicColors.DarkBorder else ClinicColors.LightBorder
     val textColor = if (isDark) ClinicColors.DarkText else ClinicColors.LightText
 
+    // ─── Server URL Dialog ──────────────────────────────────────────────
+    if (showServerDialog) {
+        AlertDialog(
+            onDismissRequest = { showServerDialog = false },
+            title = { Text("Configure Server URL", fontWeight = FontWeight.Bold, fontSize = 16.sp) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(
+                        "Enter the backend server URL. Leave default if using the production server.",
+                        fontSize = 12.sp,
+                        color = Color.Gray
+                    )
+                    OutlinedTextField(
+                        value = serverUrlInput,
+                        onValueChange = { serverUrlInput = it },
+                        label = { Text("Server URL", fontSize = 12.sp) },
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = ClinicColors.Rose600,
+                            unfocusedBorderColor = borderCol,
+                            focusedLabelColor = ClinicColors.Rose600
+                        ),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    TextButton(onClick = { serverUrlInput = DEFAULT_SERVER_URL }) {
+                        Text("Reset to Default", fontSize = 11.sp, color = ClinicColors.Rose600)
+                    }
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        val url = serverUrlInput.trim().trimEnd('/')
+                        if (url.isNotBlank()) {
+                            authPrefs.serverUrl = url
+                            RetrofitClient.resetInstance()
+                        }
+                        showServerDialog = false
+                        errorMessage = null
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = ClinicColors.Rose600)
+                ) { Text("Save", color = Color.White) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showServerDialog = false }) {
+                    Text("Cancel", color = Color.Gray)
+                }
+            },
+            containerColor = cardBg
+        )
+    }
+
+    // ─── Login Card ──────────────────────────────────────────────────────
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -58,16 +124,27 @@ fun LoginScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Header
-            Text(
-                text = "⚕️",
-                fontSize = 40.sp,
-                textAlign = TextAlign.Center
-            )
-            
-            Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            // Settings gear (top-right)
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
                 Text(
-                    text = "HOMEOPATHWAY",
+                    text = "⚙️",
+                    fontSize = 18.sp,
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .clickable { showServerDialog = true }
+                        .padding(4.dp)
+                )
+            }
+
+            // Header
+            Text(text = "⚕️", fontSize = 40.sp, textAlign = TextAlign.Center)
+
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Text(
+                    text = "DrVarsha bandi",
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Black,
                     fontFamily = FontFamily.SansSerif,
@@ -75,7 +152,7 @@ fun LoginScreen(
                     textAlign = TextAlign.Center
                 )
                 Text(
-                    text = "EMR Clinical Dashboard Mobile Portal",
+                    text = "EMR Clinical Dashboard — Mobile Portal",
                     fontSize = 11.sp,
                     color = ClinicColors.DarkTextMuted,
                     textAlign = TextAlign.Center
@@ -147,22 +224,30 @@ fun LoginScreen(
             Button(
                 onClick = {
                     if (email.isBlank() || password.isBlank()) {
-                        errorMessage = "Please enter authorize credentials."
+                        errorMessage = "Please enter your credentials."
                         return@Button
                     }
                     isLoading = true
                     errorMessage = null
                     scope.launch {
                         try {
-                            val response = RetrofitClient.apiService.login(LoginRequest(email, password))
+                            val api = RetrofitClient.getApiService(context)
+                            val response = api.login(LoginRequest(email.trim(), password))
                             if (response.isSuccessful && response.body()?.success == true) {
                                 val body = response.body()!!
-                                onLoginSuccess(email, body.token ?: "", body.doctorName ?: "Dr. Varsha Bandi")
+                                onLoginSuccess(
+                                    email.trim(),
+                                    body.token ?: "",
+                                    body.doctorName ?: "DrVarsha bandi"
+                                )
                             } else {
-                                errorMessage = response.body()?.error ?: "Invalid credentials."
+                                val errBody = response.errorBody()?.string()
+                                errorMessage = response.body()?.error
+                                    ?: if (!errBody.isNullOrBlank()) errBody else "Invalid credentials."
                             }
                         } catch (e: Exception) {
-                            errorMessage = "Network communication failure. Please verify server is live."
+                            val activeUrl = authPrefs.serverUrl ?: DEFAULT_SERVER_URL
+                            errorMessage = "Cannot reach server at $activeUrl: ${e.localizedMessage}. Tap ⚙️ to check the server URL."
                         } finally {
                             isLoading = false
                         }

@@ -32,7 +32,7 @@ class SocketIOManager private constructor(private val context: Context) {
 
     companion object {
         private const val TAG = "SocketIOManager"
-        private const val SOCKET_URL = "https://ais-pre-odhqgf7uzczd2dwh4i45wy-403938223786.asia-southeast1.run.app"
+        private const val DEFAULT_SOCKET_URL = "https://doctor-telehealth.onrender.com"
 
         @Volatile
         private var INSTANCE: SocketIOManager? = null
@@ -71,7 +71,11 @@ class SocketIOManager private constructor(private val context: Context) {
                 timeout = 20000 // 20s connection timeout
             }
 
-            socket = IO.socket(SOCKET_URL, opts)
+            // Derive socket URL from saved server URL preference
+            val savedUrl = authPrefs.serverUrl ?: DEFAULT_SOCKET_URL
+            val socketUrl = if (savedUrl.endsWith("/")) savedUrl.dropLast(1) else savedUrl
+
+            socket = IO.socket(socketUrl, opts)
 
             // Setup Event Handlers
             socket?.on(Socket.EVENT_CONNECT, Emitter.Listener {
@@ -105,12 +109,38 @@ class SocketIOManager private constructor(private val context: Context) {
                     val appointmentJson = data.getJSONObject("appointment")
                     val patientName = appointmentJson.optString("name", "Unknown Patient")
                     val appointmentTime = appointmentJson.optString("time", "No Time")
+                    val appointmentDate = appointmentJson.optString("date", "")
                     val reason = appointmentJson.optString("reason", "Consultation")
+                    val appointmentId = appointmentJson.optString("id", "socket_${System.currentTimeMillis()}")
 
                     Log.d(TAG, "Received new booking: $patientName for $appointmentTime")
 
                     // Show real system notification
                     notificationHelper.showBookingNotification(patientName, appointmentTime, reason)
+
+                    // Persist notification to local DB immediately for NotificationCenter
+                    scope.launch {
+                        try {
+                            val dao = ClinicDatabase.getDatabase(context).clinicDao()
+                            val notifId = "notif_booking_$appointmentId"
+                            val existing = dao.getAllPatientNotifications()
+                            if (existing.none { it.id == notifId }) {
+                                dao.insertPatientNotification(
+                                    com.example.db.PatientNotificationEntity(
+                                        id = notifId,
+                                        title = "New Appointment Booking",
+                                        message = "$patientName booked a consultation at $appointmentTime${if (appointmentDate.isNotBlank()) " on $appointmentDate" else ""}. Reason: $reason",
+                                        type = "appointment",
+                                        status = "Unread",
+                                        appointmentId = appointmentId,
+                                        createdAt = System.currentTimeMillis()
+                                    )
+                                )
+                            }
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Failed to persist socket notification to DB", e)
+                        }
+                    }
 
                     // Refresh repository cache reactively from server source of truth
                     scope.launch {
@@ -120,6 +150,7 @@ class SocketIOManager private constructor(private val context: Context) {
                     Log.e(TAG, "Error handling new_booking_notification event", e)
                 }
             })
+
 
             // 2. Appointment Updated Event
             socket?.on("appointment_updated", Emitter.Listener { args ->
