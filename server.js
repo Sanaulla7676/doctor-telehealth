@@ -1469,8 +1469,8 @@ app.get('/api/health', (req, res) => {
     res.json({ success: true, status: 'healthy', timestamp: new Date() });
 });
 
-// Fallback routing for SPA
-app.get('*', (req, res, next) => {
+// Fallback routing for SPA (Express 5 requires named wildcard '/{*path}')
+app.get('/{*path}', (req, res, next) => {
     if (req.path.startsWith('/api')) return next();
     const wwwIndex = path.join(__dirname, 'www', 'index.html');
     if (fs.existsSync(wwwIndex)) {
