@@ -1,0 +1,6 @@
+User-Agent: *
+Allow: /
+Disallow: /portal
+Disallow: /api/
+
+Sitemap: https://doctor-telehealth.onrender.com/sitemap.xml

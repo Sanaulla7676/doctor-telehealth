@@ -223,7 +223,6 @@
                                     <th class="p-4">Date</th>
                                     <th class="p-4">Time</th>
                                     <th class="p-4">Reason</th>
-                                    <th class="p-4">Fee & Payment</th>
                                     <th class="p-4">Booking Status</th>
                                     <th class="p-4">Meeting Link</th>
                                 </tr>
@@ -526,15 +525,6 @@
                     meetingBadge = `<span class="bg-gray-100 text-gray-500 text-[9px] px-2 py-0.5 rounded-full">Call Finished</span>`;
                 }
 
-                let paymentBadge = '';
-                if (appt.consultation_fee) {
-                    const pColor = appt.payment_status === 'Paid' ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800';
-                    paymentBadge = `<span class="text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider ${pColor}">₹${appt.consultation_fee} (${appt.payment_status || 'Unpaid'})</span>`;
-                } else if (appt.payment_status) {
-                    const pColor = appt.payment_status === 'Paid' ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800';
-                    paymentBadge = `<span class="text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider ${pColor}">${appt.payment_status}</span>`;
-                }
-
                 const item = document.createElement('div');
                 item.className = 'p-4 border border-black/[0.04] bg-black/[0.01] rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4';
                 item.innerHTML = `
@@ -546,7 +536,6 @@
                         <p class="text-[10px] text-luxMuted mt-1">Brief: "${appt.reason}"</p>
                     </div>
                     <div class="flex items-center space-x-3 w-full md:w-auto justify-between md:justify-end">
-                        ${paymentBadge}
                         <span class="text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider ${statusColor}">${appt.status}</span>
                         ${appt.status === 'Confirmed' && appt.meeting_status === 'READY' ? `
                             <button onclick="startActiveMeeting()" class="bg-luxDark text-white text-[10px] font-bold py-2 px-4 rounded-xl uppercase tracking-wider hover:bg-luxAccent transition duration-300">Join Call</button>
@@ -578,25 +567,12 @@
                     meetingCell = `<span class="text-luxMuted">Consultation Ended</span>`;
                 }
 
-                let paymentCell = '<span class="text-luxMuted">—</span>';
-                if (appt.consultation_fee) {
-                    const pCol = appt.payment_status === 'Paid' ? 'text-green-600' : 'text-amber-600';
-                    paymentCell = `<div>
-                        <div class="font-bold">₹${appt.consultation_fee}</div>
-                        <div class="text-[10px] font-bold uppercase tracking-wider ${pCol}">${appt.payment_status || 'Unpaid'}</div>
-                    </div>`;
-                } else if (appt.payment_status) {
-                    const pCol = appt.payment_status === 'Paid' ? 'text-green-600' : 'text-amber-600';
-                    paymentCell = `<span class="font-bold uppercase tracking-wider ${pCol}">${appt.payment_status}</span>`;
-                }
-
                 const tr = document.createElement('tr');
                 tr.className = 'border-b border-black/[0.02] hover:bg-black/[0.01] transition';
                 tr.innerHTML = `
                     <td class="p-4 font-bold text-luxDark">${appt.date}</td>
                     <td class="p-4 text-luxMuted">${appt.time}</td>
                     <td class="p-4 max-w-xs truncate">${appt.reason}</td>
-                    <td class="p-4">${paymentCell}</td>
                     <td class="p-4"><span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase ${statusColor}">${appt.status}</span></td>
                     <td class="p-4">${meetingCell}</td>
                 `;

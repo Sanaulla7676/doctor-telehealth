@@ -1461,23 +1461,43 @@ app.get('/api/appointments/enriched', authenticateToken, async (req, res) => {
 });
 
 // ─────────────────────────────────────────────────────────────
-// HEALTH & FALLBACK ROUTES
+// BACKWARD-COMPAT REDIRECTS (old static HTML pages → new Next.js routes)
 // ─────────────────────────────────────────────────────────────
+app.get('/patient-auth.html', (req, res) => res.redirect(301, '/auth/'));
+app.get('/patient-portal.html', (req, res) => res.redirect(301, '/portal/'));
+app.get('/patient.html', (req, res) => res.redirect(301, '/portal/'));
 
-// Health check endpoint
-app.get('/api/health', (req, res) => {
-    res.json({ success: true, status: 'healthy', timestamp: new Date() });
-});
-
-// Fallback routing for SPA (Express 5 requires named wildcard '/{*path}')
+// Fallback routing for Next.js static export (Express 5 requires named wildcard '/{*path}')
+// With output: 'export' + trailingSlash: true, Next.js generates:
+//   / → public/index.html
+//   /auth → public/auth/index.html
+//   /portal → public/portal/index.html
+//   /testimonials → public/testimonials/index.html
 app.get('/{*path}', (req, res, next) => {
     if (req.path.startsWith('/api')) return next();
-    const wwwIndex = path.join(__dirname, 'www', 'index.html');
-    if (fs.existsSync(wwwIndex)) {
-        return res.sendFile(wwwIndex);
+
+    const cleanPath = req.path.replace(/\/+$/, '') || '';
+
+    // Try these locations in order:
+    const candidates = [
+        // 1. Exact match with trailing slash (Next.js static export generates /route/index.html)
+        path.join(__dirname, 'public', cleanPath, 'index.html'),
+        // 2. Exact match as .html file
+        path.join(__dirname, 'public', cleanPath + '.html'),
+        // 3. Root index.html fallback (for client-side navigation)
+        path.join(__dirname, 'public', 'index.html'),
+    ];
+
+    for (const candidate of candidates) {
+        if (fs.existsSync(candidate)) {
+            return res.sendFile(candidate);
+        }
     }
+
+    // Final fallback
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
+
 
 // ─────────────────────────────────────────────────────────────
 // SERVER START
