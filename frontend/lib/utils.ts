@@ -13,3 +13,17 @@ export function formatDate(dateString: string | Date): string {
     day: "numeric",
   });
 }
+
+export function getApiUrl(path: string): string {
+  if (typeof window !== 'undefined') {
+    // If running on local dev server or custom Vercel domains, point to Render production backend
+    if (
+      window.location.hostname === 'localhost' || 
+      window.location.hostname === '127.0.0.1' || 
+      window.location.hostname.includes('vercel.app')
+    ) {
+      return `https://doctor-telehealth.onrender.com${path}`;
+    }
+  }
+  return path;
+}

@@ -9,7 +9,7 @@ import {
   FileText, Upload, Pill, Stethoscope, CreditCard, AlertCircle, Download,
   ZoomIn, Activity, File, Image as ImageIcon
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, getApiUrl } from "@/lib/utils";
 
 type TabType = "appointments" | "records" | "documents" | "notifications" | "profile";
 
@@ -57,10 +57,10 @@ export default function PortalPage() {
     setLoading(true);
     try {
       const [profileRes, appointmentsRes, notificationsRes, documentsRes] = await Promise.all([
-        fetch("/api/patient/profile", { headers: { Authorization: `Bearer ${token}` } }),
-        fetch("/api/patient/appointments", { headers: { Authorization: `Bearer ${token}` } }),
-        fetch("/api/patient/notifications", { headers: { Authorization: `Bearer ${token}` } }),
-        fetch("/api/patient/documents", { headers: { Authorization: `Bearer ${token}` } }),
+        fetch(getApiUrl("/api/patient/profile"), { headers: { Authorization: `Bearer ${token}` } }),
+        fetch(getApiUrl("/api/patient/appointments"), { headers: { Authorization: `Bearer ${token}` } }),
+        fetch(getApiUrl("/api/patient/notifications"), { headers: { Authorization: `Bearer ${token}` } }),
+        fetch(getApiUrl("/api/patient/documents"), { headers: { Authorization: `Bearer ${token}` } }),
       ]);
 
       const profileData = await profileRes.json();
@@ -129,7 +129,7 @@ export default function PortalPage() {
     socket.on("new_patient_document", () => {
       // Refresh documents list
       if (token) {
-        fetch("/api/patient/documents", { headers: { Authorization: `Bearer ${token}` } })
+        fetch(getApiUrl("/api/patient/documents"), { headers: { Authorization: `Bearer ${token}` } })
           .then(r => r.json()).then(d => { if (d.success) setDocuments(d.documents); });
       }
     });
@@ -145,7 +145,7 @@ export default function PortalPage() {
     e.preventDefault();
     setIsUpdatingProfile(true);
     try {
-      const res = await fetch("/api/patient/profile", {
+      const res = await fetch(getApiUrl("/api/patient/profile"), {
         method: "PUT",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ full_name: fullName, phone, email }),
@@ -162,7 +162,7 @@ export default function PortalPage() {
 
   const markAllNotificationsRead = async () => {
     try {
-      await fetch("/api/patient/notifications/mark-read", {
+      await fetch(getApiUrl("/api/patient/notifications/mark-read"), {
         method: "POST", headers: { Authorization: `Bearer ${token}` },
       });
       setNotifications(prev => prev.map(n => ({ ...n, status: "Read" })));
@@ -195,7 +195,7 @@ export default function PortalPage() {
         const sizeKB = Math.round(uploadFile.size / 1024);
         const sizeStr = sizeKB > 1024 ? `${(sizeKB / 1024).toFixed(1)} MB` : `${sizeKB} KB`;
 
-        const res = await fetch("/api/patient/documents", {
+        const res = await fetch(getApiUrl("/api/patient/documents"), {
           method: "POST",
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
           body: JSON.stringify({
@@ -222,7 +222,7 @@ export default function PortalPage() {
   // Preview document file data
   const previewDocument = async (docId: string) => {
     try {
-      const res = await fetch(`/api/patient/documents/${docId}/preview`, {
+      const res = await fetch(getApiUrl(`/api/patient/documents/${docId}/preview`), {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();

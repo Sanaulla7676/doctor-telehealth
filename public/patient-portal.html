@@ -331,7 +331,7 @@
         const BASE_URL = 'https://doctor-telehealth.onrender.com';
         const patientToken = localStorage.getItem('patientToken');
         if (!patientToken) {
-            window.location.href = '/auth/?tab=login';
+            window.location.href = '/patient-auth.html';
         }
 
         // Establish defensive socket connection

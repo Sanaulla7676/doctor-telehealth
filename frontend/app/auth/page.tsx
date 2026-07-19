@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { Lock, Mail, Phone, User } from "lucide-react";
+import { getApiUrl } from "@/lib/utils";
 
 function AuthForm() {
   const router = useRouter();
@@ -51,7 +52,7 @@ function AuthForm() {
     setErrorMessage("");
     
     try {
-      const response = await fetch("/api/patient/login", {
+      const response = await fetch(getApiUrl("/api/patient/login"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password })
@@ -80,7 +81,7 @@ function AuthForm() {
     setErrorMessage("");
 
     try {
-      const response = await fetch("/api/patient/register", {
+      const response = await fetch(getApiUrl("/api/patient/register"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ full_name: fullName, email, phone, password })
@@ -110,7 +111,7 @@ function AuthForm() {
     setSuccessMessage("");
 
     try {
-      const response = await fetch("/api/patient/forgot-password", {
+      const response = await fetch(getApiUrl("/api/patient/forgot-password"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email })
