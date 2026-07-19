@@ -34,6 +34,15 @@ const pool = new Pool({
 });
 
 app.use(express.json({ limit: '50mb' }));
+
+// ─────────────────────────────────────────────────────────────
+// BACKWARD-COMPAT REDIRECTS — must be BEFORE express.static so these
+// routes take priority over the old static HTML files in public/
+// ─────────────────────────────────────────────────────────────
+app.get('/patient-auth.html', (req, res) => res.redirect(301, '/auth/'));
+app.get('/patient-portal.html', (req, res) => res.redirect(301, '/portal/'));
+app.get('/patient.html', (req, res) => res.redirect(301, '/portal/'));
+
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static(path.join(__dirname, 'www')));
 
@@ -1461,11 +1470,8 @@ app.get('/api/appointments/enriched', authenticateToken, async (req, res) => {
 });
 
 // ─────────────────────────────────────────────────────────────
-// BACKWARD-COMPAT REDIRECTS (old static HTML pages → new Next.js routes)
+// NOTE: Backward-compat redirects moved to top of file (before express.static)
 // ─────────────────────────────────────────────────────────────
-app.get('/patient-auth.html', (req, res) => res.redirect(301, '/auth/'));
-app.get('/patient-portal.html', (req, res) => res.redirect(301, '/portal/'));
-app.get('/patient.html', (req, res) => res.redirect(301, '/portal/'));
 
 // Fallback routing for Next.js static export (Express 5 requires named wildcard '/{*path}')
 // With output: 'export' + trailingSlash: true, Next.js generates:
