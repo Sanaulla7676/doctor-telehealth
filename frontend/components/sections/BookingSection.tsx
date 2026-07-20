@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useSocket } from "@/hooks/useSocket";
 import { Phone, MapPin, CheckCircle, Video, Landmark, Calendar, Clock, User, FileText, Check } from "lucide-react";
 import { siteConfig } from "@/data/site";
+import { getApiUrl } from "@/lib/utils";
 
 declare const JitsiMeetExternalAPI: any;
 
@@ -141,7 +142,7 @@ export default function BookingSection() {
     };
 
     try {
-      const response = await fetch("/api/appointments", {
+      const response = await fetch(getApiUrl("/api/appointments"), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
