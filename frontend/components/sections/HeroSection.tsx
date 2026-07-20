@@ -5,6 +5,7 @@ import { useEffect, useRef } from "react";
 export default function HeroSection() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const buttonRef = useRef<HTMLDivElement>(null);
+  const brandRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     (async () => {
@@ -18,6 +19,11 @@ export default function HeroSection() {
       gsap.fromTo(buttonRef.current,
         { y: 50, opacity: 0 },
         { y: 0, opacity: 1, duration: 1.2, delay: 0.5, ease: "power3.out" }
+      );
+      // Fade-in and slide-in for the brand logo & text
+      gsap.fromTo(brandRef.current,
+        { x: -40, opacity: 0 },
+        { x: 0, opacity: 1, duration: 1.5, delay: 0.3, ease: "power3.out" }
       );
     })();
   }, []);
@@ -33,7 +39,7 @@ export default function HeroSection() {
 
   return (
     <section id="home" className="min-h-[calc(100vh-80px)] relative overflow-hidden bg-black">
-      {/* Full Bleed Looping Video — no overlay text */}
+      {/* Full Bleed Looping Video */}
       <video
         ref={videoRef}
         autoPlay
@@ -42,9 +48,28 @@ export default function HeroSection() {
         playsInline
         className="absolute inset-0 w-full h-full object-cover opacity-0"
       >
-        <source src="/Untitled_Scene_07-14_14_16_48_202607142043.mp4" type="video/mp4" />
+        <source src="/0720(1).mp4" type="video/mp4" />
         Your browser does not support the video tag.
       </video>
+
+      {/* Brand Overlay on Left Side */}
+      <div 
+        ref={brandRef}
+        className="absolute left-8 md:left-16 top-1/2 -translate-y-1/2 z-10 flex flex-col items-start space-y-3 pointer-events-none select-none opacity-0"
+      >
+        <div className="w-12 h-12 rounded-full bg-white/95 border border-white/20 flex items-center justify-center shadow-lg overflow-hidden backdrop-blur-sm">
+          <img src="/logo.png" alt="Homoeopathway Logo" className="w-full h-full object-cover" />
+        </div>
+        <h1 
+          className="text-white text-4xl sm:text-5xl md:text-7xl font-bold tracking-wider"
+          style={{ 
+            fontFamily: "Arial, Helvetica, sans-serif",
+            textShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 4px rgba(0, 0, 0, 0.3)"
+          }}
+        >
+          Homoeopathway
+        </h1>
+      </div>
 
       {/* Subtle bottom gradient so button is readable */}
       <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent z-0" />

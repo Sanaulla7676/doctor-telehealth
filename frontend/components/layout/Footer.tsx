@@ -29,8 +29,8 @@ export default function Footer() {
                 <span className="block text-xs font-black text-luxDark tracking-tight uppercase">
                   Dr. Varsha Bandi
                 </span>
-                <span className="block text-[10px] font-medium text-luxMuted font-serif italic lowercase leading-none">
-                  homeopathway
+                <span className="block text-[10px] font-medium text-luxMuted font-serif italic leading-none">
+                  Homoeopathway
                 </span>
               </div>
             </div>

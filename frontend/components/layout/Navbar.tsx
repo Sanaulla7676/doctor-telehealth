@@ -65,8 +65,8 @@ export default function Navbar() {
               <span className="block text-xs font-extrabold tracking-tight text-luxDark uppercase">
                 Dr. Varsha Bandi
               </span>
-              <span className="block text-[11px] font-medium text-luxAccent font-serif italic lowercase leading-none">
-                homeopathway
+              <span className="block text-[11px] font-medium text-luxAccent font-serif italic leading-none">
+                Homoeopathway
               </span>
             </div>
           </Link>
