@@ -16,11 +16,12 @@ export function formatDate(dateString: string | Date): string {
 
 export function getApiUrl(path: string): string {
   if (typeof window !== 'undefined') {
-    // If running on local dev server or custom Vercel domains, point to Render production backend
+    // If running on local dev server, Vercel app domain, or custom domain, point to Render production backend
     if (
       window.location.hostname === 'localhost' || 
       window.location.hostname === '127.0.0.1' || 
-      window.location.hostname.includes('vercel.app')
+      window.location.hostname.includes('vercel.app') ||
+      window.location.hostname.includes('drvarshabandi.com')
     ) {
       return `https://doctor-telehealth.onrender.com${path}`;
     }
