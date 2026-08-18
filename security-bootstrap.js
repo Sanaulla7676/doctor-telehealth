@@ -8,15 +8,9 @@ const jwtSecret = process.env.JWT_SECRET || '';
 const corsOrigins = (process.env.CORS_ORIGINS || '').split(',').map(v => v.trim()).filter(Boolean);
 
 if (process.env.NODE_ENV === 'production') {
-    if (jwtSecret.length < 32) {
-        throw new Error('JWT_SECRET must be at least 32 characters in production.');
-    }
-    if (!process.env.DATABASE_URL) {
-        throw new Error('DATABASE_URL is required.');
-    }
-    if (!corsOrigins.length) {
-        throw new Error('CORS_ORIGINS is required. Wildcard CORS is disabled.');
-    }
+    if (jwtSecret.length < 32) throw new Error('JWT_SECRET must be at least 32 characters in production.');
+    if (!process.env.DATABASE_URL) throw new Error('DATABASE_URL is required.');
+    if (!corsOrigins.length) throw new Error('CORS_ORIGINS is required. Wildcard CORS is disabled.');
 }
 
 let source = fs.readFileSync(serverPath, 'utf8');
@@ -60,15 +54,10 @@ source = source.replace(
     "    const { name, category, size, file_data, appointment_id } = req.body;\n    if (!file_data || typeof file_data !== 'string' || file_data.length > 8_000_000) {\n        return res.status(413).json({ success: false, error: 'Document is missing or exceeds the 8MB upload limit.' });\n    }\n    const id = 'pdoc_' + Date.now();"
 );
 
-const socketHandlerMarker = "io.on('connection', (socket) => {";
-const socketSecurity = `io.on('connection', (socket) => {\n    socket.on('confirm_and_share_link', async ({ appointmentId, roomName }) => {\n        try {\n            const token = socket.handshake.auth?.token;\n            if (!token) return;\n            const user = jwt.verify(token, process.env.JWT_SECRET);\n            if (!user?.id || !user?.email) return;\n        } catch {\n            return;\n        }\n`;
-if (source.includes(socketHandlerMarker)) {
-    source = source.replace(socketHandlerMarker, socketSecurity);
-    source = source.replace(
-        "    socket.on('confirm_and_share_link', async ({ appointmentId, roomName }) => {\n        try {\n            await pool.query(`",
-        "    socket.on('confirm_and_share_link', async ({ appointmentId, roomName }) => {\n        try {\n            await pool.query(`"
-    );
-}
+source = source.replace(
+    "    socket.on('confirm_and_share_link', async ({ appointmentId, roomName }) => {\n        try {",
+    "    socket.on('confirm_and_share_link', async ({ appointmentId, roomName }) => {\n        try {\n            const token = socket.handshake.auth?.token;\n            if (!token) return;\n            const user = jwt.verify(token, process.env.JWT_SECRET);\n            if (!user?.id || !user?.email) return;"
+);
 
 const patched = new Module(serverPath, module.parent);
 patched.filename = serverPath;
