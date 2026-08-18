@@ -6,25 +6,51 @@ export default function HeroSection() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const buttonRef = useRef<HTMLDivElement>(null);
   const brandRef = useRef<HTMLDivElement>(null);
+  const titleRef = useRef<HTMLHeadingElement>(null);
 
   useEffect(() => {
     (async () => {
       const { gsap } = await import("gsap");
+
       // Cinematic zoom-out and fade-in for the hero video
       gsap.fromTo(videoRef.current,
         { scale: 1.15, opacity: 0 },
         { scale: 1, opacity: 1, duration: 1.8, ease: "power2.out" }
       );
+
       // Premium slide-in for the bottom button
       gsap.fromTo(buttonRef.current,
         { y: 50, opacity: 0 },
         { y: 0, opacity: 1, duration: 1.2, delay: 0.5, ease: "power3.out" }
       );
-      // Fade-in and slide-in for the brand logo & text
+
+      // Fade-in and slide-up for the brand container (logo)
       gsap.fromTo(brandRef.current,
-        { x: -40, opacity: 0 },
-        { x: 0, opacity: 1, duration: 1.5, delay: 0.3, ease: "power3.out" }
+        { y: 30, opacity: 0 },
+        { y: 0, opacity: 1, duration: 1.2, delay: 0.3, ease: "power3.out" }
       );
+
+      // Letter-by-letter stagger animation for "Homoeopathway"
+      if (titleRef.current) {
+        const text = titleRef.current.innerText;
+        titleRef.current.innerHTML = text
+          .split("")
+          .map((char) =>
+            char === " "
+              ? `<span style="display:inline-block;width:0.3em">&nbsp;</span>`
+              : `<span style="display:inline-block;opacity:0;transform:translateY(40px)">${char}</span>`
+          )
+          .join("");
+
+        gsap.to(titleRef.current.querySelectorAll("span"), {
+          opacity: 1,
+          y: 0,
+          duration: 0.6,
+          ease: "power3.out",
+          stagger: 0.045,
+          delay: 0.5,
+        });
+      }
     })();
   }, []);
 
@@ -61,7 +87,8 @@ export default function HeroSection() {
           <img src="/logo.png" alt="Homoeopathway Logo" className="w-full h-full object-cover" />
         </div>
         <h1 
-          className="text-white text-4xl sm:text-5xl md:text-7xl font-bold tracking-wider"
+          ref={titleRef}
+          className="text-white text-4xl sm:text-5xl md:text-7xl font-bold tracking-wider overflow-hidden"
           style={{ 
             fontFamily: "Arial, Helvetica, sans-serif",
             textShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 4px rgba(0, 0, 0, 0.3)"

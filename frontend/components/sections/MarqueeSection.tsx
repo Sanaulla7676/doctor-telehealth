@@ -22,13 +22,13 @@ export default function MarqueeSection() {
       <div className="absolute left-0 top-16 bottom-0 w-20 bg-gradient-to-r from-luxBg to-transparent z-10 pointer-events-none"></div>
       <div className="absolute right-0 top-16 bottom-0 w-20 bg-gradient-to-l from-luxBg to-transparent z-10 pointer-events-none"></div>
 
-      <div className="flex overflow-hidden marquee-container w-full">
-        {/* Container 1 */}
+      <div className="flex overflow-hidden marquee-container w-full relative">
+        {/* Container 1 — starts at 0, scrolls left */}
         <div className="flex space-x-16 animate-marquee whitespace-nowrap min-w-full justify-around items-center text-xs font-semibold tracking-wider text-luxDark/80">
           {laws.map((law, idx) => {
             const Icon = law.icon;
             return (
-              <span key={idx} className="flex items-center gap-2">
+              <span key={idx} className="flex items-center gap-2 px-4">
                 <Icon className="text-luxAccent w-4 h-4 shrink-0" />
                 <span>{law.text}</span>
               </span>
@@ -36,12 +36,12 @@ export default function MarqueeSection() {
           })}
         </div>
 
-        {/* Container 2 */}
-        <div className="flex space-x-16 animate-marquee whitespace-nowrap min-w-full justify-around items-center text-xs font-semibold tracking-wider text-luxDark/80" aria-hidden="true">
+        {/* Container 2 — starts offset +100%, seamlessly follows */}
+        <div className="flex space-x-16 animate-marquee2 whitespace-nowrap min-w-full justify-around items-center text-xs font-semibold tracking-wider text-luxDark/80 absolute top-0 left-0" aria-hidden="true">
           {laws.map((law, idx) => {
             const Icon = law.icon;
             return (
-              <span key={`clone-${idx}`} className="flex items-center gap-2">
+              <span key={`clone-${idx}`} className="flex items-center gap-2 px-4">
                 <Icon className="text-luxAccent w-4 h-4 shrink-0" />
                 <span>{law.text}</span>
               </span>

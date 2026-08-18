@@ -99,7 +99,16 @@ html.lenis, html.lenis body {
     transform: translateX(0%);
   }
   100% {
-    transform: translateX(-50%);
+    transform: translateX(-100%);
+  }
+}
+
+@keyframes marquee2 {
+  0% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(0%);
   }
 }
 
@@ -107,9 +116,18 @@ html.lenis, html.lenis body {
   display: flex;
   width: max-content;
   animation: marquee 25s linear infinite;
+  flex-shrink: 0;
 }
 
-.marquee-container:hover .animate-marquee {
+.animate-marquee2 {
+  display: flex;
+  width: max-content;
+  animation: marquee2 25s linear infinite;
+  flex-shrink: 0;
+}
+
+.marquee-container:hover .animate-marquee,
+.marquee-container:hover .animate-marquee2 {
   animation-play-state: paused;
 }
 
