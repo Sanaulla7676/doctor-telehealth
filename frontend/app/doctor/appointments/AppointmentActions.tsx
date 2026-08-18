@@ -47,26 +47,18 @@ export default function AppointmentActions({ appointment, onUpdated, request }: 
   const confirm = async () => {
     const d = await request(`/api/appointments/${appointment.id}/status`, {
       method: "PUT",
-      body: JSON.stringify({
-        status: "Confirmed",
-        consultation_status: "Doctor Accepted Your Consultation",
-        meeting_status: "READY",
-      }),
+      body: JSON.stringify({ status: "Confirmed", consultation_status: "Doctor Accepted Your Consultation", meeting_status: "READY" }),
     });
     onUpdated(d.appointment);
   };
 
   const join = async () => {
     const roomName = roomFor(appointment);
-    try {
-      const d = await request("/api/meeting/start", {
-        method: "POST",
-        body: JSON.stringify({ appointmentId: appointment.id, roomName }),
-      });
-      onUpdated(d.appointment || { ...appointment, status: "Confirmed", meeting_status: "READY", video_room: roomName, videoRoom: roomName, consultation_status: "Doctor Joined Video Consultation" });
-    } catch {
-      // Still allow joining the deterministic Jitsi room if the persistence call fails.
-    }
+    const d = await request("/api/meeting/start", {
+      method: "POST",
+      body: JSON.stringify({ appointmentId: appointment.id, roomName }),
+    });
+    onUpdated(d.appointment || { ...appointment, status: "Confirmed", meeting_status: "READY", video_room: roomName, videoRoom: roomName, consultation_status: "Doctor Joined Video Consultation" });
     window.open(`https://meet.jit.si/${encodeURIComponent(roomName)}`, "_blank", "noopener,noreferrer");
   };
 
@@ -74,11 +66,11 @@ export default function AppointmentActions({ appointment, onUpdated, request }: 
 
   return (
     <div className="flex flex-wrap gap-2 mt-4" data-testid={`appointment-actions-${appointment.id}`}>
-      <button onClick={() => void updateStatus("Accepted", "Doctor Accepted Your Consultation")} disabled={appointment.status === "Confirmed"} className="inline-flex items-center gap-1.5 rounded-xl bg-[#1c251d] text-white px-3 py-2 text-[11px] font-bold disabled:opacity-40" data-testid="appointment-accept"><ThumbsUp className="w-3.5 h-3.5"/> Accept</button>
-      <button onClick={() => void updateStatus("Rejected", "Doctor Rejected Your Consultation")} disabled={appointment.status === "Confirmed"} className="inline-flex items-center gap-1.5 rounded-xl bg-white text-red-700 border border-red-200 px-3 py-2 text-[11px] font-bold disabled:opacity-40" data-testid="appointment-reject"><XCircle className="w-3.5 h-3.5"/> Reject</button>
-      <button onClick={openWhatsApp} disabled={!appointment.phone} className="inline-flex items-center gap-1.5 rounded-xl bg-[#e9f7ee] text-[#176b3b] border border-[#b9e1c7] px-3 py-2 text-[11px] font-bold disabled:opacity-40" data-testid="appointment-whatsapp"><MessageCircle className="w-3.5 h-3.5"/> WhatsApp</button>
-      <button onClick={confirm} disabled={appointment.status === "Confirmed" || appointment.status === "Rejected"} className="inline-flex items-center gap-1.5 rounded-xl bg-[#1c251d] text-white px-3 py-2 text-[11px] font-bold disabled:opacity-50" data-testid="appointment-confirm"><Check className="w-3.5 h-3.5"/> Confirm</button>
-      <button onClick={() => void join()} disabled={!ready} className="inline-flex items-center gap-1.5 rounded-xl bg-white text-[#1c251d] border border-black/10 px-3 py-2 text-[11px] font-bold disabled:opacity-40 disabled:cursor-not-allowed" data-testid="appointment-join-video"><Video className="w-3.5 h-3.5"/> Join Video</button>
+      <button onClick={() => void updateStatus("Accepted", "Doctor Accepted Your Consultation")} disabled={appointment.status === "Confirmed"} className="inline-flex items-center gap-1.5 rounded-xl bg-[#1c251d] text-white px-3 py-2 text-[11px] font-bold disabled:opacity-40" data-testid="appointment-accept"><ThumbsUp className="w-3.5 h-3.5"/>Accept</button>
+      <button onClick={() => void updateStatus("Rejected", "Doctor Rejected Your Consultation")} disabled={appointment.status === "Confirmed"} className="inline-flex items-center gap-1.5 rounded-xl bg-white text-red-700 border border-red-200 px-3 py-2 text-[11px] font-bold disabled:opacity-40" data-testid="appointment-reject"><XCircle className="w-3.5 h-3.5"/>Reject</button>
+      <button onClick={openWhatsApp} disabled={!appointment.phone} className="inline-flex items-center gap-1.5 rounded-xl bg-[#e9f7ee] text-[#176b3b] border border-[#b9e1c7] px-3 py-2 text-[11px] font-bold disabled:opacity-40" data-testid="appointment-whatsapp"><MessageCircle className="w-3.5 h-3.5"/>WhatsApp</button>
+      <button onClick={confirm} disabled={appointment.status === "Confirmed" || appointment.status === "Rejected"} className="inline-flex items-center gap-1.5 rounded-xl bg-[#1c251d] text-white px-3 py-2 text-[11px] font-bold disabled:opacity-50" data-testid="appointment-confirm"><Check className="w-3.5 h-3.5"/>Confirm</button>
+      <button onClick={() => void join()} disabled={!ready} className="inline-flex items-center gap-1.5 rounded-xl bg-white text-[#1c251d] border border-black/10 px-3 py-2 text-[11px] font-bold disabled:opacity-40 disabled:cursor-not-allowed" data-testid="appointment-join-video"><Video className="w-3.5 h-3.5"/>Join Video</button>
     </div>
   );
 }
