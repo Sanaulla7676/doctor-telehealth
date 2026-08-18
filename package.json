@@ -4,7 +4,7 @@
   "description": "Full-stack EMR and Clinical Portal server for Homeopathway.",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
+    "start": "node security-bootstrap.js",
     "build": "cd frontend && npm install && npm run build && cp -r out/* ../public/"
   },
 
