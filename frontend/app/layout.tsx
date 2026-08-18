@@ -10,6 +10,13 @@ export const metadata: Metadata = {
   title: "Dr. Varsha Bandi - Holistic Healing. Vital Force Activation.",
   description: "Classical Homeopathy by Dr. Varsha Bandi. Deep constitutional therapy for chronic illnesses, pediatric care, hormonal balance and women's health.",
   metadataBase: new URL("https://doctor-telehealth.onrender.com"),
+  icons: {
+    icon: [
+      { url: "/favicon-homeopathy.svg", type: "image/svg+xml" },
+    ],
+    shortcut: "/favicon-homeopathy.svg",
+    apple: "/favicon-homeopathy.svg",
+  },
   openGraph: {
     title: "Dr. Varsha Bandi - Holistic Healing. Vital Force Activation.",
     description: "Classical Homeopathy by Dr. Varsha Bandi. Deep constitutional therapy for chronic illnesses, pediatric care, hormonal balance and women's health.",
