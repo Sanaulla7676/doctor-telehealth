@@ -1,0 +1,44 @@
+name: Staging Backup Restore Drill
+
+on:
+  workflow_dispatch:
+
+jobs:
+  backup-restore:
+    name: PostgreSQL backup and restore verification
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install PostgreSQL client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+
+      - name: Dump staging database
+        env:
+          DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
+        run: |
+          test -n "$DATABASE_URL"
+          pg_dump --dbname="$DATABASE_URL" --format=custom --file=/tmp/homeopathway-staging.dump
+          pg_restore --list /tmp/homeopathway-staging.dump > /tmp/homeopathway-staging.toc
+          test -s /tmp/homeopathway-staging.toc
+
+      - name: Restore into isolated temporary database
+        env:
+          SOURCE_DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
+          RESTORE_DATABASE_URL: ${{ secrets.STAGING_RESTORE_DATABASE_URL }}
+        run: |
+          test -n "$SOURCE_DATABASE_URL"
+          test -n "$RESTORE_DATABASE_URL"
+          pg_restore --clean --if-exists --no-owner --no-privileges \
+            --dbname="$RESTORE_DATABASE_URL" /tmp/homeopathway-staging.dump
+          psql "$RESTORE_DATABASE_URL" -v ON_ERROR_STOP=1 \
+            -c 'SELECT COUNT(*) FROM patients' \
+            -c 'SELECT COUNT(*) FROM appointments' \
+            -c 'SELECT COUNT(*) FROM blogs'
+
+      - name: Verify backup artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: staging-postgres-backup-toc
+          path: /tmp/homeopathway-staging.toc
