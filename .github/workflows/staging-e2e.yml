@@ -1,0 +1,45 @@
+name: Staging E2E Evidence
+
+on:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: Staging frontend URL
+        required: true
+        type: string
+
+jobs:
+  selenium:
+    name: Authenticated Selenium + evidence
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Google Chrome
+        uses: browser-actions/setup-chrome@v1
+
+      - name: Install E2E dependencies
+        run: pip install -r tests/e2e/requirements.txt
+
+      - name: Run staging Selenium suite
+        env:
+          E2E_BASE_URL: ${{ inputs.base_url }}
+          E2E_DOCTOR_EMAIL: ${{ secrets.E2E_DOCTOR_EMAIL }}
+          E2E_DOCTOR_PASSWORD: ${{ secrets.E2E_DOCTOR_PASSWORD }}
+          E2E_EVIDENCE_DIR: tests/evidence
+        run: |
+          pytest -q tests/e2e/test_telehealth.py tests/e2e/test_emr_workspace.py \
+            --html=tests/evidence/staging-report.html --self-contained-html
+
+      - name: Upload screenshots and report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: staging-e2e-evidence
+          path: tests/evidence/
+          if-no-files-found: warn
