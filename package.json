@@ -9,6 +9,7 @@
     "test:syntax": "node --check server.js && node --check blog-api.js",
     "typecheck": "cd frontend && npm ci && npx tsc --noEmit",
     "security:audit": "node scripts/security-audit.mjs",
+    "migrate": "node scripts/migrate.js",
     "quality": "npm run test:syntax && npm run security:audit && npm run typecheck && npm run build"
   },
   "dependencies": {
