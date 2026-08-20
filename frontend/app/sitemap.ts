@@ -1,26 +1,32 @@
 import { MetadataRoute } from "next";
 import { getAllTestimonials } from "@/lib/testimonials";
 
-// Required for Next.js static export
-export const dynamic = 'force-static';
+export const dynamic = "force-static";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const testimonials = getAllTestimonials();
-  const baseUrl = "https://doctor-telehealth.onrender.com";
-  const lastMod = "2025-01-01";
+  const baseUrl = "https://www.drvarshabandi.com";
+  const lastModified = new Date();
 
-  // Static routes
-  const routes = ["", "/auth", "/portal", "/testimonials"].map((route) => ({
+  const routes = [
+    "",
+    "/auth",
+    "/portal",
+    "/blogs",
+    "/testimonials",
+    "/privacy",
+    "/terms",
+    "/telemedicine-consent",
+  ].map((route) => ({
     url: `${baseUrl}${route}`,
-    lastModified: lastMod,
+    lastModified,
     changeFrequency: "weekly" as const,
-    priority: route === "" ? 1.0 : 0.8,
+    priority: route === "" ? 1.0 : 0.7,
   }));
 
-  // Dynamic testimonial routes
   const dynamicRoutes = testimonials.map((t) => ({
     url: `${baseUrl}/testimonials/${t.slug}`,
-    lastModified: lastMod,
+    lastModified,
     changeFrequency: "monthly" as const,
     priority: 0.6,
   }));
