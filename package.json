@@ -1,6 +1,6 @@
 {
   "name": "homeopathway-clinical-dashboard-server",
-  "version": "1.3.2",
+  "version": "1.3.3",
   "description": "Production-oriented full-stack EMR, telehealth and clinical publishing platform for Homeopathway.",
   "main": "server.js",
   "scripts": {
@@ -11,7 +11,8 @@
     "security:audit": "node scripts/security-audit.mjs",
     "migrate": "node scripts/migrate.js",
     "migration:check": "node scripts/db-migration-check.mjs",
-    "quality": "npm run test:syntax && npm run security:audit && npm run migration:check && npm run typecheck && npm run build"
+    "emr:contract": "node scripts/emr-contract-check.mjs",
+    "quality": "npm run test:syntax && npm run security:audit && npm run migration:check && npm run emr:contract && npm run typecheck && npm run build"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
