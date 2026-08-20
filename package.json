@@ -4,7 +4,7 @@
   "description": "Production-oriented full-stack EMR, telehealth and clinical publishing platform for Homeopathway.",
   "main": "server.js",
   "scripts": {
-    "start": "node -r ./blog-api.js security-bootstrap.js",
+    "start": "node scripts/migrate.js && node -r ./blog-api.js security-bootstrap.js",
     "build": "cd frontend && npm ci && npm run build && cp -r out/* ../public/",
     "test:syntax": "node --check server.js && node --check blog-api.js && node --check security-bootstrap.js",
     "typecheck": "cd frontend && npm ci && npx tsc --noEmit",
