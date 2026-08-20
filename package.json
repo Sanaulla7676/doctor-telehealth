@@ -1,11 +1,14 @@
 {
   "name": "homeopathway-clinical-dashboard-server",
-  "version": "1.1.0",
-  "description": "Full-stack EMR, telehealth and clinical publishing platform for Homeopathway.",
+  "version": "1.2.0",
+  "description": "Production-oriented full-stack EMR, telehealth and clinical publishing platform for Homeopathway.",
   "main": "server.js",
   "scripts": {
     "start": "node -r ./blog-api.js server.js",
-    "build": "cd frontend && npm install && npm run build && cp -r out/* ../public/"
+    "build": "cd frontend && npm ci && npm run build && cp -r out/* ../public/",
+    "test:syntax": "node --check server.js && node --check blog-api.js",
+    "typecheck": "cd frontend && npm ci && npx tsc --noEmit",
+    "quality": "npm run test:syntax && npm run typecheck && npm run build"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
