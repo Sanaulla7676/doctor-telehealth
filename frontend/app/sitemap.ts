@@ -17,6 +17,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/privacy",
     "/terms",
     "/telemedicine-consent",
+    "/refund-policy",
   ].map((route) => ({
     url: `${baseUrl}${route}`,
     lastModified,
@@ -24,8 +25,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: route === "" ? 1.0 : 0.7,
   }));
 
-  const dynamicRoutes = testimonials.map((t) => ({
-    url: `${baseUrl}/testimonials/${t.slug}`,
+  const dynamicRoutes = testimonials.map((testimonial) => ({
+    url: `${baseUrl}/testimonials/${testimonial.slug}`,
     lastModified,
     changeFrequency: "monthly" as const,
     priority: 0.6,
