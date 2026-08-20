@@ -7,12 +7,17 @@ on:
         description: Staging frontend URL
         required: true
         type: string
+      run_jitsi:
+        description: Run two-browser Jitsi smoke test
+        required: false
+        default: true
+        type: boolean
 
 jobs:
   selenium:
     name: Authenticated Selenium + evidence
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
 
@@ -36,10 +41,17 @@ jobs:
           pytest -q tests/e2e/test_telehealth.py tests/e2e/test_emr_workspace.py \
             --html=tests/evidence/staging-report.html --self-contained-html
 
+      - name: Run two-browser Jitsi smoke
+        if: ${{ inputs.run_jitsi }}
+        env:
+          E2E_EVIDENCE_DIR: tests/evidence
+          E2E_JITSI_ROOM: drvarsha-staging-${{ github.run_id }}
+        run: pytest -q tests/e2e/test_jitsi_two_browser.py
+
       - name: Upload screenshots and report
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: staging-e2e-evidence
+          name: staging-e2e-evidence-${{ github.run_id }}
           path: tests/evidence/
           if-no-files-found: warn
