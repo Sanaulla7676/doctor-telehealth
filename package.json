@@ -1,12 +1,12 @@
 {
   "name": "homeopathway-clinical-dashboard-server",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "Production-oriented full-stack EMR, telehealth and clinical publishing platform for Homeopathway.",
   "main": "server.js",
   "scripts": {
-    "start": "node scripts/migrate.js && node -r ./blog-api.js security-bootstrap.js",
+    "start": "node scripts/migrate.js && node -r ./blog-api.js -r ./emr-api.js security-bootstrap.js",
     "build": "cd frontend && npm ci && npm run build && cp -r out/* ../public/",
-    "test:syntax": "node --check server.js && node --check blog-api.js && node --check security-bootstrap.js",
+    "test:syntax": "node --check server.js && node --check blog-api.js && node --check emr-api.js && node --check security-bootstrap.js",
     "typecheck": "cd frontend && npm ci && npx tsc --noEmit",
     "security:audit": "node scripts/security-audit.mjs",
     "migrate": "node scripts/migrate.js",
