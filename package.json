@@ -10,7 +10,8 @@
     "typecheck": "cd frontend && npm ci && npx tsc --noEmit",
     "security:audit": "node scripts/security-audit.mjs",
     "migrate": "node scripts/migrate.js",
-    "quality": "npm run test:syntax && npm run security:audit && npm run typecheck && npm run build"
+    "migration:check": "node scripts/db-migration-check.mjs",
+    "quality": "npm run test:syntax && npm run security:audit && npm run migration:check && npm run typecheck && npm run build"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
