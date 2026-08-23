@@ -9,6 +9,16 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const cors = require('cors');
 
+// API modules patch Express registration and add their routes when the first
+// app.use() call occurs. Load them before registering middleware so direct
+// Render execution (`node server.js`) exposes the same API surface as the
+// npm start bootstrap path.
+require('./blog-api.js');
+require('./emr-api.js');
+require('./telehealth-api.js');
+require('./ops-api.js');
+require('./password-reset-api.js');
+
 const app = express();
 const server = http.createServer(app);
 
@@ -33,33 +43,31 @@ const pool = new Pool({
 
 app.use(express.json({ limit: process.env.JSON_BODY_LIMIT || '10mb' }));
 
-// The Vercel deployment serves a static frontend while the canonical API lives
-// on Render. Proxy only public GET API calls here so the browser can use the
-// same relative /api URL in production and staging. Authenticated doctor APIs
-// remain handled by the canonical backend.
-const backendBaseUrl = process.env.BACKEND_API_URL || 'https://doctor-telehealth.onrender.com';
-const proxyPublicGetApi = async (req, res, next) => {
-    if (req.method !== 'GET' || !req.path.startsWith('/api/')) return next();
-    try {
-        const target = new URL(req.originalUrl, backendBaseUrl);
-        const response = await fetch(target, {
-            method: 'GET',
-            headers: { 'Accept': req.get('accept') || 'application/json' }
-        });
-        const text = await response.text();
-        res.status(response.status);
-        const contentType = response.headers.get('content-type');
-        if (contentType) res.set('Content-Type', contentType);
-        return res.send(text);
-    } catch (error) {
-        console.error('[Public API proxy] error:', error);
-        return res.status(502).json({ success: false, error: 'Backend API unavailable.' });
-    }
-};
-
+// Render is the canonical API host. Do not proxy /api requests back to the
+// same Render service, which would create a self-referential request loop.
 app.get('/patient-auth.html', (req, res) => res.redirect(301, '/auth/'));
 app.get('/patient-portal.html', (req, res) => res.redirect(301, '/portal/'));
 app.get('/patient.html', (req, res) => res.redirect(301, '/portal/'));
-app.use(proxyPublicGetApi);
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static(path.join(__dirname, 'www')));
+
+app.set('trust proxy', 1);
+app.get('/health', (req, res) => res.json({ ok: true, service: 'doctor-telehealth' }));
+app.get('/ready', async (req, res) => {
+    try {
+        await pool.query('SELECT 1');
+        res.json({ ok: true, database: 'ready' });
+    } catch (error) {
+        console.error('[Readiness] database check failed:', error);
+        res.status(503).json({ ok: false, database: 'unavailable' });
+    }
+});
+
+// server.js used to define the Express app but never start the HTTP server.
+// Render is configured to run `node server.js`, so the process exited cleanly
+// immediately after boot. Keep the listener here so both direct Render starts
+// and the existing bootstrap path stay alive.
+const PORT = Number(process.env.PORT) || 10000;
+server.listen(PORT, '0.0.0.0', () => {
+    console.log(`[Server] Doctor Telehealth API listening on port ${PORT}`);
+});
